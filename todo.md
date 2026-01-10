@@ -145,3 +145,6 @@
 
 ## Gallery Layout Update
 - [x] Change homepage galleries from 4 images to 1 image per category
+
+- [x] Reduce gallery image sizes - images are too big
+- [x] Reorganize products page with clean categorized layout

@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant } from "lucide-react";
 
-// Gallery section component - single image per category
+// Gallery section component - single image per category (compact size)
 function GallerySection({ 
   title, 
   description, 
@@ -24,20 +24,20 @@ function GallerySection({
   return (
     <Link href={link}>
       <div className="group cursor-pointer">
-        <div className={`aspect-[16/9] rounded-2xl overflow-hidden shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
+        <div className={`h-48 md:h-56 rounded-xl overflow-hidden shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
           <img
             src={image.src}
             alt={image.alt}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-3 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold font-display group-hover:text-primary transition-colors">{title}</h3>
-            <p className="text-muted-foreground text-sm">{description}</p>
+            <h3 className="text-lg font-bold font-display group-hover:text-primary transition-colors">{title}</h3>
+            <p className="text-muted-foreground text-xs">{description}</p>
           </div>
-          <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-            View All <ArrowRight className="ml-2 h-4 w-4" />
+          <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+            View <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
         </div>
       </div>
@@ -214,43 +214,38 @@ export default function Home() {
               {/* Sidebar Menu */}
               <SidebarMenu />
               
-              {/* Main Gallery Content */}
-              <div className="flex-1 space-y-12">
-                {/* Cake Gallery */}
-                <GallerySection
-                  title="Custom Cakes"
-                  description="Magical creations for every celebration"
-                  image={cakeImage}
-                  link="/products?category=customized-cakes"
-                  bgColor="bg-pastel-pink/20"
-                />
-
-                {/* Cookie Gallery */}
-                <GallerySection
-                  title="Sugar Cookies"
-                  description="Beautifully decorated and deliciously sweet"
-                  image={cookieImage}
-                  link="/products?category=customized-sugar-cookies"
-                  bgColor="bg-pastel-lavender/20"
-                />
-
-                {/* Sweet Treats Gallery */}
-                <GallerySection
-                  title="Sweet Treats"
-                  description="Brownies, cake pops, cheesecake & more"
-                  image={treatsImage}
-                  link="/products"
-                  bgColor="bg-pastel-peach/20"
-                />
-
-                {/* Cinnamon Buns Gallery */}
-                <GallerySection
-                  title="Cinnamon Buns"
-                  description="Fresh-baked and irresistibly gooey"
-                  image={cinnamonImage}
-                  link="/products?category=cinnamon-buns"
-                  bgColor="bg-pastel-mint/20"
-                />
+              {/* Main Gallery Content - 2x2 Grid */}
+              <div className="flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <GallerySection
+                    title="Custom Cakes"
+                    description="Magical creations for every celebration"
+                    image={cakeImage}
+                    link="/products?category=customized-cakes"
+                    bgColor="bg-pastel-pink/20"
+                  />
+                  <GallerySection
+                    title="Sugar Cookies"
+                    description="Beautifully decorated and deliciously sweet"
+                    image={cookieImage}
+                    link="/products?category=customized-sugar-cookies"
+                    bgColor="bg-pastel-lavender/20"
+                  />
+                  <GallerySection
+                    title="Sweet Treats"
+                    description="Brownies, cake pops, cheesecake & more"
+                    image={treatsImage}
+                    link="/products"
+                    bgColor="bg-pastel-peach/20"
+                  />
+                  <GallerySection
+                    title="Cinnamon Buns"
+                    description="Fresh-baked and irresistibly gooey"
+                    image={cinnamonImage}
+                    link="/products?category=cinnamon-buns"
+                    bgColor="bg-pastel-mint/20"
+                  />
+                </div>
               </div>
             </div>
           </div>
