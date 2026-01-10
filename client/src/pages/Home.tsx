@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant, FlaskConical, Printer, Play } from "lucide-react";
 
 // Gallery section component - single image per category (compact size)
 function GallerySection({ 
@@ -350,6 +350,75 @@ export default function Home() {
                   </CardContent>
                 </Card>
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* In the Lab Teaser Section */}
+        <section className="py-16 bg-gradient-to-r from-pastel-lavender/30 via-white to-pastel-pink/30">
+          <div className="container">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <Badge className="bg-pastel-lavender/50 text-purple-700 border-0 mb-4">
+                  <FlaskConical className="w-3 h-3 mr-1" />
+                  Behind the Magic
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  In the Lab with{" "}
+                  <span className="text-gradient-rainbow">Fairytale Farms</span>
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Ever wonder how we create those perfect custom cookie cutters and stamps? 
+                  Peek behind the curtain and watch the magic happen in real-time!
+                </p>
+                <div className="flex flex-wrap gap-4 mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Printer className="w-4 h-4 text-purple-500" />
+                    <span>3D Printed Tools</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Camera className="w-4 h-4 text-pink-500" />
+                    <span>Live Lab Cam</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span>Custom Designs</span>
+                  </div>
+                </div>
+                <Link href="/lab">
+                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                    <Play className="w-4 h-4 mr-2" />
+                    Visit the Lab
+                  </Button>
+                </Link>
+              </div>
+              <div className="relative">
+                <Card className="overflow-hidden border-2 border-pastel-lavender/50 shadow-pastel">
+                  <div className="aspect-video bg-gradient-to-br from-pastel-lavender/20 to-pastel-pink/20 flex items-center justify-center relative">
+                    <div className="text-center">
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white shadow-lg flex items-center justify-center">
+                        <FlaskConical className="w-10 h-10 text-purple-500" />
+                      </div>
+                      <p className="text-muted-foreground">See what's printing today!</p>
+                    </div>
+                    {/* Live indicator */}
+                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm flex items-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                      </span>
+                      <span className="text-xs font-medium text-purple-600">Lab Updates</span>
+                    </div>
+                  </div>
+                </Card>
+                {/* Floating elements */}
+                <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-pastel-pink flex items-center justify-center shadow-lg animate-bounce">
+                  <span className="text-xl">🍪</span>
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-10 h-10 rounded-full bg-pastel-mint flex items-center justify-center shadow-lg">
+                  <span className="text-lg">✨</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>

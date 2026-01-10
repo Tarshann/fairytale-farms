@@ -24,6 +24,7 @@ import Wishlist from "./pages/Wishlist";
 import BuildYourOwn from "./pages/BuildYourOwn";
 import CustomPortraitPucks from "./pages/CustomPortraitPucks";
 import DeliveryZones from "./pages/DeliveryZones";
+import Lab from "./pages/Lab";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path={"/build-your-own"} component={BuildYourOwn} />
       <Route path={"/custom-portrait-pucks"} component={CustomPortraitPucks} />
       <Route path={"/delivery-zones"} component={DeliveryZones} />
+      <Route path={"/lab"} component={Lab} />
       
       {/* Admin routes */}
       <Route path={"/admin"} component={AdminDashboard} />

@@ -168,3 +168,16 @@
 - [x] Create dedicated Wishlist page to view saved products
 - [x] Add wishlist link to navigation
 - [ ] Show wishlist count in header
+
+
+## "In the Lab with Fairytale Farms" Section
+- [x] Create dedicated Lab page (/lab or /behind-the-magic)
+- [x] Add header with title and one-liner tagline
+- [x] Build "Live View" tile with status indicator (Live/Offline)
+- [x] Build "This Week's Builds" tile with 3 small cards
+- [x] Create "How it becomes cookies" mini timeline (Design → Print → Test → Bake → Decorate)
+- [x] Add video/clip embed area for printer footage
+- [x] Add cute offline fallback message
+- [x] Create CTA linking to custom cookie orders
+- [x] Add Lab link to main navigation
+- [x] Add Lab teaser section on homepage
