@@ -5,18 +5,183 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant } from "lucide-react";
+
+// Gallery section component
+function GallerySection({ 
+  title, 
+  description, 
+  images, 
+  link, 
+  bgColor 
+}: { 
+  title: string; 
+  description: string; 
+  images: { src: string; alt: string }[]; 
+  link: string;
+  bgColor: string;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-2xl font-bold font-display">{title}</h3>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
+        <Link href={link}>
+          <Button variant="outline" size="sm" className="hidden md:flex">
+            View All <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {images.map((img, idx) => (
+          <Link key={idx} href={link}>
+            <div className={`aspect-square rounded-2xl overflow-hidden cursor-pointer group shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </Link>
+        ))}
+      </div>
+      <Link href={link} className="md:hidden">
+        <Button variant="outline" size="sm" className="w-full">
+          View All {title} <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
+// Sidebar menu component
+function SidebarMenu() {
+  const menuCategories = [
+    { name: "Custom Cakes", icon: Cake, href: "/products?category=customized-cakes", color: "text-pink-500" },
+    { name: "Sugar Cookies", icon: Cookie, href: "/products?category=customized-sugar-cookies", color: "text-purple-500" },
+    { name: "Cinnamon Buns", icon: Croissant, href: "/products?category=cinnamon-buns", color: "text-amber-500" },
+    { name: "Cake Pops", icon: Cherry, href: "/products?category=cake-pops", color: "text-red-400" },
+    { name: "Brownies", icon: IceCream, href: "/products?category=brownies", color: "text-amber-700" },
+    { name: "Cheesecake", icon: Cake, href: "/products?category=cheesecake", color: "text-yellow-500" },
+    { name: "Chocolate Strawberries", icon: Heart, href: "/products?category=chocolate-covered-strawberries", color: "text-red-500" },
+  ];
+
+  const specialCollections = [
+    { name: "Valentine's Collection", icon: Heart, href: "/valentines", color: "text-pink-500", badge: "NEW" },
+    { name: "Build Your Own Box", icon: Package, href: "/build-your-own", color: "text-purple-500" },
+    { name: "Portrait Pucks", icon: Camera, href: "/custom-portrait-pucks", color: "text-green-500" },
+  ];
+
+  return (
+    <aside className="w-full lg:w-72 flex-shrink-0">
+      <div className="sticky top-24 space-y-6">
+        {/* Special Collections */}
+        <Card className="border-2 border-pink-100 shadow-pastel overflow-hidden">
+          <div className="bg-gradient-rainbow-soft p-4">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-pink-500" />
+              Special Collections
+            </h3>
+          </div>
+          <CardContent className="p-0">
+            <nav className="divide-y">
+              {specialCollections.map((item) => (
+                <Link key={item.name} href={item.href}>
+                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group">
+                    <item.icon className={`w-5 h-5 ${item.color} group-hover:scale-110 transition-transform`} />
+                    <span className="font-medium group-hover:text-primary transition-colors">{item.name}</span>
+                    {item.badge && (
+                      <Badge className="ml-auto bg-pink-500 text-white text-xs">{item.badge}</Badge>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </nav>
+          </CardContent>
+        </Card>
+
+        {/* All Categories */}
+        <Card className="shadow-pastel">
+          <CardContent className="p-4">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Gift className="w-5 h-5 text-purple-500" />
+              Browse by Category
+            </h3>
+            <nav className="space-y-1">
+              {menuCategories.map((item) => (
+                <Link key={item.name} href={item.href}>
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
+                    <item.icon className={`w-4 h-4 ${item.color} group-hover:scale-110 transition-transform`} />
+                    <span className="text-sm group-hover:text-primary transition-colors">{item.name}</span>
+                  </div>
+                </Link>
+              ))}
+            </nav>
+          </CardContent>
+        </Card>
+
+        {/* Quick Links */}
+        <Card className="shadow-pastel bg-pastel-mint/30">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-green-500" />
+              Delivery Info
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              We deliver to the Nashville area within a 30-mile radius of Goodlettsville, TN.
+            </p>
+            <Link href="/delivery-zones">
+              <Button variant="outline" size="sm" className="w-full">
+                Check Your ZIP Code
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </aside>
+  );
+}
 
 export default function Home() {
-  const { data: featuredProducts, isLoading } = trpc.products.featured.useQuery();
   const { data: categories } = trpc.categories.list.useQuery();
+  
+  // Gallery data with actual images
+  const cakeGallery = [
+    { src: "/images/481921085_1253005226678831_1341694159329657887_n.jpg", alt: "Custom Birthday Cake" },
+    { src: "/images/494927964_1303921418253878_1507582454007359767_n.jpg", alt: "Decorated Cake" },
+    { src: "/images/497611705_1312120867433933_6231905264159125170_n.jpg", alt: "Special Occasion Cake" },
+    { src: "/images/498671317_1317568696889150_4793173008111768826_n.jpg", alt: "Custom Design Cake" },
+  ];
+
+  const cookieGallery = [
+    { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Decorated Sugar Cookies" },
+    { src: "/images/499252750_1317422376903782_8618992760808385286_n.jpg", alt: "Custom Cookies" },
+    { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Holiday Cookies" },
+    { src: "/images/499252750_1317422376903782_8618992760808385286_n.jpg", alt: "Party Cookies" },
+  ];
+
+  const treatsGallery = [
+    { src: "/images/brownies.jpg", alt: "Gourmet Brownies" },
+    { src: "/images/cake_pops.jpg", alt: "Cake Pops" },
+    { src: "/images/cheesecake.jpg", alt: "Cheesecake" },
+    { src: "/images/chocolate_strawberries.jpg", alt: "Chocolate Covered Strawberries" },
+  ];
+
+  const cinnamonGallery = [
+    { src: "/images/cinnamon_buns.jpg", alt: "Fresh Cinnamon Buns" },
+    { src: "/images/cinnamon_buns.jpg", alt: "Glazed Cinnamon Rolls" },
+    { src: "/images/cinnamon_buns.jpg", alt: "Homestyle Cinnamon Buns" },
+    { src: "/images/cinnamon_buns.jpg", alt: "Classic Cinnamon Rolls" },
+  ];
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navigation />
       
       <main className="flex-1">
-        {/* Valentine's Day Hero Banner */}
+        {/* Whimsical Hero Banner */}
         <section className="relative overflow-hidden bg-gradient-rainbow-soft">
           <div className="absolute inset-0">
             <div className="absolute top-10 left-10 w-40 h-40 bg-pastel-pink rounded-full blur-3xl opacity-50" />
@@ -33,13 +198,13 @@ export default function Home() {
               </Badge>
               
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                Where Technology Meets{" "}
-                <span className="text-gradient-rainbow">Fairytale Magic</span>
+                Welcome to{" "}
+                <span className="text-gradient-rainbow">Fairytale Farms</span>
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Handcrafted treats featuring projection technology, freeze-dried candy, and artisanal baked goods. 
-                Limited Valentine's collection available for February 13-14 delivery.
+                Where every treat tells a story! Handcrafted with love, our magical creations 
+                turn ordinary moments into extraordinary memories. 
               </p>
               
               <div className="flex flex-wrap gap-4 justify-center">
@@ -51,7 +216,7 @@ export default function Home() {
                 </Link>
                 <Link href="/products">
                   <Button size="lg" variant="outline" className="border-2">
-                    Browse All Products
+                    Browse All Treats
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -76,68 +241,62 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Valentine's Day Quick Links */}
+        {/* Main Content with Sidebar */}
         <section className="py-12 bg-white">
           <div className="container">
-            <div className="grid md:grid-cols-3 gap-6">
-              <Link href="/valentines">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-pink-200 hover:shadow-pastel transition-all duration-300 overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-pastel-pink flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Gift className="w-7 h-7 text-pink-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Curated Tiers</h3>
-                        <p className="text-sm text-muted-foreground">Three perfectly crafted Valentine's collections starting at $35</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Sidebar Menu */}
+              <SidebarMenu />
               
-              <Link href="/build-your-own">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-purple-200 hover:shadow-pastel transition-all duration-300 overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-pastel-lavender flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Package className="w-7 h-7 text-purple-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Build Your Own</h3>
-                        <p className="text-sm text-muted-foreground">Create a custom box with your favorite treats</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/custom-portrait-pucks">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-green-200 hover:shadow-pastel transition-all duration-300 overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-pastel-mint flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Camera className="w-7 h-7 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">Portrait Pucks</h3>
-                        <p className="text-sm text-muted-foreground">Turn your photo into edible art with projection technology</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              {/* Main Gallery Content */}
+              <div className="flex-1 space-y-16">
+                {/* Cake Gallery */}
+                <GallerySection
+                  title="Custom Cakes"
+                  description="Magical creations for every celebration"
+                  images={cakeGallery}
+                  link="/products?category=customized-cakes"
+                  bgColor="bg-pastel-pink/20"
+                />
+
+                {/* Cookie Gallery */}
+                <GallerySection
+                  title="Sugar Cookies"
+                  description="Beautifully decorated and deliciously sweet"
+                  images={cookieGallery}
+                  link="/products?category=customized-sugar-cookies"
+                  bgColor="bg-pastel-lavender/20"
+                />
+
+                {/* Sweet Treats Gallery */}
+                <GallerySection
+                  title="Sweet Treats"
+                  description="Brownies, cake pops, cheesecake & more"
+                  images={treatsGallery}
+                  link="/products"
+                  bgColor="bg-pastel-peach/20"
+                />
+
+                {/* Cinnamon Buns Gallery */}
+                <GallerySection
+                  title="Cinnamon Buns"
+                  description="Fresh-baked and irresistibly gooey"
+                  images={cinnamonGallery}
+                  link="/products?category=cinnamon-buns"
+                  bgColor="bg-pastel-mint/20"
+                />
+              </div>
             </div>
           </div>
         </section>
         
-        {/* Features */}
+        {/* What Makes Us Special - Whimsical Version */}
         <section className="py-16 bg-muted/30">
           <div className="container">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Makes Us Special</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Makes Us Magical</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Combining traditional baking artistry with modern technology for treats that are truly magical
+                Every treat from Fairytale Farms is crafted with a sprinkle of magic and a whole lot of love
               </p>
             </div>
             
@@ -149,7 +308,7 @@ export default function Home() {
                   </div>
                   <h3 className="text-xl font-semibold">Made with Love</h3>
                   <p className="text-muted-foreground">
-                    Every item is handcrafted with care using premium ingredients and traditional techniques.
+                    Every item is handcrafted with care using premium ingredients and a whole lot of heart.
                   </p>
                 </CardContent>
               </Card>
@@ -159,9 +318,9 @@ export default function Home() {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pastel-lavender">
                     <Sparkles className="h-8 w-8 text-purple-600" />
                   </div>
-                  <h3 className="text-xl font-semibold">Tech-Enhanced</h3>
+                  <h3 className="text-xl font-semibold">A Touch of Magic</h3>
                   <p className="text-muted-foreground">
-                    Projection technology, 3D-printed dam systems, and freeze-dried treats for unique creations.
+                    Our secret? A sprinkle of fairy dust and years of baking expertise in every creation.
                   </p>
                 </CardContent>
               </Card>
@@ -180,146 +339,70 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
-        {/* Featured Products */}
+
+        {/* Valentine's Day Quick Links - No Prices */}
         <section className="py-16 bg-white">
           <div className="container">
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">Featured Treats</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Discover our most popular creations, perfect for any celebration or sweet craving.
+            <div className="text-center mb-12">
+              <Badge className="bg-pink-100 text-pink-600 mb-4">
+                <Heart className="w-3 h-3 mr-1 fill-current" /> Limited Time
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Valentine's Day Specials</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Show your love with our enchanting Valentine's collection
               </p>
             </div>
             
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="aspect-square bg-muted animate-pulse" />
-                    <CardContent className="p-6 space-y-2">
-                      <div className="h-6 bg-muted animate-pulse rounded" />
-                      <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredProducts?.map((product) => (
-                  <Link key={product.id} href={`/product/${product.slug}`}>
-                    <Card className="overflow-hidden hover:shadow-pastel-hover transition-all duration-300 cursor-pointer group border-2 border-transparent hover:border-primary/20">
-                      <div className="aspect-square overflow-hidden bg-gradient-rainbow-soft">
-                        {product.imageUrl ? (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Sparkles className="w-16 h-16 text-primary/30" />
-                          </div>
-                        )}
-                      </div>
-                      <CardContent className="p-6 space-y-2">
-                        <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                          {product.name}
-                        </h3>
-                        <p className="text-muted-foreground line-clamp-2 text-sm">
-                          {product.description}
-                        </p>
-                        <div className="flex items-center justify-between pt-2">
-                          <span className="text-2xl font-bold text-primary">
-                            ${parseFloat(product.basePrice).toFixed(2)}
-                          </span>
-                          {product.isCustomizable && (
-                            <Badge variant="secondary" className="bg-pastel-lavender text-purple-700 border-0">
-                              Customizable
-                            </Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-            
-            <div className="text-center mt-12">
-              <Link href="/products">
-                <Button size="lg" variant="outline" className="border-2">
-                  View All Products
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-        
-        {/* Categories */}
-        <section className="py-16 bg-muted/30">
-          <div className="container">
-            <div className="text-center space-y-4 mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">Shop by Category</h2>
-              <p className="text-lg text-muted-foreground">
-                Explore our full range of delicious offerings
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {categories?.map((category, index) => {
-                const colors = [
-                  "bg-pastel-pink hover:border-pink-300",
-                  "bg-pastel-lavender hover:border-purple-300",
-                  "bg-pastel-mint hover:border-green-300",
-                  "bg-pastel-peach hover:border-orange-300",
-                  "bg-pastel-sky hover:border-blue-300",
-                  "bg-pastel-yellow hover:border-yellow-300",
-                ];
-                return (
-                  <Link key={category.id} href={`/products?category=${category.id}`}>
-                    <Card className={`${colors[index % colors.length]} border-2 border-transparent hover:shadow-pastel transition-all duration-300 cursor-pointer group`}>
-                      <CardContent className="p-6 text-center">
-                        <h3 className="font-semibold group-hover:text-primary transition-colors">
-                          {category.name}
-                        </h3>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-        
-        {/* Valentine's CTA */}
-        <section className="py-20 bg-gradient-rainbow">
-          <div className="container text-center space-y-6">
-            <Badge className="bg-white/90 text-pink-600 border-0 px-4 py-2">
-              <Heart className="w-4 h-4 mr-2 fill-current" />
-              Limited Time Collection
-            </Badge>
-            
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Don't Miss Our Valentine's Day Collection
-            </h2>
-            <p className="text-lg text-white/90 max-w-2xl mx-auto">
-              Order by February 12 for guaranteed delivery on February 13-14. 
-              Only 100 boxes available!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="grid md:grid-cols-3 gap-6">
               <Link href="/valentines">
-                <Button size="lg" className="bg-white text-pink-600 hover:bg-white/90">
-                  <Heart className="mr-2 h-5 w-5 fill-current" />
-                  Shop Valentine's Collection
-                </Button>
+                <Card className="group cursor-pointer border-2 border-transparent hover:border-pink-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
+                  <div className="aspect-video bg-gradient-to-br from-pastel-pink to-pastel-lavender flex items-center justify-center">
+                    <Gift className="w-16 h-16 text-pink-600 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Curated Gift Boxes</h3>
+                    <p className="text-muted-foreground">Three perfectly crafted Valentine's collections for every budget</p>
+                  </CardContent>
+                </Card>
               </Link>
-              <Link href="/delivery-zones">
-                <Button size="lg" variant="outline" className="bg-transparent text-white border-white/50 hover:bg-white/10">
-                  <MapPin className="mr-2 h-5 w-5" />
-                  Check Delivery Area
-                </Button>
+              
+              <Link href="/build-your-own">
+                <Card className="group cursor-pointer border-2 border-transparent hover:border-purple-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
+                  <div className="aspect-video bg-gradient-to-br from-pastel-lavender to-pastel-sky flex items-center justify-center">
+                    <Package className="w-16 h-16 text-purple-600 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Build Your Own Box</h3>
+                    <p className="text-muted-foreground">Create a custom box filled with your sweetheart's favorite treats</p>
+                  </CardContent>
+                </Card>
               </Link>
+              
+              <Link href="/custom-portrait-pucks">
+                <Card className="group cursor-pointer border-2 border-transparent hover:border-green-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
+                  <div className="aspect-video bg-gradient-to-br from-pastel-mint to-pastel-sky flex items-center justify-center">
+                    <Camera className="w-16 h-16 text-green-600 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Custom Portrait Pucks</h3>
+                    <p className="text-muted-foreground">Turn your favorite photo into a delicious edible keepsake</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonial/Story Section */}
+        <section className="py-16 bg-gradient-rainbow-soft">
+          <div className="container">
+            <div className="max-w-3xl mx-auto text-center space-y-6">
+              <Sparkles className="w-12 h-12 text-pink-500 mx-auto" />
+              <blockquote className="text-2xl md:text-3xl font-display italic text-foreground/80">
+                "Every treat has a story, and we're here to help you tell yours. From birthday wishes to wedding dreams, 
+                we bake happiness into every creation."
+              </blockquote>
+              <p className="text-muted-foreground font-medium">— The Fairytale Farms Family</p>
             </div>
           </div>
         </section>

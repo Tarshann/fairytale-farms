@@ -193,7 +193,7 @@ export default function CustomPortraitPucks() {
             <Card>
               <CardHeader>
                 <CardTitle>How It Works</CardTitle>
-                <CardDescription>Our exclusive projection technology process</CardDescription>
+<CardDescription>Our magical creation process</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">

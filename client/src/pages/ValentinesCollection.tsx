@@ -41,13 +41,14 @@ export default function ValentinesCollection() {
             </Badge>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground">
-              Where Technology Meets{" "}
+              Spread the Love with{" "}
               <span className="text-gradient-rainbow">Fairytale Magic</span>
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Handcrafted with love using projection technology, 3D-printed dam systems, 
-              and freeze-dried treats. Limited quantities available for February 13-14 delivery.
+              Handcrafted with love and a sprinkle of magic. Our enchanting Valentine's treats 
+              are perfect for sweethearts, friends, and anyone who deserves a little extra love. 
+              Limited quantities available for February 13-14 delivery.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -190,8 +191,8 @@ export default function ValentinesCollection() {
                 </h2>
                 
                 <p className="text-lg text-muted-foreground mb-6">
-                  Turn your favorite photo into an edible keepsake. Using projection technology 
-                  exclusive to Fairytale Farms, we transform your memories into hand-traced Oreo masterpieces.
+Turn your favorite photo into an edible keepsake. Our artists lovingly transform 
+                  your memories into hand-crafted Oreo masterpieces that taste as magical as they look.
                 </p>
                 
                 <div className="space-y-4 mb-8">
