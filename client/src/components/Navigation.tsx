@@ -1,7 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, User, Menu, X, Heart, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
@@ -19,7 +20,8 @@ export default function Navigation() {
   
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
+    { href: "/valentines", label: "Valentine's 2026", special: true },
+    { href: "/products", label: "All Products" },
     { href: "/contact", label: "Contact" },
   ];
   
@@ -35,31 +37,40 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/">
             <a className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-gradient-gold">
+              <div className="w-10 h-10 rounded-full bg-gradient-rainbow flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold text-gradient-rainbow">
                 Fairytale Farms
               </h1>
             </a>
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <a
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                  className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 ${
                     isActive(link.href)
                       ? "text-primary"
                       : "text-muted-foreground"
                   }`}
                 >
+                  {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
                   {link.label}
+                  {link.special && (
+                    <Badge className="ml-1 bg-pastel-pink text-pink-700 border-0 text-xs py-0 px-1.5">
+                      NEW
+                    </Badge>
+                  )}
                 </a>
               </Link>
             ))}
           </div>
           
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
                 <Link href="/my-orders">
@@ -86,6 +97,20 @@ export default function Navigation() {
             )}
             
             <Link href="/cart">
+              <Button variant="outline" size="sm" className="relative border-primary/30 hover:border-primary">
+                <ShoppingCart className="h-4 w-4" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link href="/cart">
               <Button variant="outline" size="sm" className="relative">
                 <ShoppingCart className="h-4 w-4" />
                 {cartCount > 0 && (
@@ -95,35 +120,39 @@ export default function Navigation() {
                 )}
               </Button>
             </Link>
+            <button
+              className="p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
-          
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
         </div>
         
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-4 border-t border-border">
+          <div className="md:hidden py-4 space-y-2 border-t border-border">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <a
-                  className={`block py-2 text-sm font-medium ${
+                  className={`flex items-center gap-2 py-3 px-2 rounded-lg text-sm font-medium ${
                     isActive(link.href)
-                      ? "text-primary"
+                      ? "text-primary bg-primary/5"
                       : "text-muted-foreground"
-                  }`}
+                  } ${link.special ? "bg-pastel-pink/30" : ""}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
+                  {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
                   {link.label}
+                  {link.special && (
+                    <Badge className="ml-auto bg-pink-500 text-white border-0 text-xs">
+                      NEW
+                    </Badge>
+                  )}
                 </a>
               </Link>
             ))}
@@ -153,13 +182,6 @@ export default function Navigation() {
                   </Button>
                 </a>
               )}
-              
-              <Link href="/cart">
-                <Button variant="outline" className="w-full justify-start relative" onClick={() => setMobileMenuOpen(false)}>
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Cart {cartCount > 0 && `(${cartCount})`}
-                </Button>
-              </Link>
             </div>
           </div>
         )}

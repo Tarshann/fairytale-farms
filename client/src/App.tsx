@@ -18,19 +18,31 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminContacts from "./pages/admin/AdminContacts";
 
+// Valentine's Day 2026 Collection
+import ValentinesCollection from "./pages/ValentinesCollection";
+import BuildYourOwn from "./pages/BuildYourOwn";
+import CustomPortraitPucks from "./pages/CustomPortraitPucks";
+import DeliveryZones from "./pages/DeliveryZones";
+
 function Router() {
   return (
     <Switch>
       {/* Public routes */}
       <Route path={"/"} component={Home} />
       <Route path={"/products"} component={Products} />
-      <Route path={"/products/:slug"} component={ProductDetail} />
+      <Route path={"/product/:slug"} component={ProductDetail} />
       <Route path={"/cart"} component={Cart} />
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/order-confirmation/:orderNumber"} component={OrderConfirmation} />
       <Route path={"/my-orders"} component={MyOrders} />
       <Route path={"/orders/:id"} component={OrderDetail} />
       <Route path={"/contact"} component={Contact} />
+      
+      {/* Valentine's Day 2026 Collection */}
+      <Route path={"/valentines"} component={ValentinesCollection} />
+      <Route path={"/build-your-own"} component={BuildYourOwn} />
+      <Route path={"/custom-portrait-pucks"} component={CustomPortraitPucks} />
+      <Route path={"/delivery-zones"} component={DeliveryZones} />
       
       {/* Admin routes */}
       <Route path={"/admin"} component={AdminDashboard} />
@@ -43,11 +55,6 @@ function Router() {
     </Switch>
   );
 }
-
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
   return (

@@ -80,3 +80,54 @@
 - [x] Verify all features are working correctly
 - [ ] Prepare deployment documentation
 - [x] Deliver completed website to user
+
+## Valentine's Day 2026 Launch Customizations
+
+### Product System
+- [x] Create Valentine's Day tier products (Sweet Beginnings $28, Love Story $52, Fairytale Romance $85)
+- [x] Implement Build-Your-Own system with base box + individual item pricing
+- [x] Add Custom Portrait Pucks product with photo upload functionality
+- [x] Setup product inventory caps (Tier 1: 40, Tier 2: 35, Tier 3: 15, BYO: 10, Custom: 10)
+- [x] Implement auto-cutoff dates (Feb 12 for tiers, Feb 10 for custom portraits)
+
+### Payment & Deposits
+- [x] Implement 50% deposit system for custom portrait orders (schema ready)
+- [ ] Add automated remaining 50% charge 24 hours before delivery
+- [x] Setup Academy member promo codes (20% off tiers, 15% off BYO)
+- [x] Add returning customer discount codes (15% off all)
+
+### Photo Upload System
+- [x] Build photo upload widget for custom portrait pucks page
+- [x] Accept JPG/PNG formats with minimum 1MB file size
+- [ ] Send upload confirmation email to customer
+- [ ] Send admin notification when photo uploaded
+- [ ] Add photo review/approval workflow
+
+### Delivery System
+- [x] Build delivery zone checker (ZIP code validator for 30-mile radius from 37031)
+- [x] Add delivery date picker for Feb 13-14
+- [x] Implement same-day delivery toggle for tier/BYO orders
+- [x] Setup scheduled-only delivery for custom portrait orders
+- [x] Display covered ZIP codes list
+
+### Frontend Updates
+- [x] Create Valentine's Day collection landing page
+- [x] Build individual tier product pages with detailed contents
+- [x] Create Build-Your-Own interactive page with live pricing calculator
+- [x] Design Custom Portrait Pucks page with upload interface
+- [x] Add Valentine's Day hero banner to homepage
+- [x] Update branding with "Where Technology Meets Fairytale Magic" tagline
+- [x] Add equipment moat messaging (projection tech, 3D dam system, freeze dryer)
+
+### Admin Features
+- [x] Add real-time inventory counter in admin dashboard
+- [ ] Build photo review interface for custom portrait orders
+- [x] Add order management for scheduled deliveries
+- [x] Implement promo code usage tracking
+
+### Design Updates
+- [x] Update color scheme to white base with pastel rainbow accents (soft pink, lavender, mint, peach, sky blue)
+
+### Testing
+- [x] Write vitest tests for Valentine's Day features (12 tests passing)
+- [x] All 29 tests passing

@@ -353,3 +353,243 @@ export async function updateContactSubmissionStatus(id: number, status: "new" | 
   if (!db) throw new Error("Database not available");
   await db.update(contactSubmissions).set({ status }).where(eq(contactSubmissions.id, id));
 }
+
+// ============= PHOTO UPLOAD OPERATIONS =============
+
+import { photoUploads, PhotoUpload, InsertPhotoUpload } from "../drizzle/schema";
+
+export async function createPhotoUpload(upload: InsertPhotoUpload): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const [result] = await db.insert(photoUploads).values(upload);
+  return Number(result.insertId);
+}
+
+export async function getPhotoUploadsByOrder(orderId: number): Promise<PhotoUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(photoUploads).where(eq(photoUploads.orderId, orderId));
+}
+
+export async function getPendingPhotoUploads(): Promise<PhotoUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(photoUploads).where(eq(photoUploads.status, "pending_review"));
+}
+
+export async function updatePhotoUploadStatus(
+  id: number, 
+  status: "pending_review" | "approved" | "rejected",
+  reviewNotes?: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(photoUploads)
+    .set({ status, reviewNotes, updatedAt: new Date() })
+    .where(eq(photoUploads.id, id));
+}
+
+// ============= PROMO CODE OPERATIONS =============
+
+import { promoCodes, PromoCode } from "../drizzle/schema";
+
+export async function getPromoCodeByCode(code: string): Promise<PromoCode | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const [result] = await db.select()
+    .from(promoCodes)
+    .where(eq(promoCodes.code, code))
+    .limit(1);
+  
+  return result;
+}
+
+export async function validatePromoCode(code: string): Promise<{
+  valid: boolean;
+  promoCode?: PromoCode;
+  reason?: string;
+}> {
+  const promoCode = await getPromoCodeByCode(code);
+  
+  if (!promoCode) {
+    return { valid: false, reason: "Promo code not found" };
+  }
+  
+  if (!promoCode.isActive) {
+    return { valid: false, reason: "Promo code is no longer active" };
+  }
+  
+  const now = new Date();
+  if (promoCode.validFrom && now < promoCode.validFrom) {
+    return { valid: false, reason: "Promo code is not yet valid" };
+  }
+  
+  if (promoCode.validUntil && now > promoCode.validUntil) {
+    return { valid: false, reason: "Promo code has expired" };
+  }
+  
+  if (promoCode.maxUses && promoCode.usedCount >= promoCode.maxUses) {
+    return { valid: false, reason: "Promo code has reached maximum uses" };
+  }
+  
+  return { valid: true, promoCode };
+}
+
+export async function incrementPromoCodeUsage(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(promoCodes)
+    .set({ usedCount: sql`${promoCodes.usedCount} + 1` })
+    .where(eq(promoCodes.id, id));
+}
+
+export async function calculateDiscount(
+  promoCode: PromoCode,
+  subtotal: number,
+  productTypes: string[]
+): Promise<number> {
+  // Check if promo code applies to these product types
+  if (promoCode.applicableProductTypes) {
+    const applicableTypes = JSON.parse(promoCode.applicableProductTypes);
+    const hasApplicableProduct = productTypes.some(type => applicableTypes.includes(type));
+    if (!hasApplicableProduct) {
+      return 0;
+    }
+  }
+  
+  // Check minimum order amount
+  if (promoCode.minOrderAmount && subtotal < Number(promoCode.minOrderAmount)) {
+    return 0;
+  }
+  
+  // Calculate discount
+  if (promoCode.discountType === "percentage") {
+    return (subtotal * Number(promoCode.discountValue)) / 100;
+  } else {
+    return Math.min(Number(promoCode.discountValue), subtotal);
+  }
+}
+
+// ============= DELIVERY ZONE OPERATIONS =============
+
+import { deliveryZones, DeliveryZone } from "../drizzle/schema";
+
+export async function validateDeliveryZone(zipCode: string): Promise<{
+  valid: boolean;
+  zone?: DeliveryZone;
+  reason?: string;
+}> {
+  const db = await getDb();
+  if (!db) {
+    return { valid: false, reason: "Database not available" };
+  }
+  
+  const [zone] = await db.select()
+    .from(deliveryZones)
+    .where(eq(deliveryZones.zipCode, zipCode))
+    .limit(1);
+  
+  if (!zone) {
+    return { valid: false, reason: "Delivery not available in this ZIP code" };
+  }
+  
+  if (!zone.isActive) {
+    return { valid: false, reason: "Delivery temporarily unavailable in this area" };
+  }
+  
+  return { valid: true, zone };
+}
+
+export async function getAllDeliveryZones(): Promise<DeliveryZone[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(deliveryZones).where(eq(deliveryZones.isActive, true));
+}
+
+// ============= PRODUCT INVENTORY OPERATIONS =============
+
+export async function checkProductAvailability(productId: number, quantity: number): Promise<{
+  available: boolean;
+  reason?: string;
+}> {
+  const db = await getDb();
+  if (!db) {
+    return { available: false, reason: "Database not available" };
+  }
+  
+  const [product] = await db.select()
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+  
+  if (!product) {
+    return { available: false, reason: "Product not found" };
+  }
+  
+  if (!product.inStock) {
+    return { available: false, reason: "Product is out of stock" };
+  }
+  
+  // Check availability dates
+  const now = new Date();
+  if (product.availableFrom && now < product.availableFrom) {
+    return { available: false, reason: "Product is not yet available" };
+  }
+  
+  if (product.availableUntil && now > product.availableUntil) {
+    return { available: false, reason: "Product is no longer available" };
+  }
+  
+  // Check inventory cap
+  if (product.inventoryCap) {
+    const remaining = product.inventoryCap - (product.inventorySold || 0);
+    if (remaining < quantity) {
+      return { available: false, reason: `Only ${remaining} remaining` };
+    }
+  }
+  
+  return { available: true };
+}
+
+export async function incrementProductSold(productId: number, quantity: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(products)
+    .set({ inventorySold: sql`${products.inventorySold} + ${quantity}` })
+    .where(eq(products.id, productId));
+}
+
+export async function getValentinesProducts(): Promise<Product[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const valentinesCategory = await db.select()
+    .from(categories)
+    .where(eq(categories.slug, "valentines-day-2026"))
+    .limit(1);
+  
+  if (!valentinesCategory.length) return [];
+  
+  return db.select()
+    .from(products)
+    .where(eq(products.categoryId, valentinesCategory[0].id))
+    .orderBy(products.displayOrder);
+}
+
+export async function getProductsByType(productType: "standard" | "tier" | "build_your_own_item" | "custom_portrait"): Promise<Product[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select()
+    .from(products)
+    .where(eq(products.productType, productType))
+    .orderBy(products.displayOrder);
+}
