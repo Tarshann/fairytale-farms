@@ -141,3 +141,7 @@
 - [x] Make branding fun and whimsical instead of tech-focused
 - [x] Remove prices from main page - show only when clicking products
 - [x] Update hero section to be whimsical without tech messaging
+
+
+## Gallery Layout Update
+- [x] Change homepage galleries from 4 images to 1 image per category

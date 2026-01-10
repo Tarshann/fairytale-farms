@@ -7,52 +7,41 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant } from "lucide-react";
 
-// Gallery section component
+// Gallery section component - single image per category
 function GallerySection({ 
   title, 
   description, 
-  images, 
+  image, 
   link, 
   bgColor 
 }: { 
   title: string; 
   description: string; 
-  images: { src: string; alt: string }[]; 
+  image: { src: string; alt: string }; 
   link: string;
   bgColor: string;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-bold font-display">{title}</h3>
-          <p className="text-muted-foreground">{description}</p>
+    <Link href={link}>
+      <div className="group cursor-pointer">
+        <div className={`aspect-[16/9] rounded-2xl overflow-hidden shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
+          <img
+            src={image.src}
+            alt={image.alt}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
-        <Link href={link}>
-          <Button variant="outline" size="sm" className="hidden md:flex">
+        <div className="mt-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold font-display group-hover:text-primary transition-colors">{title}</h3>
+            <p className="text-muted-foreground text-sm">{description}</p>
+          </div>
+          <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
             View All <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-        </Link>
+        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {images.map((img, idx) => (
-          <Link key={idx} href={link}>
-            <div className={`aspect-square rounded-2xl overflow-hidden cursor-pointer group shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
-              <img
-                src={img.src}
-                alt={img.alt}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </Link>
-        ))}
-      </div>
-      <Link href={link} className="md:hidden">
-        <Button variant="outline" size="sm" className="w-full">
-          View All {title} <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </Link>
-    </div>
+    </Link>
   );
 }
 
@@ -147,34 +136,11 @@ function SidebarMenu() {
 export default function Home() {
   const { data: categories } = trpc.categories.list.useQuery();
   
-  // Gallery data with actual images
-  const cakeGallery = [
-    { src: "/images/481921085_1253005226678831_1341694159329657887_n.jpg", alt: "Custom Birthday Cake" },
-    { src: "/images/494927964_1303921418253878_1507582454007359767_n.jpg", alt: "Decorated Cake" },
-    { src: "/images/497611705_1312120867433933_6231905264159125170_n.jpg", alt: "Special Occasion Cake" },
-    { src: "/images/498671317_1317568696889150_4793173008111768826_n.jpg", alt: "Custom Design Cake" },
-  ];
-
-  const cookieGallery = [
-    { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Decorated Sugar Cookies" },
-    { src: "/images/499252750_1317422376903782_8618992760808385286_n.jpg", alt: "Custom Cookies" },
-    { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Holiday Cookies" },
-    { src: "/images/499252750_1317422376903782_8618992760808385286_n.jpg", alt: "Party Cookies" },
-  ];
-
-  const treatsGallery = [
-    { src: "/images/brownies.jpg", alt: "Gourmet Brownies" },
-    { src: "/images/cake_pops.jpg", alt: "Cake Pops" },
-    { src: "/images/cheesecake.jpg", alt: "Cheesecake" },
-    { src: "/images/chocolate_strawberries.jpg", alt: "Chocolate Covered Strawberries" },
-  ];
-
-  const cinnamonGallery = [
-    { src: "/images/cinnamon_buns.jpg", alt: "Fresh Cinnamon Buns" },
-    { src: "/images/cinnamon_buns.jpg", alt: "Glazed Cinnamon Rolls" },
-    { src: "/images/cinnamon_buns.jpg", alt: "Homestyle Cinnamon Buns" },
-    { src: "/images/cinnamon_buns.jpg", alt: "Classic Cinnamon Rolls" },
-  ];
+  // Single image per gallery category
+  const cakeImage = { src: "/images/481921085_1253005226678831_1341694159329657887_n.jpg", alt: "Custom Birthday Cake" };
+  const cookieImage = { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Decorated Sugar Cookies" };
+  const treatsImage = { src: "/images/brownies.jpg", alt: "Gourmet Brownies" };
+  const cinnamonImage = { src: "/images/cinnamon_buns.jpg", alt: "Fresh Cinnamon Buns" };
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -249,12 +215,12 @@ export default function Home() {
               <SidebarMenu />
               
               {/* Main Gallery Content */}
-              <div className="flex-1 space-y-16">
+              <div className="flex-1 space-y-12">
                 {/* Cake Gallery */}
                 <GallerySection
                   title="Custom Cakes"
                   description="Magical creations for every celebration"
-                  images={cakeGallery}
+                  image={cakeImage}
                   link="/products?category=customized-cakes"
                   bgColor="bg-pastel-pink/20"
                 />
@@ -263,7 +229,7 @@ export default function Home() {
                 <GallerySection
                   title="Sugar Cookies"
                   description="Beautifully decorated and deliciously sweet"
-                  images={cookieGallery}
+                  image={cookieImage}
                   link="/products?category=customized-sugar-cookies"
                   bgColor="bg-pastel-lavender/20"
                 />
@@ -272,7 +238,7 @@ export default function Home() {
                 <GallerySection
                   title="Sweet Treats"
                   description="Brownies, cake pops, cheesecake & more"
-                  images={treatsGallery}
+                  image={treatsImage}
                   link="/products"
                   bgColor="bg-pastel-peach/20"
                 />
@@ -281,7 +247,7 @@ export default function Home() {
                 <GallerySection
                   title="Cinnamon Buns"
                   description="Fresh-baked and irresistibly gooey"
-                  images={cinnamonGallery}
+                  image={cinnamonImage}
                   link="/products?category=cinnamon-buns"
                   bgColor="bg-pastel-mint/20"
                 />
