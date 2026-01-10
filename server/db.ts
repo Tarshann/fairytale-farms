@@ -7,7 +7,8 @@ import {
   cartItems, CartItem, InsertCartItem,
   orders, Order, InsertOrder,
   orderItems, OrderItem, InsertOrderItem,
-  contactSubmissions, ContactSubmission, InsertContactSubmission
+  contactSubmissions, ContactSubmission, InsertContactSubmission,
+  wishlistItems, WishlistItem, InsertWishlistItem
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -592,4 +593,103 @@ export async function getProductsByType(productType: "standard" | "tier" | "buil
     .from(products)
     .where(eq(products.productType, productType))
     .orderBy(products.displayOrder);
+}
+
+
+// ============ WISHLIST FUNCTIONS ============
+
+export async function getWishlistItems(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const items = await db
+    .select({
+      id: wishlistItems.id,
+      userId: wishlistItems.userId,
+      productId: wishlistItems.productId,
+      createdAt: wishlistItems.createdAt,
+      product: {
+        id: products.id,
+        name: products.name,
+        slug: products.slug,
+        description: products.description,
+        basePrice: products.basePrice,
+        imageUrl: products.imageUrl,
+        inStock: products.inStock,
+        categoryId: products.categoryId,
+      }
+    })
+    .from(wishlistItems)
+    .innerJoin(products, eq(wishlistItems.productId, products.id))
+    .where(eq(wishlistItems.userId, userId))
+    .orderBy(desc(wishlistItems.createdAt));
+  
+  return items;
+}
+
+export async function addToWishlist(userId: number, productId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Check if already in wishlist
+  const existing = await db
+    .select()
+    .from(wishlistItems)
+    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    return existing[0];
+  }
+  
+  const result = await db.insert(wishlistItems).values({ userId, productId });
+  return { id: Number((result as any)[0].insertId), userId, productId };
+}
+
+export async function removeFromWishlist(userId: number, productId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  
+  await db
+    .delete(wishlistItems)
+    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)));
+  
+  return true;
+}
+
+export async function isInWishlist(userId: number, productId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  
+  const existing = await db
+    .select()
+    .from(wishlistItems)
+    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
+    .limit(1);
+  
+  return existing.length > 0;
+}
+
+export async function getWishlistProductIds(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const items = await db
+    .select({ productId: wishlistItems.productId })
+    .from(wishlistItems)
+    .where(eq(wishlistItems.userId, userId));
+  
+  return items.map(item => item.productId);
+}
+
+export async function getWishlistCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(wishlistItems)
+    .where(eq(wishlistItems.userId, userId));
+  
+  return result[0]?.count || 0;
 }

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
-import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -140,11 +140,15 @@ function QuickViewModal({
 function ProductCard({ 
   product, 
   onQuickView,
-  categoryName
+  categoryName,
+  isInWishlist,
+  onToggleWishlist
 }: { 
   product: any; 
   onQuickView: () => void;
   categoryName?: string;
+  isInWishlist?: boolean;
+  onToggleWishlist?: () => void;
 }) {
   const placeholder = categoryPlaceholders[categoryName?.toLowerCase() || ""] || { emoji: "🧁", gradient: "from-pastel-pink/30 to-pastel-lavender/30" };
   
@@ -174,6 +178,20 @@ function ProductCard({
         </CardContent>
       </Link>
       
+      {/* Wishlist Heart Button */}
+      <Button
+        size="icon"
+        variant="ghost"
+        className={`absolute top-2 left-2 h-8 w-8 rounded-full bg-white/80 hover:bg-white shadow-md transition-all duration-200 ${isInWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleWishlist?.();
+        }}
+      >
+        <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-current' : ''}`} />
+      </Button>
+      
       {/* Quick View Button - appears on hover */}
       <Button
         size="sm"
@@ -197,12 +215,16 @@ function CategorySection({
   category, 
   products,
   bgColor,
-  onQuickView
+  onQuickView,
+  wishlistIds,
+  onToggleWishlist
 }: { 
   category: { id: number; name: string; slug: string; description?: string | null };
   products: any[];
   bgColor: string;
   onQuickView: (product: any, categoryName: string) => void;
+  wishlistIds: number[];
+  onToggleWishlist: (productId: number) => void;
 }) {
   if (products.length === 0) return null;
   
@@ -229,6 +251,8 @@ function CategorySection({
               product={product} 
               onQuickView={() => onQuickView(product, category.name)}
               categoryName={category.name}
+              isInWishlist={wishlistIds.includes(product.id)}
+              onToggleWishlist={() => onToggleWishlist(product.id)}
             />
           ))}
         </div>
@@ -257,6 +281,30 @@ export default function Products() {
   
   const { data: categories } = trpc.categories.list.useQuery();
   const { data: allProducts, isLoading } = trpc.products.list.useQuery();
+  
+  // Wishlist functionality
+  const { isAuthenticated } = useAuth();
+  const { data: wishlistIds = [], refetch: refetchWishlist } = trpc.wishlist.productIds.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const toggleWishlist = trpc.wishlist.toggle.useMutation({
+    onSuccess: (data) => {
+      refetchWishlist();
+      toast.success(data.added ? "Added to wishlist!" : "Removed from wishlist");
+    },
+    onError: () => {
+      toast.error("Please sign in to use wishlist");
+    }
+  });
+  
+  const handleToggleWishlist = (productId: number) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to save favorites");
+      return;
+    }
+    toggleWishlist.mutate({ productId });
+  };
   
   useEffect(() => {
     if (categoryParam) {
@@ -540,6 +588,8 @@ export default function Products() {
                       product={product} 
                       onQuickView={() => handleQuickView(product, getCategoryName(product.categoryId))}
                       categoryName={getCategoryName(product.categoryId)}
+                      isInWishlist={wishlistIds.includes(product.id)}
+                      onToggleWishlist={() => handleToggleWishlist(product.id)}
                     />
                   ))}
                 </div>
@@ -574,6 +624,8 @@ export default function Products() {
                 products={productsByCategory[category.id] || []}
                 bgColor={bgColors[index % bgColors.length]}
                 onQuickView={handleQuickView}
+                wishlistIds={wishlistIds}
+                onToggleWishlist={handleToggleWishlist}
               />
             ))}
           </>

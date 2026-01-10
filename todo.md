@@ -156,3 +156,15 @@
 - [x] Add quick view button to each product card
 - [x] Create quick view modal with product details
 - [x] Update stock images to be relevant to each category
+
+
+## Wishlist/Favorites Feature
+- [x] Add wishlist table to database schema
+- [x] Create database helper functions for wishlist operations
+- [x] Add tRPC procedures for add/remove/list wishlist items
+- [x] Add heart icon toggle to product cards on Products page
+- [x] Add heart icon to Quick View modal
+- [ ] Add heart icon to Product Detail page
+- [x] Create dedicated Wishlist page to view saved products
+- [x] Add wishlist link to navigation
+- [ ] Show wishlist count in header

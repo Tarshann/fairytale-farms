@@ -96,6 +96,12 @@ export default function Navigation() {
               </a>
             )}
             
+            <Link href="/wishlist">
+              <Button variant="ghost" size="sm" className="text-pink-500 hover:text-pink-600 hover:bg-pink-50">
+                <Heart className="h-4 w-4" />
+              </Button>
+            </Link>
+            
             <Link href="/cart">
               <Button variant="outline" size="sm" className="relative border-primary/30 hover:border-primary">
                 <ShoppingCart className="h-4 w-4" />
@@ -110,6 +116,11 @@ export default function Navigation() {
           
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-2">
+            <Link href="/wishlist">
+              <Button variant="ghost" size="sm" className="text-pink-500">
+                <Heart className="h-4 w-4" />
+              </Button>
+            </Link>
             <Link href="/cart">
               <Button variant="outline" size="sm" className="relative">
                 <ShoppingCart className="h-4 w-4" />
@@ -158,6 +169,12 @@ export default function Navigation() {
             ))}
             
             <div className="pt-4 space-y-2 border-t border-border">
+              <Link href="/wishlist">
+                <Button variant="ghost" className="w-full justify-start text-pink-500" onClick={() => setMobileMenuOpen(false)}>
+                  <Heart className="h-4 w-4 mr-2" />
+                  My Wishlist
+                </Button>
+              </Link>
               {isAuthenticated ? (
                 <>
                   <Link href="/my-orders">

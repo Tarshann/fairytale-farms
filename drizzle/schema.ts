@@ -209,3 +209,17 @@ export const deliveryZones = mysqlTable("deliveryZones", {
 
 export type DeliveryZone = typeof deliveryZones.$inferSelect;
 export type InsertDeliveryZone = typeof deliveryZones.$inferInsert;
+
+
+/**
+ * Wishlist/Favorites for users to save products
+ */
+export const wishlistItems = mysqlTable("wishlistItems", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  productId: int("productId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WishlistItem = typeof wishlistItems.$inferSelect;
+export type InsertWishlistItem = typeof wishlistItems.$inferInsert;

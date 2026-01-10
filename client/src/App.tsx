@@ -20,6 +20,7 @@ import AdminContacts from "./pages/admin/AdminContacts";
 
 // Valentine's Day 2026 Collection
 import ValentinesCollection from "./pages/ValentinesCollection";
+import Wishlist from "./pages/Wishlist";
 import BuildYourOwn from "./pages/BuildYourOwn";
 import CustomPortraitPucks from "./pages/CustomPortraitPucks";
 import DeliveryZones from "./pages/DeliveryZones";
@@ -37,6 +38,7 @@ function Router() {
       <Route path={"/my-orders"} component={MyOrders} />
       <Route path={"/orders/:id"} component={OrderDetail} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/wishlist"} component={Wishlist} />
       
       {/* Valentine's Day 2026 Collection */}
       <Route path={"/valentines"} component={ValentinesCollection} />
