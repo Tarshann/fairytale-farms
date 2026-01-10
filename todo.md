@@ -148,3 +148,11 @@
 
 - [x] Reduce gallery image sizes - images are too big
 - [x] Reorganize products page with clean categorized layout
+
+
+## Products Page Enhancements
+- [x] Add search bar to top of Products page
+- [x] Implement filtering system for products
+- [x] Add quick view button to each product card
+- [x] Create quick view modal with product details
+- [x] Update stock images to be relevant to each category

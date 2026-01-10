@@ -1,18 +1,157 @@
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
 
-// Product card component - compact and clean
-function ProductCard({ product }: { product: any }) {
+// Category-specific placeholder images
+const categoryPlaceholders: Record<string, { emoji: string; gradient: string }> = {
+  "valentine's day 2026": { emoji: "💝", gradient: "from-pink-200 to-red-200" },
+  "customized cakes": { emoji: "🎂", gradient: "from-pastel-pink/40 to-pastel-peach/40" },
+  "customized sugar cookies": { emoji: "🍪", gradient: "from-pastel-peach/40 to-pastel-yellow/40" },
+  "cinnamon buns": { emoji: "🥐", gradient: "from-amber-200 to-orange-200" },
+  "cake pops": { emoji: "🍭", gradient: "from-pastel-lavender/40 to-pastel-pink/40" },
+  "brownies": { emoji: "🍫", gradient: "from-amber-300 to-amber-500" },
+  "cheesecake": { emoji: "🍰", gradient: "from-yellow-100 to-orange-100" },
+  "chocolate covered strawberries": { emoji: "🍓", gradient: "from-red-200 to-pink-200" },
+};
+
+// Quick View Modal Component
+function QuickViewModal({ 
+  product, 
+  isOpen, 
+  onClose,
+  categoryName
+}: { 
+  product: any; 
+  isOpen: boolean; 
+  onClose: () => void;
+  categoryName?: string;
+}) {
+  const { isAuthenticated } = useAuth();
+  const addToCart = trpc.cart.add.useMutation({
+    onSuccess: () => {
+      toast.success(`${product.name} added to cart!`);
+      onClose();
+    },
+    onError: () => {
+      toast.error("Failed to add to cart");
+    }
+  });
+
+  const placeholder = categoryPlaceholders[categoryName?.toLowerCase() || ""] || { emoji: "🧁", gradient: "from-pastel-pink/30 to-pastel-lavender/30" };
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to add items to cart");
+      return;
+    }
+    addToCart.mutate({ productId: product.id, quantity: 1 });
+  };
+
   return (
-    <Link href={`/products/${product.slug}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
-        <div className="aspect-square overflow-hidden bg-muted">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="font-display text-xl">{product.name}</DialogTitle>
+        </DialogHeader>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Product Image */}
+          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${placeholder.gradient}`}>
+                <span className="text-6xl">{placeholder.emoji}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Product Details */}
+          <div className="flex flex-col">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl font-bold text-primary">
+                  ${(parseInt(product.basePrice) / 100).toFixed(2)}
+                </span>
+                {product.isFeatured && (
+                  <Badge variant="secondary" className="bg-pastel-pink/20 text-pink-700">
+                    Featured
+                  </Badge>
+                )}
+              </div>
+              
+              <p className="text-muted-foreground mb-4">
+                {product.description}
+              </p>
+              
+              {product.isCustomizable && (
+                <div className="mb-4 p-3 bg-pastel-lavender/10 rounded-lg">
+                  <p className="text-sm font-medium text-primary">✨ Customizable</p>
+                  <p className="text-xs text-muted-foreground">
+                    This item can be personalized to your preferences
+                  </p>
+                </div>
+              )}
+              
+              {product.inventoryCap && product.inventoryCap > 0 && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  <span className="font-medium">Limited availability:</span> Only {product.inventoryCap} remaining
+                </p>
+              )}
+            </div>
+            
+            <div className="flex gap-3 mt-4">
+              <Button 
+                className="flex-1" 
+                onClick={handleAddToCart}
+                disabled={addToCart.isPending}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Add to Cart
+              </Button>
+              <Link href={`/products/${product.slug}`}>
+                <Button variant="outline">
+                  View Details
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Product card component with quick view
+function ProductCard({ 
+  product, 
+  onQuickView,
+  categoryName
+}: { 
+  product: any; 
+  onQuickView: () => void;
+  categoryName?: string;
+}) {
+  const placeholder = categoryPlaceholders[categoryName?.toLowerCase() || ""] || { emoji: "🧁", gradient: "from-pastel-pink/30 to-pastel-lavender/30" };
+  
+  return (
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full relative">
+      <Link href={`/products/${product.slug}`}>
+        <div className="aspect-square overflow-hidden bg-muted relative">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
@@ -20,8 +159,8 @@ function ProductCard({ product }: { product: any }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pastel-pink/30 to-pastel-lavender/30">
-              <span className="text-4xl">🧁</span>
+            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${placeholder.gradient}`}>
+              <span className="text-4xl">{placeholder.emoji}</span>
             </div>
           )}
         </div>
@@ -33,8 +172,23 @@ function ProductCard({ product }: { product: any }) {
             {product.description}
           </p>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+      
+      {/* Quick View Button - appears on hover */}
+      <Button
+        size="sm"
+        variant="secondary"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-md"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onQuickView();
+        }}
+      >
+        <Eye className="h-4 w-4 mr-1" />
+        Quick View
+      </Button>
+    </Card>
   );
 }
 
@@ -42,11 +196,13 @@ function ProductCard({ product }: { product: any }) {
 function CategorySection({ 
   category, 
   products,
-  bgColor
+  bgColor,
+  onQuickView
 }: { 
   category: { id: number; name: string; slug: string; description?: string | null };
   products: any[];
   bgColor: string;
+  onQuickView: (product: any, categoryName: string) => void;
 }) {
   if (products.length === 0) return null;
   
@@ -68,7 +224,12 @@ function CategorySection({
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {products.slice(0, 6).map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onQuickView={() => onQuickView(product, category.name)}
+              categoryName={category.name}
+            />
           ))}
         </div>
       </div>
@@ -84,6 +245,16 @@ export default function Products() {
     categoryParam ? parseInt(categoryParam) : null
   );
   
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [priceRange, setPriceRange] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Quick view state
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [quickViewCategory, setQuickViewCategory] = useState<string>("");
+  
   const { data: categories } = trpc.categories.list.useQuery();
   const { data: allProducts, isLoading } = trpc.products.list.useQuery();
   
@@ -95,7 +266,64 @@ export default function Products() {
     }
   }, [categoryParam]);
 
-  // Group products by category
+  // Filter and search products
+  const filteredAndSearchedProducts = useMemo(() => {
+    if (!allProducts) return [];
+    
+    let filtered = [...allProducts];
+    
+    // Category filter
+    if (selectedCategory !== null) {
+      filtered = filtered.filter(p => p.categoryId === selectedCategory);
+    }
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Price range filter
+    if (priceRange !== "all") {
+      switch (priceRange) {
+        case "under25":
+          filtered = filtered.filter(p => parseInt(p.basePrice) < 2500);
+          break;
+        case "25to50":
+          filtered = filtered.filter(p => parseInt(p.basePrice) >= 2500 && parseInt(p.basePrice) <= 5000);
+          break;
+        case "50to100":
+          filtered = filtered.filter(p => parseInt(p.basePrice) >= 5000 && parseInt(p.basePrice) <= 10000);
+          break;
+        case "over100":
+          filtered = filtered.filter(p => parseInt(p.basePrice) > 10000);
+          break;
+      }
+    }
+    
+    // Sort
+    switch (sortBy) {
+      case "name":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "price-low":
+        filtered.sort((a, b) => parseInt(a.basePrice) - parseInt(b.basePrice));
+        break;
+      case "price-high":
+        filtered.sort((a, b) => parseInt(b.basePrice) - parseInt(a.basePrice));
+        break;
+      case "newest":
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+    
+    return filtered;
+  }, [allProducts, selectedCategory, searchQuery, sortBy, priceRange]);
+
+  // Group products by category (for all categories view)
   const productsByCategory = categories?.reduce((acc, category) => {
     acc[category.id] = allProducts?.filter(p => p.categoryId === category.id) || [];
     return acc;
@@ -113,14 +341,21 @@ export default function Products() {
     "bg-pastel-peach/5",
   ];
 
-  // If a specific category is selected, show only that category's products
-  const filteredProducts = selectedCategory
-    ? allProducts?.filter(p => p.categoryId === selectedCategory)
-    : null;
-
   const selectedCategoryData = selectedCategory 
     ? categories?.find(c => c.id === selectedCategory)
     : null;
+
+  const handleQuickView = (product: any, categoryName: string) => {
+    setQuickViewProduct(product);
+    setQuickViewCategory(categoryName);
+  };
+
+  const getCategoryName = (categoryId: number) => {
+    return categories?.find(c => c.id === categoryId)?.name || "";
+  };
+
+  // Check if search/filters are active
+  const hasActiveFilters = searchQuery.trim() || priceRange !== "all" || sortBy !== "name";
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -139,9 +374,100 @@ export default function Products() {
           </div>
         </section>
         
-        {/* Category Filter Pills */}
-        <section className="py-4 border-b border-border bg-white sticky top-16 z-10">
+        {/* Search and Filter Bar */}
+        <section className="py-4 border-b border-border bg-white sticky top-16 z-20">
           <div className="container">
+            {/* Search Bar */}
+            <div className="flex gap-3 mb-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search treats..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              
+              <Button
+                variant={showFilters ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filters
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    !
+                  </Badge>
+                )}
+              </Button>
+            </div>
+            
+            {/* Filter Options */}
+            {showFilters && (
+              <div className="flex flex-wrap gap-3 mb-4 p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Sort by:</span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[140px] h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name A-Z</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Price:</span>
+                  <Select value={priceRange} onValueChange={setPriceRange}>
+                    <SelectTrigger className="w-[140px] h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Prices</SelectItem>
+                      <SelectItem value="under25">Under $25</SelectItem>
+                      <SelectItem value="25to50">$25 - $50</SelectItem>
+                      <SelectItem value="50to100">$50 - $100</SelectItem>
+                      <SelectItem value="over100">Over $100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSortBy("name");
+                      setPriceRange("all");
+                    }}
+                    className="text-muted-foreground"
+                  >
+                    Clear all filters
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            {/* Category Filter Pills */}
             <div className="flex flex-wrap gap-2 justify-center">
               <Link href="/products">
                 <Button
@@ -167,6 +493,16 @@ export default function Products() {
           </div>
         </section>
         
+        {/* Search Results Count */}
+        {(searchQuery || hasActiveFilters) && (
+          <div className="container py-3">
+            <p className="text-sm text-muted-foreground">
+              {filteredAndSearchedProducts.length} {filteredAndSearchedProducts.length === 1 ? 'result' : 'results'} found
+              {searchQuery && ` for "${searchQuery}"`}
+            </p>
+          </div>
+        )}
+        
         {isLoading ? (
           /* Loading State */
           <section className="py-12">
@@ -184,25 +520,46 @@ export default function Products() {
               </div>
             </div>
           </section>
-        ) : selectedCategory !== null ? (
-          /* Single Category View */
+        ) : (searchQuery || hasActiveFilters || selectedCategory !== null) ? (
+          /* Filtered/Search Results View */
           <section className="py-8">
             <div className="container">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold font-display">{selectedCategoryData?.name}</h2>
-                {selectedCategoryData?.description && (
-                  <p className="text-muted-foreground mt-1">{selectedCategoryData.description}</p>
-                )}
-              </div>
-              {filteredProducts && filteredProducts.length > 0 ? (
+              {selectedCategoryData && !searchQuery && !hasActiveFilters && (
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold font-display">{selectedCategoryData.name}</h2>
+                  {selectedCategoryData.description && (
+                    <p className="text-muted-foreground mt-1">{selectedCategoryData.description}</p>
+                  )}
+                </div>
+              )}
+              {filteredAndSearchedProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  {filteredAndSearchedProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      onQuickView={() => handleQuickView(product, getCategoryName(product.categoryId))}
+                      categoryName={getCategoryName(product.categoryId)}
+                    />
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No products found in this category.</p>
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-lg font-semibold mb-2">No treats found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Try adjusting your search or filters
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSortBy("name");
+                      setPriceRange("all");
+                    }}
+                  >
+                    Clear filters
+                  </Button>
                 </div>
               )}
             </div>
@@ -216,6 +573,7 @@ export default function Products() {
                 category={category}
                 products={productsByCategory[category.id] || []}
                 bgColor={bgColors[index % bgColors.length]}
+                onQuickView={handleQuickView}
               />
             ))}
           </>
@@ -223,6 +581,16 @@ export default function Products() {
       </main>
       
       <Footer />
+      
+      {/* Quick View Modal */}
+      {quickViewProduct && (
+        <QuickViewModal
+          product={quickViewProduct}
+          isOpen={!!quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+          categoryName={quickViewCategory}
+        />
+      )}
     </div>
   );
 }
