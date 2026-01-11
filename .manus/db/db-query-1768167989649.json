@@ -1,0 +1,158 @@
+{
+  "query": "SELECT name, basePrice FROM products;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT name, basePrice FROM products;",
+  "rows": [
+    {
+      "name": "Custom Birthday Cake",
+      "basePrice": "65.00"
+    },
+    {
+      "name": "Wedding Cake",
+      "basePrice": "250.00"
+    },
+    {
+      "name": "Themed Celebration Cake",
+      "basePrice": "75.00"
+    },
+    {
+      "name": "Decorated Sugar Cookies (Dozen)",
+      "basePrice": "55.00"
+    },
+    {
+      "name": "Custom Shaped Sugar Cookies",
+      "basePrice": "42.00"
+    },
+    {
+      "name": "Classic Cinnamon Buns (6-pack)",
+      "basePrice": "18.00"
+    },
+    {
+      "name": "Classic Cinnamon Buns (Dozen)",
+      "basePrice": "32.00"
+    },
+    {
+      "name": "Cake Pops (Dozen)",
+      "basePrice": "24.00"
+    },
+    {
+      "name": "Fudge Brownies (Half Dozen)",
+      "basePrice": "15.00"
+    },
+    {
+      "name": "Fudge Brownies (Dozen)",
+      "basePrice": "28.00"
+    },
+    {
+      "name": "Classic New York Cheesecake",
+      "basePrice": "45.00"
+    },
+    {
+      "name": "Flavored Cheesecake",
+      "basePrice": "48.00"
+    },
+    {
+      "name": "Chocolate Covered Strawberries (Half Dozen)",
+      "basePrice": "18.00"
+    },
+    {
+      "name": "Chocolate Covered Strawberries (Dozen)",
+      "basePrice": "32.00"
+    },
+    {
+      "name": "Sweet Beginnings",
+      "basePrice": "28.00"
+    },
+    {
+      "name": "Love Story",
+      "basePrice": "52.00"
+    },
+    {
+      "name": "Fairytale Romance",
+      "basePrice": "85.00"
+    },
+    {
+      "name": "Build-Your-Own Base Box",
+      "basePrice": "15.00"
+    },
+    {
+      "name": "Chocolate Chip Cookie",
+      "basePrice": "1.83"
+    },
+    {
+      "name": "Meringue Cookie",
+      "basePrice": "1.83"
+    },
+    {
+      "name": "Royal Icing Sugar Cookie",
+      "basePrice": "3.50"
+    },
+    {
+      "name": "Valentine Oreo Puck",
+      "basePrice": "2.75"
+    },
+    {
+      "name": "Chocolate-Covered Strawberry",
+      "basePrice": "3.00"
+    },
+    {
+      "name": "Mini Brownie with Ganache",
+      "basePrice": "3.50"
+    },
+    {
+      "name": "Mini Cake",
+      "basePrice": "18.00"
+    },
+    {
+      "name": "Freeze-Dried Candy (Small)",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze-Dried Candy (Large)",
+      "basePrice": "12.00"
+    },
+    {
+      "name": "Custom Pucks",
+      "basePrice": "4.00"
+    },
+    {
+      "name": "Freeze-Dried Skittles",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze-Dried Jolly Ranchers",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze-Dried Taffy",
+      "basePrice": "7.00"
+    },
+    {
+      "name": "Freeze Dried Caramel M&Ms",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze Dried Airheads",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze Dried Sprees",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze Dried Fruit Chews",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze Dried Jolly Rancher Chews",
+      "basePrice": "8.00"
+    },
+    {
+      "name": "Freeze Dried Milk Duds",
+      "basePrice": "8.00"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tbasePrice\nCustom Birthday Cake\t65.00\nWedding Cake\t250.00\nThemed Celebration Cake\t75.00\nDecorated Sugar Cookies (Dozen)\t55.00\nCustom Shaped Sugar Cookies\t42.00\nClassic Cinnamon Buns (6-pack)\t18.00\nClassic Cinnamon Buns (Dozen)\t32.00\nCake Pops (Dozen)\t24.00\nFudge Brownies (Half Dozen)\t15.00\nFudge Brownies (Dozen)\t28.00\nClassic New York Cheesecake\t45.00\nFlavored Cheesecake\t48.00\nChocolate Covered Strawberries (Half Dozen)\t18.00\nChocolate Covered Strawberries (Dozen)\t32.00\nSweet Beginnings\t28.00\nLove Story\t52.00\nFairytale Romance\t85.00\nBuild-Your-Own Base Box\t15.00\nChocolate Chip Cookie\t1.83\nMeringue Cookie\t1.83\nRoyal Icing Sugar Cookie\t3.50\nValentine Oreo Puck\t2.75\nChocolate-Covered Strawberry\t3.00\nMini Brownie with Ganache\t3.50\nMini Cake\t18.00\nFreeze-Dried Candy (Small)\t8.00\nFreeze-Dried Candy (Large)\t12.00\nCustom Pucks\t4.00\nFreeze-Dried Skittles\t8.00\nFreeze-Dried Jolly Ranchers\t8.00\nFreeze-Dried Taffy\t7.00\nFreeze Dried Caramel M&Ms\t8.00\nFreeze Dried Airheads\t8.00\nFreeze Dried Sprees\t8.00\nFreeze Dried Fruit Chews\t8.00\nFreeze Dried Jolly Rancher Chews\t8.00\nFreeze Dried Milk Duds\t8.00\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

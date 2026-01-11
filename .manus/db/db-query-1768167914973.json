@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name FROM categories ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT id, name FROM categories ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Customized Cakes"
+    },
+    {
+      "id": "2",
+      "name": "Customized Sugar Cookies"
+    },
+    {
+      "id": "3",
+      "name": "Cinnamon Buns"
+    },
+    {
+      "id": "4",
+      "name": "Cake Pops"
+    },
+    {
+      "id": "5",
+      "name": "Brownies"
+    },
+    {
+      "id": "6",
+      "name": "Cheesecake"
+    },
+    {
+      "id": "7",
+      "name": "Chocolate Covered Strawberries"
+    },
+    {
+      "id": "30001",
+      "name": "Valentine's Day 2026"
+    },
+    {
+      "id": "90001",
+      "name": "Bickering Bros Freeze-Dried Candy"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1\tCustomized Cakes\n2\tCustomized Sugar Cookies\n3\tCinnamon Buns\n4\tCake Pops\n5\tBrownies\n6\tCheesecake\n7\tChocolate Covered Strawberries\n30001\tValentine's Day 2026\n90001\tBickering Bros Freeze-Dried Candy\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

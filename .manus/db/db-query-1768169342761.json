@@ -1,0 +1,13 @@
+{
+  "query": "SELECT id FROM categories WHERE name = 'Brownies';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT id FROM categories WHERE name = 'Brownies';",
+  "rows": [
+    {
+      "id": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n5\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

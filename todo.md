@@ -220,7 +220,33 @@
 - [x] Add option to select custom portrait pucks (higher price)ain page with best gallery images
 - [x] Show only Cakes, Cookies, Sugar Cookies, and Brownies on main page
 
-- [ ] Add admin page visibility toggle feature (show/hide pages)
+- [x] Add admin page visibility toggle feature (show/hide pages)
 
 - [x] Update location from Goodlettsville/Nashville to Castalian Springs, Sumner County
 - [x] Add DoorDash and Uber Eats delivery info
+
+
+## Pricing, Admin Toggle & Links Update
+- [x] Update Custom Cakes pricing (6-inch $75, 8-inch $110, Two-tier $150-$210)
+- [x] Update Sugar Cookies pricing ($55/dozen)
+- [x] Update Chocolate Strawberries pricing ($30/dozen)
+- [x] Add brownie varieties (Simple, Turtle, S'mores)
+- [x] Add cookie varieties (Chocolate Chip, Crinkle, Sprinkle Sugar, Pecan Sandies, Meringue)
+- [x] Add admin page visibility toggle feature
+- [x] Check and fix all navigation links
+- [x] Fix any broken redirects
+
+- [x] Admin: Add price adjustment feature for products
+- [x] Admin: Add quantity/inventory adjustment feature
+
+## Final Pricing Update (Jan 2026)
+- [x] Update all product prices from Fairytale_Farms_Menu_Pricing_FINAL.pdf
+- [x] Custom Cakes: 6-inch $75, 8-inch $110, Two-tier 6+4 $150, Two-tier 8+6 $210
+- [x] Custom Sugar Cookies: $55/dozen
+- [x] Mini Tin Cakes: $5 each (Chocolate, Vanilla, Strawberry Crunch)
+- [x] Brownies: Simple $4, Turtle $5, S'mores $5
+- [x] Classic Cookies: Chocolate Chip $18/doz, Crinkle $20/doz, Sprinkle Sugar $18/doz, Pecan Sandies $20/doz
+- [x] Chocolate Strawberries: Half dozen $18, Dozen $30
+- [x] Verify admin Site Settings page has price adjustment controls
+- [x] Verify admin Site Settings page has page visibility toggles
+- [x] Test all navigation links throughout site

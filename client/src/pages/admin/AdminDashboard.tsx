@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Package, ShoppingCart, MessageSquare, DollarSign, TrendingUp } from "lucide-react";
+import { Package, ShoppingCart, MessageSquare, DollarSign, TrendingUp, Settings } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Link href="/admin/products">
               <Card className="hover:shadow-card-hover transition-all cursor-pointer">
                 <CardContent className="p-6 text-center space-y-4">
@@ -137,6 +137,18 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-xl font-bold">Contact Messages</h3>
                     <p className="text-sm text-muted-foreground">View customer inquiries</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link href="/admin/settings">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer">
+                <CardContent className="p-6 text-center space-y-4">
+                  <Settings className="h-12 w-12 mx-auto text-primary" />
+                  <div>
+                    <h3 className="text-xl font-bold">Site Settings</h3>
+                    <p className="text-sm text-muted-foreground">Page visibility & pricing</p>
                   </div>
                 </CardContent>
               </Card>

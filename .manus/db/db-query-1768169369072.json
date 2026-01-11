@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Chocolate Mini Tin Cake', 'chocolate-mini-tin-cake', 'Rich chocolate mini cake', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';\nINSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Vanilla Birthday Mini Tin Cake', 'vanilla-birthday-mini-tin-cake', 'Classic vanilla birthday cake in mini size', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';\nINSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Strawberry Crunch Mini Tin Cake', 'strawberry-crunch-mini-tin-cake', 'Strawberry cake with crunchy coating', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute INSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Chocolate Mini Tin Cake', 'chocolate-mini-tin-cake', 'Rich chocolate mini cake', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';\nINSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Vanilla Birthday Mini Tin Cake', 'vanilla-birthday-mini-tin-cake', 'Classic vanilla birthday cake in mini size', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';\nINSERT INTO products (name, slug, description, basePrice, categoryId) \nSELECT 'Strawberry Crunch Mini Tin Cake', 'strawberry-crunch-mini-tin-cake', 'Strawberry cake with crunchy coating', 5.00, id FROM categories WHERE name = 'Mini Tin Cakes';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 82
+}

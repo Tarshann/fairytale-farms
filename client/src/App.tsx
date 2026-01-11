@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminContacts from "./pages/admin/AdminContacts";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 // Valentine's Day 2026 Collection
 import ValentinesCollection from "./pages/ValentinesCollection";
@@ -59,6 +60,7 @@ function Router() {
       <Route path={"/admin/products"} component={AdminProducts} />
       <Route path={"/admin/orders"} component={AdminOrders} />
       <Route path={"/admin/contacts"} component={AdminContacts} />
+      <Route path={"/admin/settings"} component={AdminSettings} />
       
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

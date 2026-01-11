@@ -238,8 +238,7 @@ export default function CustomPortraitPucks() {
             </Card>
 
             {/* Photo Upload - Only show for custom portraits */}
-            {isCustomPortrait && (
-            <>
+            {isCustomPortrait && (<>
             <Card className="border-2 border-dashed border-purple-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -309,8 +308,7 @@ export default function CustomPortraitPucks() {
                 </ul>
               </CardContent>
             </Card>
-            </>
-            )}
+            </>)}
           </div>
 
           {/* Right: Order Configuration */}
