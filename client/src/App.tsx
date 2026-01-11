@@ -36,7 +36,7 @@ function Router() {
       {/* Public routes */}
       <Route path={"/"} component={Home} />
       <Route path={"/products"} component={Products} />
-      <Route path={"/product/:slug"} component={ProductDetail} />
+      <Route path={"/products/:slug"} component={ProductDetail} />
       <Route path={"/cart"} component={Cart} />
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/order-confirmation/:orderNumber"} component={OrderConfirmation} />

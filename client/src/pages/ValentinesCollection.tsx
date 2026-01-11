@@ -160,7 +160,7 @@ export default function ValentinesCollection() {
                     </CardContent>
                     
                     <CardFooter>
-                      <Link href={`/product/${tier.slug}`} className="w-full">
+                      <Link href={`/products/${tier.slug}`} className="w-full">
                         <Button className="w-full group-hover:bg-primary group-hover:text-white transition-colors">
                           View Details
                           <ChevronRight className="w-4 h-4 ml-2" />

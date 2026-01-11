@@ -250,3 +250,16 @@
 - [x] Verify admin Site Settings page has price adjustment controls
 - [x] Verify admin Site Settings page has page visibility toggles
 - [x] Test all navigation links throughout site
+
+
+## Stripe Checkout Verification
+- [x] Test product add to cart functionality
+- [x] Test checkout button goes to Stripe
+- [x] Verify Stripe checkout is functional
+- [x] Test order completion flow
+
+## Link Fixes (Jan 2026)
+- [x] Fixed product detail route mismatch (/product/:slug → /products/:slug)
+- [x] Fixed Valentine's tier product links to use correct route
+- [x] Verified all product links go to detail pages
+- [x] Verified checkout flow goes directly to Stripe
