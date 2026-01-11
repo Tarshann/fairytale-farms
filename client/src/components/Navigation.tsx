@@ -23,6 +23,7 @@ export default function Navigation() {
     { href: "/valentines", label: "Valentine's 2026", special: true },
     { href: "/lab", label: "The Lab", lab: true },
     { href: "/products", label: "All Products" },
+    { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
   ];
   
@@ -39,7 +40,7 @@ export default function Navigation() {
           <Link href="/">
             <a className="flex items-center space-x-2">
               <img 
-                src="/images/fairytale-farms-logo.jpeg" 
+                src="/images/fairytale-farms-logo.png" 
                 alt="Fairytale Farms" 
                 className="h-12 w-auto object-contain"
               />

@@ -1,29 +1,61 @@
 import { Link } from "wouter";
-import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, Phone, MapPin, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
     <footer className="bg-muted/50 border-t border-border mt-auto">
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
+          {/* Brand with Logo */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gradient-gold">
-              Fairytale Farms Bakery
-            </h3>
+            <Link href="/">
+              <a className="block">
+                <img 
+                  src="/images/fairytale-farms-logo.png" 
+                  alt="Fairytale Farms" 
+                  className="h-24 w-auto object-contain"
+                />
+              </a>
+            </Link>
             <p className="text-sm text-muted-foreground">
-              Creating magical moments with artisanal baked goods, custom cakes, and sweet treats.
+              Where every treat tells a story! Handcrafted with love, our magical creations turn ordinary moments into extraordinary memories.
             </p>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <span>Made with</span>
+              <Heart className="h-4 w-4 text-pink-500 fill-pink-500" />
+              <span>in Goodlettsville, TN</span>
+            </div>
           </div>
           
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Quick Links</h4>
+            <h4 className="font-semibold text-foreground">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/products">
                   <a className="text-muted-foreground hover:text-primary transition-colors">
-                    Products
+                    All Products
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/valentines">
+                  <a className="text-muted-foreground hover:text-pink-500 transition-colors">
+                    Valentine's 2026 Collection
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/lab">
+                  <a className="text-muted-foreground hover:text-purple-500 transition-colors">
+                    In the Lab
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/about">
+                  <a className="text-muted-foreground hover:text-primary transition-colors">
+                    About Us
                   </a>
                 </Link>
               </li>
@@ -46,32 +78,39 @@ export default function Footer() {
           
           {/* Contact Info */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Contact</h4>
+            <h4 className="font-semibold text-foreground">Contact</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start space-x-2">
-                <Phone className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>(555) 123-4567</span>
+                <Phone className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-pink" />
+                <span>(615) 555-BAKE</span>
               </li>
               <li className="flex items-start space-x-2">
-                <Mail className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-lavender" />
                 <span>hello@fairytalefarms.com</span>
               </li>
               <li className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>123 Bakery Lane<br />Sweet Town, ST 12345</span>
+                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-mint" />
+                <span>Goodlettsville, TN<br />Nashville Area Delivery</span>
               </li>
             </ul>
+            <div className="pt-2">
+              <Link href="/delivery-zones">
+                <a className="text-sm text-primary hover:underline">
+                  Check Delivery Area →
+                </a>
+              </Link>
+            </div>
           </div>
           
           {/* Social & Hours */}
           <div className="space-y-4">
-            <h4 className="font-semibold">Follow Us</h4>
+            <h4 className="font-semibold text-foreground">Follow Us</h4>
             <div className="flex space-x-4">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-blue-600 transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </a>
@@ -79,22 +118,34 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-pink-500 transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
             <div className="text-sm text-muted-foreground">
-              <p className="font-semibold mb-2">Hours</p>
-              <p>Mon-Fri: 8am - 6pm</p>
-              <p>Sat: 9am - 5pm</p>
-              <p>Sun: Closed</p>
+              <p className="font-semibold mb-2 text-foreground">Order Hours</p>
+              <p>Orders accepted 24/7 online</p>
+              <p className="mt-2 text-xs">
+                Custom orders require 48-72 hours notice
+              </p>
             </div>
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Fairytale Farms Bakery. All rights reserved.</p>
+        {/* Bottom Bar */}
+        <div className="mt-8 pt-8 border-t border-border">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} Fairytale Farms Bakery. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link href="/privacy">
+                <a className="hover:text-primary transition-colors">Privacy Policy</a>
+              </Link>
+              <Link href="/terms">
+                <a className="hover:text-primary transition-colors">Terms of Service</a>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
