@@ -74,7 +74,7 @@ export default function Gallery() {
             </h1>
             <p className="text-lg text-gray-600 mb-8">
               Browse our collection of custom cakes and decorated sugar cookies. 
-              Each creation is handcrafted with love in Goodlettsville, TN.
+              Each creation is handcrafted with love in Castalian Springs, TN.
             </p>
             
             {/* Category Filter */}

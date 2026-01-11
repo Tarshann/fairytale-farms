@@ -214,3 +214,13 @@
 - [x] Create Gallery page with category sections (cakes, cupcakes, cake pops, cookies, etc.)
 - [x] Update main page with best featured images
 - [x] Link "View All" to the gallery page
+
+
+## Custom Pucks & Main Page Updates- [x] Change 'Custom Portrait Pucks' to 'Custom Pucks' at $4wer Custom Pucks price to $4
+- [x] Add option to select custom portrait pucks (higher price)ain page with best gallery images
+- [x] Show only Cakes, Cookies, Sugar Cookies, and Brownies on main page
+
+- [ ] Add admin page visibility toggle feature (show/hide pages)
+
+- [x] Update location from Goodlettsville/Nashville to Castalian Springs, Sumner County
+- [x] Add DoorDash and Uber Eats delivery info

@@ -54,7 +54,7 @@ export default function About() {
                     quickly blossomed into something magical.
                   </p>
                   <p>
-                    Based in Goodlettsville, Tennessee, we believe that every cookie, cake, and sweet 
+                    Based in Castalian Springs, Tennessee, we believe that every cookie, cake, and sweet 
                     treat should be crafted with the same love and attention you'd give to something 
                     made for your own family. Because to us, every customer becomes part of our 
                     Fairytale Farms family.
@@ -195,7 +195,7 @@ export default function About() {
                 </div>
                 <h3 className="text-xl font-semibold">Community First</h3>
                 <p className="text-muted-foreground">
-                  Proudly serving the Nashville area with local delivery and a commitment to our neighbors.
+                  Proudly serving Sumner County with DoorDash & Uber Eats delivery and a commitment to our neighbors.
                 </p>
               </div>
               
@@ -223,11 +223,11 @@ export default function About() {
                     <span className="text-sm font-medium uppercase tracking-wider">Find Us</span>
                   </div>
                   <h2 className="text-3xl font-bold">
-                    Serving the Nashville Area
+                    Serving Sumner County
                   </h2>
                   <p className="text-muted-foreground">
-                    Based in Goodlettsville, Tennessee, we deliver fresh treats throughout the 
-                    greater Nashville area within a 30-mile radius. Can't wait? Local pickup 
+                    Based in Castalian Springs, Tennessee, we deliver fresh treats throughout 
+                    Sumner County via DoorDash & Uber Eats. Can't wait? Local pickup 
                     is always available!
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -250,11 +250,11 @@ export default function About() {
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-pastel-pink" />
-                        Goodlettsville & Hendersonville
+                        Castalian Springs & Gallatin
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-pastel-lavender" />
-                        Nashville & Brentwood
+                        Hendersonville & Portland
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-pastel-mint" />
@@ -266,7 +266,7 @@ export default function About() {
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-pastel-blue" />
-                        And more within 30 miles!
+                        And more throughout Sumner County!
                       </li>
                     </ul>
                   </CardContent>

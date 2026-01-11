@@ -119,7 +119,7 @@ function SidebarMenu() {
               Delivery Info
             </h3>
             <p className="text-sm text-muted-foreground">
-              We deliver to the Nashville area within a 30-mile radius of Goodlettsville, TN.
+              We deliver throughout Sumner County via DoorDash & Uber Eats from Castalian Springs, TN.
             </p>
             <Link href="/delivery-zones">
               <Button variant="outline" size="sm" className="w-full">
@@ -136,11 +136,11 @@ function SidebarMenu() {
 export default function Home() {
   const { data: categories } = trpc.categories.list.useQuery();
   
-  // Single image per gallery category
-  const cakeImage = { src: "/images/481921085_1253005226678831_1341694159329657887_n.jpg", alt: "Custom Birthday Cake" };
-  const cookieImage = { src: "/images/344689592_197741496452305_5407816167306511262_n.jpg", alt: "Decorated Sugar Cookies" };
-  const treatsImage = { src: "/images/brownies.jpg", alt: "Gourmet Brownies" };
-  const cinnamonImage = { src: "/images/cinnamon_buns.jpg", alt: "Fresh Cinnamon Buns" };
+  // Single image per gallery category - using best gallery photos
+  const cakeImage = { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Happily Ever After Wedding Cake" };
+  const cookieImage = { src: "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg", alt: "Wedding Sugar Cookies" };
+  const treatsImage = { src: "/images/gallery/cake-royal-crown-gold.jpeg", alt: "Royal Crown Birthday Cake" };
+  const browniesImage = { src: "/images/brownies.jpg", alt: "Gourmet Brownies" };
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -196,7 +196,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
                   <MapPin className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-medium">Nashville Area Delivery</span>
+                  <span className="text-sm font-medium">Sumner County Delivery</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
                   <Star className="w-4 h-4 text-yellow-500" />
@@ -232,17 +232,17 @@ export default function Home() {
                     bgColor="bg-pastel-lavender/20"
                   />
                   <GallerySection
-                    title="Sweet Treats"
-                    description="Brownies, cake pops, cheesecake & more"
-                    image={treatsImage}
-                    link="/products"
+                    title="Brownies"
+                    description="Rich, fudgy, and irresistible"
+                    image={browniesImage}
+                    link="/products?category=brownies"
                     bgColor="bg-pastel-peach/20"
                   />
                   <GallerySection
-                    title="Cinnamon Buns"
-                    description="Fresh-baked and irresistibly gooey"
-                    image={cinnamonImage}
-                    link="/products?category=cinnamon-buns"
+                    title="More Cakes"
+                    description="From birthdays to weddings"
+                    image={treatsImage}
+                    link="/gallery?category=cakes"
                     bgColor="bg-pastel-mint/20"
                   />
                 </div>

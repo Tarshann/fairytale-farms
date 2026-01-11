@@ -32,9 +32,12 @@ export default function CustomPortraitPucks() {
   const addToCart = trpc.cart.add.useMutation();
   const utils = trpc.useUtils();
 
+  const [isCustomPortrait, setIsCustomPortrait] = useState(false);
   const minQuantity = 6;
   const maxQuantity = 24;
-  const pricePerPuck = product ? parseFloat(product.basePrice) : 8;
+  const basePricePerPuck = 4;
+  const portraitPricePerPuck = 8;
+  const pricePerPuck = isCustomPortrait ? portraitPricePerPuck : basePricePerPuck;
   
   const subtotal = quantity * pricePerPuck;
   const deposit = subtotal * 0.5;
@@ -140,8 +143,8 @@ export default function CustomPortraitPucks() {
               <Camera className="w-8 h-8 text-purple-500" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold">Custom Portrait Pucks</h1>
-              <p className="text-muted-foreground">Transform your memories into edible art</p>
+              <h1 className="text-3xl md:text-4xl font-bold">Custom Pucks</h1>
+              <p className="text-muted-foreground">Edible art on delicious Oreo pucks - standard designs or custom portraits!</p>
             </div>
           </div>
           
@@ -234,7 +237,9 @@ export default function CustomPortraitPucks() {
               </CardContent>
             </Card>
 
-            {/* Photo Upload */}
+            {/* Photo Upload - Only show for custom portraits */}
+            {isCustomPortrait && (
+            <>
             <Card className="border-2 border-dashed border-purple-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -288,7 +293,7 @@ export default function CustomPortraitPucks() {
               </CardContent>
             </Card>
 
-            {/* Photo Tips */}
+            {/* Photo Tips - Only show for custom portraits */}
             <Card className="bg-muted/30">
               <CardContent className="p-4">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
@@ -304,6 +309,8 @@ export default function CustomPortraitPucks() {
                 </ul>
               </CardContent>
             </Card>
+            </>
+            )}
           </div>
 
           {/* Right: Order Configuration */}
@@ -315,6 +322,39 @@ export default function CustomPortraitPucks() {
               </CardHeader>
               
               <CardContent className="p-6 space-y-6">
+                {/* Puck Type Selector */}
+                <div>
+                  <Label className="text-base font-semibold mb-3 block">Puck Type</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomPortrait(false)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        !isCustomPortrait 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-muted hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="font-semibold">Standard Designs</div>
+                      <div className="text-sm text-muted-foreground">Pre-made themed designs</div>
+                      <div className="text-lg font-bold text-primary mt-2">$4/puck</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomPortrait(true)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        isCustomPortrait 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-muted hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="font-semibold">Custom Portrait</div>
+                      <div className="text-sm text-muted-foreground">Your photo on pucks</div>
+                      <div className="text-lg font-bold text-primary mt-2">$8/puck</div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Quantity Selector */}
                 <div>
                   <Label className="text-base font-semibold mb-3 block">Number of Pucks</Label>

@@ -23,7 +23,7 @@ export default function Footer() {
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>Made with</span>
               <Heart className="h-4 w-4 text-pink-500 fill-pink-500" />
-              <span>in Goodlettsville, TN</span>
+              <span>in Castalian Springs, TN</span>
             </div>
           </div>
           
@@ -90,7 +90,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-mint" />
-                <span>Goodlettsville, TN<br />Nashville Area Delivery</span>
+                <span>Castalian Springs, TN<br />Sumner County • DoorDash & Uber Eats</span>
               </li>
             </ul>
             <div className="pt-2">
