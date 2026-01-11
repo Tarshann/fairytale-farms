@@ -263,3 +263,10 @@
 - [x] Fixed Valentine's tier product links to use correct route
 - [x] Verified all product links go to detail pages
 - [x] Verified checkout flow goes directly to Stripe
+
+
+## Product Images Update
+- [x] Audit all products for missing images
+- [x] Match available uploaded images to products
+- [x] Update product images in database
+- [x] Verify all non-Valentine's products have images
