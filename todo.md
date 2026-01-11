@@ -194,3 +194,15 @@
 - [x] Add logo to footer section with contact information
 - [x] Create "About Fairytale Farms" page with brand story
 - [x] Add About page link to navigation
+
+
+## Bickering Bros Candy Co Section
+- [x] Save Bickering Bros logo to project assets
+- [x] Create transparent PNG version of logo (remove black background)
+- [x] Create dedicated Bickering Bros page with logo and products
+- [x] Add freeze-dried candy category to database
+- [x] Add sample freeze-dried candy products
+- [x] Add Bickering Bros link to navigation
+- [x] Add Bickering Bros teaser section on homepage
+
+- [x] Update Fairytale Farms logo to new castle design

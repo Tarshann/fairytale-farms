@@ -26,6 +26,7 @@ import CustomPortraitPucks from "./pages/CustomPortraitPucks";
 import DeliveryZones from "./pages/DeliveryZones";
 import Lab from "./pages/Lab";
 import About from "./pages/About";
+import BickeringBros from "./pages/BickeringBros";
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function Router() {
       <Route path={"/delivery-zones"} component={DeliveryZones} />
       <Route path={"/lab"} component={Lab} />
       <Route path={"/about"} component={About} />
+      <Route path={"/bickering-bros"} component={BickeringBros} />
       
       {/* Admin routes */}
       <Route path={"/admin"} component={AdminDashboard} />

@@ -1,0 +1,40 @@
+{
+  "query": "SELECT name, basePrice, featured FROM products WHERE categoryId = (SELECT id FROM categories WHERE slug = 'freeze-dried-candy');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT name, basePrice, featured FROM products WHERE categoryId = (SELECT id FROM categories WHERE slug = 'freeze-dried-candy');",
+  "rows": [
+    {
+      "name": "Freeze-Dried Skittles",
+      "basePrice": "8.00",
+      "featured": "1"
+    },
+    {
+      "name": "Freeze-Dried Jolly Ranchers",
+      "basePrice": "8.00",
+      "featured": "1"
+    },
+    {
+      "name": "Freeze-Dried Gummy Bears",
+      "basePrice": "7.00",
+      "featured": "0"
+    },
+    {
+      "name": "Freeze-Dried Taffy",
+      "basePrice": "7.00",
+      "featured": "0"
+    },
+    {
+      "name": "Freeze-Dried Sour Worms",
+      "basePrice": "8.00",
+      "featured": "1"
+    },
+    {
+      "name": "Bickering Bros Variety Pack",
+      "basePrice": "15.00",
+      "featured": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tbasePrice\tfeatured\nFreeze-Dried Skittles\t8.00\t1\nFreeze-Dried Jolly Ranchers\t8.00\t1\nFreeze-Dried Gummy Bears\t7.00\t0\nFreeze-Dried Taffy\t7.00\t0\nFreeze-Dried Sour Worms\t8.00\t1\nBickering Bros Variety Pack\t15.00\t1\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

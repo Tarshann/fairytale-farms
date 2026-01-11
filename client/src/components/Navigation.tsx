@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, User, Menu, X, Heart, Sparkles, FlaskConical } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Heart, Sparkles, FlaskConical, Candy } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
@@ -22,6 +22,7 @@ export default function Navigation() {
     { href: "/", label: "Home" },
     { href: "/valentines", label: "Valentine's 2026", special: true },
     { href: "/lab", label: "The Lab", lab: true },
+    { href: "/bickering-bros", label: "Bickering Bros", candy: true },
     { href: "/products", label: "All Products" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
@@ -60,6 +61,7 @@ export default function Navigation() {
                 >
                   {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
                   {link.lab && <FlaskConical className="w-4 h-4 text-purple-500" />}
+                  {link.candy && <Candy className="w-4 h-4 text-yellow-500" />}
                   {link.label}
                   {link.special && (
                     <Badge className="ml-1 bg-pastel-pink text-pink-700 border-0 text-xs py-0 px-1.5">
@@ -69,6 +71,11 @@ export default function Navigation() {
                   {link.lab && (
                     <Badge className="ml-1 bg-pastel-lavender text-purple-700 border-0 text-xs py-0 px-1.5">
                       LIVE
+                    </Badge>
+                  )}
+                  {link.candy && (
+                    <Badge className="ml-1 bg-yellow-100 text-yellow-700 border-0 text-xs py-0 px-1.5">
+                      NEW
                     </Badge>
                   )}
                 </a>
@@ -161,11 +168,12 @@ export default function Navigation() {
                     isActive(link.href)
                       ? "text-primary bg-primary/5"
                       : "text-muted-foreground"
-                  } ${link.special ? "bg-pastel-pink/30" : ""} ${link.lab ? "bg-pastel-lavender/30" : ""}`}
+                  } ${link.special ? "bg-pastel-pink/30" : ""} ${link.lab ? "bg-pastel-lavender/30" : ""} ${link.candy ? "bg-yellow-50" : ""}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
                   {link.lab && <FlaskConical className="w-4 h-4 text-purple-500" />}
+                  {link.candy && <Candy className="w-4 h-4 text-yellow-500" />}
                   {link.label}
                   {link.special && (
                     <Badge className="ml-auto bg-pink-500 text-white border-0 text-xs">
@@ -175,6 +183,11 @@ export default function Navigation() {
                   {link.lab && (
                     <Badge className="ml-auto bg-purple-500 text-white border-0 text-xs">
                       LIVE
+                    </Badge>
+                  )}
+                  {link.candy && (
+                    <Badge className="ml-auto bg-yellow-500 text-white border-0 text-xs">
+                      NEW
                     </Badge>
                   )}
                 </a>

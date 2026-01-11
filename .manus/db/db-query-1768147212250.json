@@ -1,0 +1,82 @@
+{
+  "query": "SELECT * FROM categories;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT * FROM categories;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Customized Cakes",
+      "slug": "customized-cakes",
+      "description": "Beautiful custom cakes for any occasion",
+      "displayOrder": "1",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "2",
+      "name": "Customized Sugar Cookies",
+      "slug": "customized-sugar-cookies",
+      "description": "Delicious decorated sugar cookies",
+      "displayOrder": "2",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "3",
+      "name": "Cinnamon Buns",
+      "slug": "cinnamon-buns",
+      "description": "Warm, gooey cinnamon buns",
+      "displayOrder": "3",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "4",
+      "name": "Cake Pops",
+      "slug": "cake-pops",
+      "description": "Bite-sized cake treats on a stick",
+      "displayOrder": "4",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "5",
+      "name": "Brownies",
+      "slug": "brownies",
+      "description": "Rich, fudgy brownies",
+      "displayOrder": "5",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "6",
+      "name": "Cheesecake",
+      "slug": "cheesecake",
+      "description": "Creamy, decadent cheesecake",
+      "displayOrder": "6",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "7",
+      "name": "Chocolate Covered Strawberries",
+      "slug": "chocolate-strawberries",
+      "description": "Fresh strawberries dipped in chocolate",
+      "displayOrder": "7",
+      "createdAt": "2026-01-09 16:22:35",
+      "updatedAt": "2026-01-09 16:22:35"
+    },
+    {
+      "id": "30001",
+      "name": "Valentine's Day 2026",
+      "slug": "valentines-day-2026",
+      "description": "Special Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks",
+      "displayOrder": "0",
+      "createdAt": "2026-01-10 19:43:23",
+      "updatedAt": "2026-01-10 19:43:23"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tdescription\tdisplayOrder\tcreatedAt\tupdatedAt\n1\tCustomized Cakes\tcustomized-cakes\tBeautiful custom cakes for any occasion\t1\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n2\tCustomized Sugar Cookies\tcustomized-sugar-cookies\tDelicious decorated sugar cookies\t2\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n3\tCinnamon Buns\tcinnamon-buns\tWarm, gooey cinnamon buns\t3\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n4\tCake Pops\tcake-pops\tBite-sized cake treats on a stick\t4\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n5\tBrownies\tbrownies\tRich, fudgy brownies\t5\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n6\tCheesecake\tcheesecake\tCreamy, decadent cheesecake\t6\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n7\tChocolate Covered Strawberries\tchocolate-strawberries\tFresh strawberries dipped in chocolate\t7\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n30001\tValentine's Day 2026\tvalentines-day-2026\tSpecial Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks\t0\t2026-01-10 19:43:23\t2026-01-10 19:43:23\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

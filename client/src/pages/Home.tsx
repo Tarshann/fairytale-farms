@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
-import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant, FlaskConical, Printer, Play } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant, FlaskConical, Printer, Play, Candy, Zap } from "lucide-react";
 
 // Gallery section component - single image per category (compact size)
 function GallerySection({ 
@@ -418,6 +418,56 @@ export default function Home() {
                 <div className="absolute -bottom-4 -left-4 w-10 h-10 rounded-full bg-pastel-mint flex items-center justify-center shadow-lg">
                   <span className="text-lg">✨</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bickering Bros Freeze-Dried Candy Section */}
+        <section className="py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+          {/* Colorful splash effects */}
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-20 w-40 h-40 bg-red-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 left-1/4 w-36 h-36 bg-blue-500/20 rounded-full blur-3xl" />
+          
+          <div className="container relative z-10">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="space-y-6">
+                <Badge className="bg-yellow-500 text-black font-bold">
+                  <Candy className="w-4 h-4 mr-2" />
+                  NEW! Family Business
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-white">
+                  Introducing <span className="text-yellow-500">Bickering Bros</span> Candy Co
+                </h2>
+                <p className="text-gray-300 text-lg">
+                  Meet our boys! They're bringing you the crunchiest, most flavorful freeze-dried candy 
+                  you've ever tasted. Made with love (and a little brotherly competition) using our 
+                  Harvest Right Freeze Dryer.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center gap-2 bg-gray-800 rounded-full px-4 py-2">
+                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <span className="text-white text-sm">Super Crunchy</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-gray-800 rounded-full px-4 py-2">
+                    <Sparkles className="w-4 h-4 text-red-500" />
+                    <span className="text-white text-sm">Intense Flavor</span>
+                  </div>
+                </div>
+                <Link href="/bickering-bros">
+                  <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
+                    <Candy className="w-5 h-5 mr-2" />
+                    Shop Freeze-Dried Candy
+                  </Button>
+                </Link>
+              </div>
+              <div className="flex justify-center">
+                <img 
+                  src="/images/bickering-bros-logo.png" 
+                  alt="Bickering Bros Candy Co" 
+                  className="h-64 md:h-80 w-auto object-contain"
+                />
               </div>
             </div>
           </div>
