@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO products (categoryId, name, slug, description, basePrice, isCustomizable, inStock, featured, displayOrder, productType, imageUrl) \nSELECT id, 'Freeze Dried Fruit Chews', 'freeze-dried-fruit-chews', 'Colorful fruit chews transformed into crunchy, airy bites! Each piece bursts with intensified fruity flavor that melts in your mouth.', '8.00', 0, 1, 1, 7, 'standard', '/images/freeze-dried-fruit-chews.png' FROM categories WHERE slug = 'freeze-dried-candy';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute INSERT INTO products (categoryId, name, slug, description, basePrice, isCustomizable, inStock, featured, displayOrder, productType, imageUrl) \nSELECT id, 'Freeze Dried Fruit Chews', 'freeze-dried-fruit-chews', 'Colorful fruit chews transformed into crunchy, airy bites! Each piece bursts with intensified fruity flavor that melts in your mouth.', '8.00', 0, 1, 1, 7, 'standard', '/images/freeze-dried-fruit-chews.png' FROM categories WHERE slug = 'freeze-dried-candy';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 58
+}

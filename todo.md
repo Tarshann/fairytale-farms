@@ -206,3 +206,11 @@
 - [x] Add Bickering Bros teaser section on homepage
 
 - [x] Update Fairytale Farms logo to new castle design
+
+
+## Gallery Page with Categories
+- [x] Analyze and categorize uploaded photos
+- [x] Copy photos to project assets with proper naming
+- [x] Create Gallery page with category sections (cakes, cupcakes, cake pops, cookies, etc.)
+- [x] Update main page with best featured images
+- [x] Link "View All" to the gallery page

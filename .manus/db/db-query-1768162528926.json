@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO products (categoryId, name, slug, description, basePrice, isCustomizable, inStock, featured, displayOrder, productType, imageUrl) \nSELECT id, 'Freeze Dried Caramel M&Ms', 'freeze-dried-caramel-mms', 'Crunchy caramel M&Ms with an incredible texture! The caramel becomes light and airy while the chocolate shell stays perfectly intact.', '8.00', 0, 1, 1, 2, 'standard', '/images/freeze-dried-caramel-mms.png' FROM categories WHERE slug = 'freeze-dried-candy';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute INSERT INTO products (categoryId, name, slug, description, basePrice, isCustomizable, inStock, featured, displayOrder, productType, imageUrl) \nSELECT id, 'Freeze Dried Caramel M&Ms', 'freeze-dried-caramel-mms', 'Crunchy caramel M&Ms with an incredible texture! The caramel becomes light and airy while the chocolate shell stays perfectly intact.', '8.00', 0, 1, 1, 2, 'standard', '/images/freeze-dried-caramel-mms.png' FROM categories WHERE slug = 'freeze-dried-candy';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 201
+}
