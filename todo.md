@@ -181,3 +181,9 @@
 - [x] Create CTA linking to custom cookie orders
 - [x] Add Lab link to main navigation
 - [x] Add Lab teaser section on homepage
+
+
+## Logo Update
+- [x] Add official Fairytale Farms logo to website
+- [x] Update navigation header with logo image
+- [x] Set logo as favicon

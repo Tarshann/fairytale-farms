@@ -38,12 +38,11 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/">
             <a className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-rainbow flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-xl md:text-2xl font-bold text-gradient-rainbow">
-                Fairytale Farms
-              </h1>
+              <img 
+                src="/images/fairytale-farms-logo.jpeg" 
+                alt="Fairytale Farms" 
+                className="h-12 w-auto object-contain"
+              />
             </a>
           </Link>
           
