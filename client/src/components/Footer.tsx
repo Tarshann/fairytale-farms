@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Facebook, Instagram, Mail, Phone, MapPin, Heart } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -81,12 +81,8 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground">Contact</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start space-x-2">
-                <Phone className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-pink" />
-                <span>(615) 555-BAKE</span>
-              </li>
-              <li className="flex items-start space-x-2">
                 <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-lavender" />
-                <span>hello@fairytalefarms.com</span>
+                <a href="mailto:fairytalefarms.net@gmail.com" className="hover:text-primary transition-colors">fairytalefarms.net@gmail.com</a>
               </li>
               <li className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-mint" />

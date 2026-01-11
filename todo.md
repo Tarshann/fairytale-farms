@@ -270,3 +270,12 @@
 - [x] Match available uploaded images to products
 - [x] Update product images in database
 - [x] Verify all non-Valentine's products have images
+
+
+## Contact Information Update
+- [x] Update email to fairytalefarms.net@gmail.com
+- [x] Remove phone number (online only business)
+
+- [x] Add stock images for Valentine's Day boxes and treats
+- [x] Add stock puck photo for custom puck section
+- [x] Add stock images for Build Your Own box items

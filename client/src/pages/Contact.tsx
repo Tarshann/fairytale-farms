@@ -8,7 +8,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
+import { Mail, MapPin, Clock, Send } from "lucide-react";
 
 export default function Contact() {
   const [name, setName] = useState("");
@@ -96,24 +96,17 @@ export default function Contact() {
                     <h3 className="text-xl font-bold">Contact Information</h3>
                     <div className="space-y-4">
                       <div className="flex items-start gap-3">
-                        <Phone className="h-5 w-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="font-medium">Phone</p>
-                          <p className="text-sm text-muted-foreground">(555) 123-4567</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
                         <Mail className="h-5 w-5 text-primary mt-0.5" />
                         <div>
                           <p className="font-medium">Email</p>
-                          <p className="text-sm text-muted-foreground">hello@fairytalefarms.com</p>
+                          <a href="mailto:fairytalefarms.net@gmail.com" className="text-sm text-muted-foreground hover:text-primary transition-colors">fairytalefarms.net@gmail.com</a>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <MapPin className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <p className="font-medium">Address</p>
-                          <p className="text-sm text-muted-foreground">123 Bakery Lane<br />Sweet Town, ST 12345</p>
+                          <p className="font-medium">Location</p>
+                          <p className="text-sm text-muted-foreground">Castalian Springs, TN<br />Sumner County</p>
                         </div>
                       </div>
                     </div>
@@ -122,20 +115,17 @@ export default function Contact() {
                 
                 <Card>
                   <CardContent className="p-6 space-y-4">
-                    <h3 className="text-xl font-bold">Business Hours</h3>
+                    <h3 className="text-xl font-bold">Order Information</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Monday - Friday</span>
-                        <span className="font-medium">8am - 6pm</span>
+                        <span className="text-muted-foreground">Online Orders</span>
+                        <span className="font-medium">24/7</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Saturday</span>
-                        <span className="font-medium">9am - 5pm</span>
+                        <span className="text-muted-foreground">Custom Orders</span>
+                        <span className="font-medium">48-72 hours notice</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Sunday</span>
-                        <span className="font-medium">Closed</span>
-                      </div>
+                      <p className="text-xs text-muted-foreground pt-2">We're an online-only bakery serving Sumner County via DoorDash & Uber Eats</p>
                     </div>
                   </CardContent>
                 </Card>
