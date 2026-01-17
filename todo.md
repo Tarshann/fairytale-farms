@@ -279,3 +279,8 @@
 - [x] Add stock images for Valentine's Day boxes and treats
 - [x] Add stock puck photo for custom puck section
 - [x] Add stock images for Build Your Own box items
+
+## Price Update
+- [x] Update freeze-dried candy (small) price from $7 to $5
+- [x] Update freeze-dried candy (large) price from $8 to $5
+- [x] Update all freeze-dried candy varieties to $5
