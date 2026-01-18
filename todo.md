@@ -332,3 +332,16 @@
 - [x] Fix out-of-stock products still appearing on products page
 - [x] Replace Custom Shaped Sugar Cookie image (shows cake instead of cookie)
 - [x] Fix brownie section showing 4 duplicate images - show only one
+
+
+## Customer-Focused Homepage Rewrite
+- [x] Implement new hero section with clear value proposition
+- [x] Add quick reassurance strip (made from scratch, custom designs, porch pickup, local family-owned)
+- [x] Create "Cookies & Brownies - Ready to Order" featured section
+- [x] Add Custom Cakes section with how-it-works steps
+- [x] Add Gallery preview section with "See Our Work"
+- [x] Update About section with warm, emotional messaging
+- [x] Add "How Ordering Works" section to remove anxiety
+- [x] Add final call-to-action section
+- [x] Update footer with trust signals
+- [x] Use provided images for sections

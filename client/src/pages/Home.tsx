@@ -1,488 +1,394 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { trpc } from "@/lib/trpc";
-import { ArrowRight, Sparkles, Heart, Award, Gift, Camera, Package, Clock, MapPin, Star, Cake, Cookie, Cherry, IceCream, Croissant, FlaskConical, Printer, Play, Candy, Zap } from "lucide-react";
-
-// Gallery section component - single image per category (compact size)
-function GallerySection({ 
-  title, 
-  description, 
-  image, 
-  link, 
-  bgColor 
-}: { 
-  title: string; 
-  description: string; 
-  image: { src: string; alt: string }; 
-  link: string;
-  bgColor: string;
-}) {
-  return (
-    <Link href={link}>
-      <div className="group cursor-pointer">
-        <div className={`h-48 md:h-56 rounded-xl overflow-hidden shadow-pastel hover:shadow-pastel-hover transition-all duration-300 ${bgColor}`}>
-          <img
-            src={image.src}
-            alt={image.alt}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-        <div className="mt-3 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold font-display group-hover:text-primary transition-colors">{title}</h3>
-            <p className="text-muted-foreground text-xs">{description}</p>
-          </div>
-          <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity text-xs">
-            View <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// Sidebar menu component
-function SidebarMenu() {
-  const menuCategories = [
-    { name: "Custom Cakes", icon: Cake, href: "/products?category=customized-cakes", color: "text-pink-500" },
-    { name: "Sugar Cookies", icon: Cookie, href: "/products?category=customized-sugar-cookies", color: "text-purple-500" },
-    { name: "Cinnamon Buns", icon: Croissant, href: "/products?category=cinnamon-buns", color: "text-amber-500" },
-    { name: "Cake Pops", icon: Cherry, href: "/products?category=cake-pops", color: "text-red-400" },
-    { name: "Brownies", icon: IceCream, href: "/products?category=brownies", color: "text-amber-700" },
-    { name: "Cheesecake", icon: Cake, href: "/products?category=cheesecake", color: "text-yellow-500" },
-    { name: "Chocolate Strawberries", icon: Heart, href: "/products?category=chocolate-covered-strawberries", color: "text-red-500" },
-  ];
-
-  const specialCollections = [
-    { name: "Valentine's Collection", icon: Heart, href: "/valentines", color: "text-pink-500", badge: "NEW" },
-    { name: "Build Your Own Box", icon: Package, href: "/build-your-own", color: "text-purple-500" },
-    { name: "Portrait Pucks", icon: Camera, href: "/custom-portrait-pucks", color: "text-green-500" },
-  ];
-
-  return (
-    <aside className="w-full lg:w-72 flex-shrink-0">
-      <div className="sticky top-24 space-y-6">
-        {/* Special Collections */}
-        <Card className="border-2 border-pink-100 shadow-pastel overflow-hidden">
-          <div className="bg-gradient-rainbow-soft p-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-pink-500" />
-              Special Collections
-            </h3>
-          </div>
-          <CardContent className="p-0">
-            <nav className="divide-y">
-              {specialCollections.map((item) => (
-                <Link key={item.name} href={item.href}>
-                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group">
-                    <item.icon className={`w-5 h-5 ${item.color} group-hover:scale-110 transition-transform`} />
-                    <span className="font-medium group-hover:text-primary transition-colors">{item.name}</span>
-                    {item.badge && (
-                      <Badge className="ml-auto bg-pink-500 text-white text-xs">{item.badge}</Badge>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </nav>
-          </CardContent>
-        </Card>
-
-        {/* All Categories */}
-        <Card className="shadow-pastel">
-          <CardContent className="p-4">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Gift className="w-5 h-5 text-purple-500" />
-              Browse by Category
-            </h3>
-            <nav className="space-y-1">
-              {menuCategories.map((item) => (
-                <Link key={item.name} href={item.href}>
-                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
-                    <item.icon className={`w-4 h-4 ${item.color} group-hover:scale-110 transition-transform`} />
-                    <span className="text-sm group-hover:text-primary transition-colors">{item.name}</span>
-                  </div>
-                </Link>
-              ))}
-            </nav>
-          </CardContent>
-        </Card>
-
-        {/* Quick Links */}
-        <Card className="shadow-pastel bg-pastel-mint/30">
-          <CardContent className="p-4 space-y-3">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-green-500" />
-              Delivery Info
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              We deliver throughout Sumner County via DoorDash & Uber Eats from Castalian Springs, TN.
-            </p>
-            <Link href="/delivery-zones">
-              <Button variant="outline" size="sm" className="w-full">
-                Check Your ZIP Code
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    </aside>
-  );
-}
+import { ArrowRight, Check, Heart, Cake, Cookie, MessageCircle, Truck, Home as HomeIcon, Users } from "lucide-react";
 
 export default function Home() {
-  const { data: categories } = trpc.categories.list.useQuery();
+  // Best gallery images for each section
+  const heroImage = "/images/gallery/cake-happily-ever-after-wedding.jpeg";
+  const cookiesImage = "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg";
+  const browniesImage = "/images/brownies.jpg";
+  const kidsBirthdayImage = "/images/gallery/cake-frozen-elsa-birthday.jpeg";
+  const elegantCakeImage = "/images/gallery/cake-elegant-blue-two-tier.jpeg";
+  const cupcakeImage = "/images/gallery/cake-royal-crown-gold.jpeg";
+  const aboutImage = "/images/gallery/cake-cinnamoroll-sanrio.jpeg";
+  const ctaImage = "/images/gallery/sugar-cookies-baby-girl-caroline.jpeg";
   
-  // Single image per gallery category - using best gallery photos
-  const cakeImage = { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Happily Ever After Wedding Cake" };
-  const cookieImage = { src: "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg", alt: "Wedding Sugar Cookies" };
-  const treatsImage = { src: "/images/gallery/cake-royal-crown-gold.jpeg", alt: "Royal Crown Birthday Cake" };
-  const browniesImage = { src: "/images/brownies.jpg", alt: "Gourmet Brownies" };
+  // Gallery preview images (best 6)
+  const galleryImages = [
+    { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Wedding Cake" },
+    { src: "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg", alt: "Wedding Cookies" },
+    { src: "/images/gallery/cake-frozen-elsa-birthday.jpeg", alt: "Frozen Birthday Cake" },
+    { src: "/images/gallery/sugar-cookies-harry-potter-graduation.jpeg", alt: "Harry Potter Cookies" },
+    { src: "/images/gallery/cake-elegant-blue-two-tier.jpeg", alt: "Elegant Two-Tier Cake" },
+    { src: "/images/gallery/sugar-cookies-pink-dinosaur.jpeg", alt: "Dinosaur Cookies" },
+  ];
   
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navigation />
       
       <main className="flex-1">
-        {/* Whimsical Hero Banner */}
-        <section className="relative overflow-hidden bg-gradient-rainbow-soft">
+        {/* HERO SECTION */}
+        <section className="relative min-h-[70vh] flex items-center">
+          {/* Background Image */}
           <div className="absolute inset-0">
-            <div className="absolute top-10 left-10 w-40 h-40 bg-pastel-pink rounded-full blur-3xl opacity-50" />
-            <div className="absolute top-20 right-20 w-48 h-48 bg-pastel-lavender rounded-full blur-3xl opacity-50" />
-            <div className="absolute bottom-10 left-1/3 w-44 h-44 bg-pastel-mint rounded-full blur-3xl opacity-50" />
-            <div className="absolute bottom-20 right-1/4 w-36 h-36 bg-pastel-peach rounded-full blur-3xl opacity-50" />
+            <img 
+              src={heroImage} 
+              alt="Beautiful custom cake" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
           </div>
           
-          <div className="container relative py-16 md:py-24">
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              <Badge className="bg-white/80 text-pink-600 border-pink-200 px-4 py-2 text-sm animate-pulse">
-                <Heart className="w-4 h-4 mr-2 fill-current" />
-                Valentine's Day 2026 Collection Now Available!
-              </Badge>
-              
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                Welcome to{" "}
-                <span className="text-gradient-rainbow">Fairytale Farms</span>
+          <div className="container relative z-10 py-16 md:py-24">
+            <div className="max-w-2xl space-y-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
+                Custom Cakes, Cookies & Sweet Treats Made with Heart
               </h1>
               
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Where every treat tells a story! Handcrafted with love, our magical creations 
-                turn ordinary moments into extraordinary memories. 
+              <p className="text-lg md:text-xl text-gray-700">
+                Handcrafted desserts for birthdays, celebrations, and everyday moments—made fresh, never mass-produced.
               </p>
               
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Link href="/valentines">
-                  <Button size="lg" className="shadow-pastel bg-primary hover:bg-primary/90">
-                    <Heart className="mr-2 h-5 w-5 fill-current" />
-                    Shop Valentine's Collection
-                  </Button>
-                </Link>
-                <Link href="/products">
-                  <Button size="lg" variant="outline" className="border-2">
-                    Browse All Treats
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
+              <p className="text-base text-gray-600 flex items-center gap-2">
+                <Truck className="w-5 h-5 text-pink-500" />
+                Serving Gallatin & surrounding Tennessee communities
+              </p>
               
-              {/* Quick Info */}
-              <div className="flex flex-wrap justify-center gap-4 pt-6">
-                <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
-                  <Clock className="w-4 h-4 text-pink-500" />
-                  <span className="text-sm font-medium">Order by Feb 12</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
-                  <MapPin className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-medium">Sumner County Delivery</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm font-medium">Limited Quantities</span>
-                </div>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link href="/products?category=classic-cookies">
+                  <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg">
+                    <Cookie className="mr-2 h-5 w-5" />
+                    Order Cookies & Brownies
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button size="lg" variant="outline" className="border-2 border-gray-800 text-gray-800 hover:bg-gray-100">
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Custom Cake Inquiry
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Main Content with Sidebar */}
-        <section className="py-12 bg-white">
+        {/* QUICK REASSURANCE STRIP */}
+        <section className="py-6 bg-gray-50 border-y border-gray-100">
           <div className="container">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Sidebar Menu */}
-              <SidebarMenu />
-              
-              {/* Main Gallery Content - 2x2 Grid */}
-              <div className="flex-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <GallerySection
-                    title="Custom Cakes"
-                    description="Magical creations for every celebration"
-                    image={cakeImage}
-                    link="/products?category=customized-cakes"
-                    bgColor="bg-pastel-pink/20"
-                  />
-                  <GallerySection
-                    title="Sugar Cookies"
-                    description="Beautifully decorated and deliciously sweet"
-                    image={cookieImage}
-                    link="/products?category=customized-sugar-cookies"
-                    bgColor="bg-pastel-lavender/20"
-                  />
-                  <GallerySection
-                    title="Brownies"
-                    description="Rich, fudgy, and irresistible"
-                    image={browniesImage}
-                    link="/products?category=brownies"
-                    bgColor="bg-pastel-peach/20"
-                  />
-                  <GallerySection
-                    title="More Cakes"
-                    description="From birthdays to weddings"
-                    image={treatsImage}
-                    link="/gallery?category=cakes"
-                    bgColor="bg-pastel-mint/20"
-                  />
-                </div>
+            <div className="flex flex-wrap justify-center gap-6 md:gap-12">
+              <div className="flex items-center gap-2 text-gray-700">
+                <Check className="w-5 h-5 text-green-500" />
+                <span className="font-medium">Made from scratch</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <Check className="w-5 h-5 text-green-500" />
+                <span className="font-medium">Custom designs welcome</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <Check className="w-5 h-5 text-green-500" />
+                <span className="font-medium">Porch pickup available</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <Check className="w-5 h-5 text-green-500" />
+                <span className="font-medium">Local, family-owned bakery</span>
               </div>
             </div>
           </div>
         </section>
-        
-        {/* What Makes Us Special - Whimsical Version */}
-        <section className="py-16 bg-muted/30">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Makes Us Magical</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Every treat from Fairytale Farms is crafted with a sprinkle of magic and a whole lot of love
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="border-none shadow-pastel bg-white">
-                <CardContent className="pt-8 text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pastel-pink">
-                    <Heart className="h-8 w-8 text-pink-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold">Made with Love</h3>
-                  <p className="text-muted-foreground">
-                    Every item is handcrafted with care using premium ingredients and a whole lot of heart.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-none shadow-pastel bg-white">
-                <CardContent className="pt-8 text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pastel-lavender">
-                    <Sparkles className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold">A Touch of Magic</h3>
-                  <p className="text-muted-foreground">
-                    Our secret? A sprinkle of fairy dust and years of baking expertise in every creation.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-none shadow-pastel bg-white">
-                <CardContent className="pt-8 text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-pastel-mint">
-                    <Award className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold">Premium Quality</h3>
-                  <p className="text-muted-foreground">
-                    We use only the finest ingredients to ensure every bite is a delightful experience.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
 
-        {/* Valentine's Day Quick Links - No Prices */}
+        {/* FEATURED OFFER: COOKIES & BROWNIES */}
         <section className="py-16 bg-white">
           <div className="container">
-            <div className="text-center mb-12">
-              <Badge className="bg-pink-100 text-pink-600 mb-4">
-                <Heart className="w-3 h-3 mr-1 fill-current" /> Limited Time
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Valentine's Day Specials</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Show your love with our enchanting Valentine's collection
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <Link href="/valentines">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-pink-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
-                  <div className="aspect-video bg-gradient-to-br from-pastel-pink to-pastel-lavender flex items-center justify-center">
-                    <Gift className="w-16 h-16 text-pink-600 group-hover:scale-110 transition-transform" />
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Curated Gift Boxes</h3>
-                    <p className="text-muted-foreground">Three perfectly crafted Valentine's collections for every budget</p>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/build-your-own">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-purple-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
-                  <div className="aspect-video bg-gradient-to-br from-pastel-lavender to-pastel-sky flex items-center justify-center">
-                    <Package className="w-16 h-16 text-purple-600 group-hover:scale-110 transition-transform" />
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Build Your Own Box</h3>
-                    <p className="text-muted-foreground">Create a custom box filled with your sweetheart's favorite treats</p>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/custom-portrait-pucks">
-                <Card className="group cursor-pointer border-2 border-transparent hover:border-green-200 hover:shadow-pastel transition-all duration-300 overflow-hidden h-full">
-                  <div className="aspect-video bg-gradient-to-br from-pastel-mint to-pastel-sky flex items-center justify-center">
-                    <Camera className="w-16 h-16 text-green-600 group-hover:scale-110 transition-transform" />
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">Custom Portrait Pucks</h3>
-                    <p className="text-muted-foreground">Turn your favorite photo into a delicious edible keepsake</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* In the Lab Teaser Section */}
-        <section className="py-16 bg-gradient-to-r from-pastel-lavender/30 via-white to-pastel-pink/30">
-          <div className="container">
             <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <Badge className="bg-pastel-lavender/50 text-purple-700 border-0 mb-4">
-                  <FlaskConical className="w-3 h-3 mr-1" />
-                  Behind the Magic
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  In the Lab with{" "}
-                  <span className="text-gradient-rainbow">Fairytale Farms</span>
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  Ever wonder how we create those perfect custom cookie cutters and stamps? 
-                  Peek behind the curtain and watch the magic happen in real-time!
-                </p>
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Printer className="w-4 h-4 text-purple-500" />
-                    <span>3D Printed Tools</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Camera className="w-4 h-4 text-pink-500" />
-                    <span>Live Lab Cam</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Star className="w-4 h-4 text-yellow-500" />
-                    <span>Custom Designs</span>
-                  </div>
-                </div>
-                <Link href="/lab">
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                    <Play className="w-4 h-4 mr-2" />
-                    Visit the Lab
-                  </Button>
-                </Link>
-              </div>
-              <div className="relative">
-                <Card className="overflow-hidden border-2 border-pastel-lavender/50 shadow-pastel">
-                  <div className="aspect-video bg-gradient-to-br from-pastel-lavender/20 to-pastel-pink/20 flex items-center justify-center relative">
-                    <div className="text-center">
-                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white shadow-lg flex items-center justify-center">
-                        <FlaskConical className="w-10 h-10 text-purple-500" />
-                      </div>
-                      <p className="text-muted-foreground">See what's printing today!</p>
-                    </div>
-                    {/* Live indicator */}
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm flex items-center gap-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                      </span>
-                      <span className="text-xs font-medium text-purple-600">Lab Updates</span>
-                    </div>
-                  </div>
-                </Card>
-                {/* Floating elements */}
-                <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-pastel-pink flex items-center justify-center shadow-lg animate-bounce">
-                  <span className="text-xl">🍪</span>
-                </div>
-                <div className="absolute -bottom-4 -left-4 w-10 h-10 rounded-full bg-pastel-mint flex items-center justify-center shadow-lg">
-                  <span className="text-lg">✨</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Bickering Bros Freeze-Dried Candy Section */}
-        <section className="py-16 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
-          {/* Colorful splash effects */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-20 w-40 h-40 bg-red-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-1/4 w-36 h-36 bg-blue-500/20 rounded-full blur-3xl" />
-          
-          <div className="container relative z-10">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="space-y-6">
-                <Badge className="bg-yellow-500 text-black font-bold">
-                  <Candy className="w-4 h-4 mr-2" />
-                  NEW! Family Business
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-white">
-                  Introducing <span className="text-yellow-500">Bickering Bros</span> Candy Co
-                </h2>
-                <p className="text-gray-300 text-lg">
-                  Meet our boys! They're bringing you the crunchiest, most flavorful freeze-dried candy 
-                  you've ever tasted. Made with love (and a little brotherly competition) using our 
-                  Harvest Right Freeze Dryer.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center gap-2 bg-gray-800 rounded-full px-4 py-2">
-                    <Zap className="w-4 h-4 text-yellow-500" />
-                    <span className="text-white text-sm">Super Crunchy</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-gray-800 rounded-full px-4 py-2">
-                    <Sparkles className="w-4 h-4 text-red-500" />
-                    <span className="text-white text-sm">Intense Flavor</span>
-                  </div>
-                </div>
-                <Link href="/bickering-bros">
-                  <Button size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
-                    <Candy className="w-5 h-5 mr-2" />
-                    Shop Freeze-Dried Candy
-                  </Button>
-                </Link>
-              </div>
-              <div className="flex justify-center">
+              {/* Images */}
+              <div className="grid grid-cols-2 gap-4">
                 <img 
-                  src="/images/bickering-bros-logo.png" 
-                  alt="Bickering Bros Candy Co" 
-                  className="h-64 md:h-80 w-auto object-contain"
+                  src={cookiesImage} 
+                  alt="Fresh baked cookies" 
+                  className="rounded-xl shadow-lg w-full h-48 md:h-64 object-cover"
+                />
+                <img 
+                  src={browniesImage} 
+                  alt="Rich fudgy brownies" 
+                  className="rounded-xl shadow-lg w-full h-48 md:h-64 object-cover"
                 />
               </div>
+              
+              {/* Content */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Cookie className="w-8 h-8 text-amber-500" />
+                  <h2 className="text-3xl md:text-4xl font-bold">Cookies & Brownies</h2>
+                </div>
+                <p className="text-lg text-gray-600 font-medium">Ready to Order</p>
+                
+                <p className="text-gray-700">
+                  Perfect for gifts, parties, or a sweet night in.
+                </p>
+                
+                <ul className="space-y-3 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Fresh-baked cookies by the half dozen or dozen</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Rich, fudgy brownies</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Porch pickup or local delivery</span>
+                  </li>
+                </ul>
+                
+                <Link href="/products?category=classic-cookies">
+                  <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-white">
+                    Shop Cookies & Brownies
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                
+                <p className="text-sm text-gray-500 italic">
+                  Want something custom? Keep scrolling—we do that too.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Testimonial/Story Section */}
-        <section className="py-16 bg-gradient-rainbow-soft">
+        {/* CUSTOM CAKES SECTION */}
+        <section className="py-16 bg-gray-50">
           <div className="container">
+            {/* 3 Image Row */}
+            <div className="grid grid-cols-3 gap-4 mb-10">
+              <img 
+                src={kidsBirthdayImage} 
+                alt="Kids birthday cake" 
+                className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
+              />
+              <img 
+                src={elegantCakeImage} 
+                alt="Elegant celebration cake" 
+                className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
+              />
+              <img 
+                src={cupcakeImage} 
+                alt="Cupcake set" 
+                className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
+              />
+            </div>
+            
+            {/* Content */}
             <div className="max-w-3xl mx-auto text-center space-y-6">
-              <Sparkles className="w-12 h-12 text-pink-500 mx-auto" />
-              <blockquote className="text-2xl md:text-3xl font-display italic text-foreground/80">
-                "Every treat has a story, and we're here to help you tell yours. From birthday wishes to wedding dreams, 
-                we bake happiness into every creation."
-              </blockquote>
-              <p className="text-muted-foreground font-medium">— The Fairytale Farms Family</p>
+              <div className="flex items-center justify-center gap-2">
+                <Cake className="w-8 h-8 text-pink-500" />
+                <h2 className="text-3xl md:text-4xl font-bold">Custom Cakes Made Just for You</h2>
+              </div>
+              
+              <p className="text-lg text-gray-700">
+                From kids' birthdays to milestone celebrations, every cake is designed specifically for your event.
+              </p>
+              
+              <div className="text-left max-w-md mx-auto">
+                <p className="font-semibold text-gray-800 mb-3">Popular requests include:</p>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                    Birthday cakes (kids & adults)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                    Cupcake sets
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                    Themed desserts
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                    Simple and elegant designs
+                  </li>
+                </ul>
+              </div>
+              
+              {/* How it works */}
+              <div className="bg-white rounded-2xl p-8 shadow-sm mt-8">
+                <h3 className="font-semibold text-xl mb-6 text-gray-800">How it works:</h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold text-xl flex items-center justify-center mx-auto mb-3">1</div>
+                    <p className="text-gray-700">Tell us your idea using our cake inquiry form</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold text-xl flex items-center justify-center mx-auto mb-3">2</div>
+                    <p className="text-gray-700">We confirm design, size, and pricing</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold text-xl flex items-center justify-center mx-auto mb-3">3</div>
+                    <p className="text-gray-700">Your cake is baked fresh and ready for pickup</p>
+                  </div>
+                </div>
+              </div>
+              
+              <Link href="/contact">
+                <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white mt-4">
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Start a Custom Cake Order
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* GALLERY PREVIEW */}
+        <section className="py-16 bg-white">
+          <div className="container">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">See Our Work</h2>
+              <p className="text-gray-600">Every dessert is made with care and attention to detail.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((image, index) => (
+                <img 
+                  key={index}
+                  src={image.src} 
+                  alt={image.alt} 
+                  className="rounded-xl shadow-md w-full aspect-square object-cover hover:shadow-lg transition-shadow"
+                />
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <Link href="/gallery">
+                <Button variant="outline" size="lg" className="border-2">
+                  View Full Gallery
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ABOUT SECTION */}
+        <section className="py-16 bg-gray-50">
+          <div className="container">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Image */}
+              <div>
+                <img 
+                  src={aboutImage} 
+                  alt="Fairytale Farms bakery" 
+                  className="rounded-2xl shadow-lg w-full h-80 md:h-96 object-cover"
+                />
+              </div>
+              
+              {/* Content */}
+              <div className="space-y-6">
+                <h2 className="text-3xl md:text-4xl font-bold">Welcome to Fairytale Farms</h2>
+                
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Fairytale Farms is a small, family-run bakery built on love for baking and celebrating life's sweetest moments. Every order is handcrafted, thoughtfully designed, and made as if it were for our own family.
+                </p>
+                
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  We believe desserts should feel special—because the moments they're part of truly are.
+                </p>
+                
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Users className="w-5 h-5 text-pink-500" />
+                  <span>Family-owned in Castalian Springs, Tennessee</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW ORDERING WORKS */}
+        <section className="py-16 bg-white">
+          <div className="container">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-10">How Ordering Works</h2>
+              
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-pink-100 text-pink-600 font-bold text-2xl flex items-center justify-center mx-auto">1</div>
+                  <h3 className="font-semibold text-lg">Choose</h3>
+                  <p className="text-gray-600">Choose a ready-to-order item or submit a custom request</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-pink-100 text-pink-600 font-bold text-2xl flex items-center justify-center mx-auto">2</div>
+                  <h3 className="font-semibold text-lg">Confirm</h3>
+                  <p className="text-gray-600">We confirm availability and details</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-pink-100 text-pink-600 font-bold text-2xl flex items-center justify-center mx-auto">3</div>
+                  <h3 className="font-semibold text-lg">Enjoy</h3>
+                  <p className="text-gray-600">Pick up your order and enjoy</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 mt-8">
+                Questions? We're happy to help.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FINAL CALL TO ACTION */}
+        <section className="relative py-20">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src={ctaImage} 
+              alt="Celebration cookies" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-900/80 to-purple-900/80" />
+          </div>
+          
+          <div className="container relative z-10 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
+              Ready to Order Something Sweet?
+            </h2>
+            
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link href="/products?category=classic-cookies">
+                <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100">
+                  <Cookie className="mr-2 h-5 w-5" />
+                  Order Cookies & Brownies
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10">
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Custom Cake Inquiry
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER TRUST SIGNALS */}
+        <section className="py-8 bg-gray-100 border-t border-gray-200">
+          <div className="container">
+            <div className="flex flex-wrap justify-center gap-8 text-gray-600">
+              <div className="flex items-center gap-2">
+                <HomeIcon className="w-5 h-5 text-pink-500" />
+                <span>Local Tennessee Bakery</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-pink-500" />
+                <span>Easy communication</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cake className="w-5 h-5 text-pink-500" />
+                <span>Made fresh to order</span>
+              </div>
             </div>
           </div>
         </section>
