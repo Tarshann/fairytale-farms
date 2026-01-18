@@ -13,6 +13,7 @@ interface GalleryImage {
 
 const galleryImages: GalleryImage[] = [
   // Custom Cakes
+  { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Happily Ever After Wedding Cake", category: "cakes" },
   { src: "/images/gallery/cake-ufc-boxing-birthday.jpeg", alt: "UFC Boxing Birthday Cake - Michael", category: "cakes" },
   { src: "/images/gallery/cake-mickey-clubhouse-birthday.jpeg", alt: "Mickey Mouse Clubhouse Birthday - Cooper", category: "cakes" },
   { src: "/images/gallery/cake-frozen-elsa-birthday.jpeg", alt: "Frozen Elsa Birthday Cake - Addison", category: "cakes" },
@@ -28,7 +29,6 @@ const galleryImages: GalleryImage[] = [
   { src: "/images/gallery/cake-taco-bell.jpeg", alt: "Taco Bell Birthday Cake", category: "cakes" },
   { src: "/images/gallery/cake-royal-crown-gold.jpeg", alt: "Royal Crown Gold Birthday Cake", category: "cakes" },
   { src: "/images/gallery/cake-minnie-polka-dot-luna.png", alt: "Minnie Mouse Pink Polka Dot - Luna 4th Birthday", category: "cakes" },
-  { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Happily Ever After Wedding Cake", category: "cakes" },
   
   // Sugar Cookies
   { src: "/images/gallery/sugar-cookies-housewarming.jpeg", alt: "Housewarming Welcome Home Cookies", category: "cookies" },

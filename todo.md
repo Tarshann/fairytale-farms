@@ -325,3 +325,4 @@
 ## Gallery Updates
 - [x] Remove "Strawberry ONE First Birthday Cake" from gallery
 - [x] Remove "John Deere Tractor Birthday - Henry" from gallery
+- [x] Move "Happily Ever After Wedding Cake" to first position in gallery
