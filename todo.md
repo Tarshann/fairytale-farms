@@ -353,3 +353,9 @@
 - [x] Add "Starting at..." pricing hints for self-qualification
 - [x] Update footer with Facebook link (https://www.facebook.com/share/1ATGMAQo44/)
 - [x] Update footer with Instagram link (https://www.instagram.com/fairytale.farms)
+
+
+## Checkout/Payment Fix
+- [x] Test current checkout flow
+- [x] Fix "Pay with Stripe" button - changed from window.open (blocked by popup blockers) to window.location.href
+- [ ] Verify Stripe integration working

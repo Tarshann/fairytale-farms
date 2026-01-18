@@ -21,8 +21,8 @@ export default function Checkout() {
   const createCheckoutMutation = trpc.orders.createCheckout.useMutation({
     onSuccess: (data) => {
       if (data.checkoutUrl) {
-        toast.success("Redirecting to checkout...");
-        window.open(data.checkoutUrl, '_blank');
+        toast.success("Redirecting to Stripe checkout...");
+        window.location.href = data.checkoutUrl;
       }
     },
     onError: (error) => {
