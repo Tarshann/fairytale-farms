@@ -438,3 +438,28 @@ export async function attachImagesToInquiry(
     .set({ imageAttachments: JSON.stringify(imageUrls) })
     .where(eq(customOrderInquiries.id, inquiryId));
 }
+
+
+// Get conversation history for an inquiry by inquiry ID
+export async function getInquiryConversation(inquiryId: number): Promise<Array<{
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: Date;
+}>> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const messages = await db
+    .select()
+    .from(chatMessages)
+    .where(eq(chatMessages.inquiryId, inquiryId))
+    .orderBy(chatMessages.createdAt);
+
+  return messages.map((m) => ({
+    id: m.id,
+    role: m.role as "user" | "assistant",
+    content: m.content,
+    createdAt: m.createdAt,
+  }));
+}

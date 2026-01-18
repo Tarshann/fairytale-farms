@@ -303,3 +303,12 @@
 - [x] Store uploaded images with inquiry in database
 - [x] Display uploaded images in admin inquiry view
 - [x] Test image upload functionality
+
+
+### Phase 2 (Enhanced UX)
+- [x] Add quick reply buttons for common responses (Custom Cake, Cookies, Other Treats)
+- [x] Add conversation history view to admin inquiries page
+- [x] Add typing indicator while AI responds
+- [x] Add message timestamps
+- [x] Improve chat styling and animations
+- [x] Test Phase 2 features

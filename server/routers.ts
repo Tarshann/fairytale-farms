@@ -751,6 +751,12 @@ export const appRouter = router({
         await chatbot.updateInquiryStatus(input.id, input.status, input.adminNotes);
         return { success: true };
       }),
+
+    getConversation: adminProcedure
+      .input(z.object({ inquiryId: z.number() }))
+      .query(async ({ input }) => {
+        return await chatbot.getInquiryConversation(input.inquiryId);
+      }),
   }),
 });
 
