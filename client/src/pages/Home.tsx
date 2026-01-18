@@ -124,7 +124,8 @@ export default function Home() {
                   <Cookie className="w-8 h-8 text-amber-500" />
                   <h2 className="text-3xl md:text-4xl font-bold">Cookies & Brownies</h2>
                 </div>
-                <p className="text-lg text-gray-600 font-medium">Ready to Order</p>
+                <p className="text-lg text-green-600 font-semibold">🟢 Ready to Order — No Wait!</p>
+                <p className="text-sm text-gray-500">Starting at $18/dozen</p>
                 
                 <p className="text-gray-700">
                   Perfect for gifts, parties, or a sweet night in.
@@ -151,8 +152,11 @@ export default function Home() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
+                <p className="text-sm text-gray-600 mt-2">
+                  → Add to cart, checkout, and schedule your pickup. That's it!
+                </p>
                 
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-sm text-gray-500 italic mt-4">
                   Want something custom? Keep scrolling—we do that too.
                 </p>
               </div>
@@ -188,6 +192,7 @@ export default function Home() {
                 <Cake className="w-8 h-8 text-pink-500" />
                 <h2 className="text-3xl md:text-4xl font-bold">Custom Cakes Made Just for You</h2>
               </div>
+              <p className="text-sm text-gray-500">Starting at $75 for a 6-inch cake</p>
               
               <p className="text-lg text-gray-700">
                 From kids' birthdays to milestone celebrations, every cake is designed specifically for your event.
@@ -240,6 +245,9 @@ export default function Home() {
                   Start a Custom Cake Order
                 </Button>
               </Link>
+              <p className="text-sm text-gray-600 mt-2">
+                → We'll reply within 24 hours with design ideas and pricing.
+              </p>
             </div>
           </div>
         </section>

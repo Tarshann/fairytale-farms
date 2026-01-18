@@ -103,18 +103,20 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground">Follow Us</h4>
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/1ATGMAQo44/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-blue-600 transition-colors"
+                aria-label="Follow us on Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/fairytale.farms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-pink-500 transition-colors"
+                aria-label="Follow us on Instagram"
               >
                 <Instagram className="h-5 w-5" />
               </a>

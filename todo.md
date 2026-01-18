@@ -345,3 +345,11 @@
 - [x] Add final call-to-action section
 - [x] Update footer with trust signals
 - [x] Use provided images for sections
+
+
+## Homepage Polish Points
+- [x] Make cookies feel like the "easy yes" - clearest/fastest option
+- [x] Add "what happens next" sentences after CTAs
+- [x] Add "Starting at..." pricing hints for self-qualification
+- [x] Update footer with Facebook link (https://www.facebook.com/share/1ATGMAQo44/)
+- [x] Update footer with Instagram link (https://www.instagram.com/fairytale.farms)
