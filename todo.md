@@ -320,3 +320,8 @@
 - [x] Add bulk status updates functionality
 - [x] Add overdue follow-up reminders (24hr SLA warning)
 - [x] Test Phase 3 features
+
+
+## Gallery Updates
+- [x] Remove "Strawberry ONE First Birthday Cake" from gallery
+- [x] Remove "John Deere Tractor Birthday - Henry" from gallery

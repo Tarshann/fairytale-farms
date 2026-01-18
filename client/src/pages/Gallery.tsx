@@ -13,13 +13,11 @@ interface GalleryImage {
 
 const galleryImages: GalleryImage[] = [
   // Custom Cakes
-  { src: "/images/gallery/cake-strawberry-one-birthday.jpeg", alt: "Strawberry ONE First Birthday Cake", category: "cakes" },
   { src: "/images/gallery/cake-ufc-boxing-birthday.jpeg", alt: "UFC Boxing Birthday Cake - Michael", category: "cakes" },
   { src: "/images/gallery/cake-mickey-clubhouse-birthday.jpeg", alt: "Mickey Mouse Clubhouse Birthday - Cooper", category: "cakes" },
   { src: "/images/gallery/cake-frozen-elsa-birthday.jpeg", alt: "Frozen Elsa Birthday Cake - Addison", category: "cakes" },
   { src: "/images/gallery/cake-elegant-blue-two-tier.jpeg", alt: "Elegant Blue Two-Tier Cake", category: "cakes" },
   { src: "/images/gallery/cake-minnie-pink-rosettes.jpeg", alt: "Minnie Mouse Pink Rosettes Cake", category: "cakes" },
-  { src: "/images/gallery/cake-john-deere-tractor.jpeg", alt: "John Deere Tractor Birthday - Henry", category: "cakes" },
   { src: "/images/gallery/cake-pink-heart-birthday.jpeg", alt: "Pink Heart 12th Birthday Cake", category: "cakes" },
   { src: "/images/gallery/cake-spidey-twins-birthday.jpeg", alt: "Spidey & Friends Twin Birthday - Miles & Selah", category: "cakes" },
   { src: "/images/gallery/cake-cinnamoroll-sanrio.jpeg", alt: "Cinnamoroll Sanrio Birthday - Auden", category: "cakes" },
