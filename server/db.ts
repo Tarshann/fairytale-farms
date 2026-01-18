@@ -125,6 +125,15 @@ export async function createCategory(category: InsertCategory) {
 export async function getAllProducts() {
   const db = await getDb();
   if (!db) return [];
+  return db.select().from(products)
+    .where(eq(products.inStock, true))
+    .orderBy(products.displayOrder, products.name);
+}
+
+// Get all products including out-of-stock (for admin)
+export async function getAllProductsAdmin() {
+  const db = await getDb();
+  if (!db) return [];
   return db.select().from(products).orderBy(products.displayOrder, products.name);
 }
 
@@ -132,7 +141,7 @@ export async function getProductsByCategory(categoryId: number) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(products)
-    .where(eq(products.categoryId, categoryId))
+    .where(and(eq(products.categoryId, categoryId), eq(products.inStock, true)))
     .orderBy(products.displayOrder, products.name);
 }
 

@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE products SET inStock = 0 WHERE id IN (9, 10, 30010, 150002, 150003);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute UPDATE products SET inStock = 0 WHERE id IN (9, 10, 30010, 150002, 150003);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 479
+}

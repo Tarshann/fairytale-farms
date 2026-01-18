@@ -326,3 +326,9 @@
 - [x] Remove "Strawberry ONE First Birthday Cake" from gallery
 - [x] Remove "John Deere Tractor Birthday - Henry" from gallery
 - [x] Move "Happily Ever After Wedding Cake" to first position in gallery
+
+
+## Bug Fixes
+- [x] Fix out-of-stock products still appearing on products page
+- [x] Replace Custom Shaped Sugar Cookie image (shows cake instead of cookie)
+- [x] Fix brownie section showing 4 duplicate images - show only one
