@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
+import * as chatbot from "./chatbot";
 
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -698,6 +699,57 @@ export const appRouter = router({
           await db.addToWishlist(ctx.user.id, input.productId);
           return { success: true, added: true };
         }
+      }),
+  }),
+
+  // ============= CHATBOT ROUTES =============
+  chatbot: router({
+    sendMessage: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        message: z.string(),
+        conversationHistory: z.array(z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string(),
+        })).optional(),
+        imageUrls: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await chatbot.processChat(input);
+      }),
+
+    uploadImage: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        imageData: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return await chatbot.uploadImage(input.sessionId, input.imageData, input.fileName);
+      }),
+
+    getHistory: publicProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ input }) => {
+        return await chatbot.getConversationHistory(input.sessionId);
+      }),
+  }),
+
+  // ============= ADMIN INQUIRY ROUTES =============
+  inquiries: router({
+    list: adminProcedure.query(async () => {
+      return await chatbot.getAllInquiries();
+    }),
+
+    updateStatus: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["new", "contacted", "quoted", "confirmed", "completed", "cancelled"]),
+        adminNotes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await chatbot.updateInquiryStatus(input.id, input.status, input.adminNotes);
+        return { success: true };
       }),
   }),
 });

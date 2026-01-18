@@ -18,6 +18,8 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminContacts from "./pages/admin/AdminContacts";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminInquiries from "./pages/admin/AdminInquiries";
+import ChatWidget from "./components/ChatWidget";
 
 // Valentine's Day 2026 Collection
 import ValentinesCollection from "./pages/ValentinesCollection";
@@ -61,6 +63,7 @@ function Router() {
       <Route path={"/admin/orders"} component={AdminOrders} />
       <Route path={"/admin/contacts"} component={AdminContacts} />
       <Route path={"/admin/settings"} component={AdminSettings} />
+      <Route path={"/admin/inquiries"} component={AdminInquiries} />
       
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
@@ -75,6 +78,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <ChatWidget />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

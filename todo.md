@@ -284,3 +284,22 @@
 - [x] Update freeze-dried candy (small) price from $7 to $5
 - [x] Update freeze-dried candy (large) price from $8 to $5
 - [x] Update all freeze-dried candy varieties to $5
+
+
+## AI Custom Order Chatbot
+
+### Phase 1 (Essential)
+- [x] Design chatbot database schema for storing custom order inquiries
+- [x] Create backend API endpoint for chatbot using Anthropic Claude
+- [x] Build frontend chatbot UI component (floating chat widget)
+- [x] Add system prompt with product catalog and ordering rules
+- [x] Store chat conversations and order details in database
+- [x] Admin inquiry list with status management
+- [x] Test chatbot functionality
+
+### Phase 1.5 (Image Upload)
+- [x] Add image upload button to chatbot UI
+- [x] Create backend endpoint for image uploads
+- [x] Store uploaded images with inquiry in database
+- [x] Display uploaded images in admin inquiry view
+- [x] Test image upload functionality

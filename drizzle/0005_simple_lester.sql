@@ -1,0 +1,1 @@
+ALTER TABLE `customOrderInquiries` ADD `imageAttachments` text;

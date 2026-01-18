@@ -223,3 +223,48 @@ export const wishlistItems = mysqlTable("wishlistItems", {
 
 export type WishlistItem = typeof wishlistItems.$inferSelect;
 export type InsertWishlistItem = typeof wishlistItems.$inferInsert;
+
+
+/**
+ * Custom order inquiries from AI chatbot
+ */
+export const customOrderInquiries = mysqlTable("customOrderInquiries", {
+  id: int("id").autoincrement().primaryKey(),
+  inquiryNumber: varchar("inquiryNumber", { length: 50 }).notNull().unique(),
+  customerName: varchar("customerName", { length: 200 }),
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerPhone: varchar("customerPhone", { length: 50 }),
+  eventDate: timestamp("eventDate"),
+  eventType: varchar("eventType", { length: 100 }),
+  quantity: text("quantity"),
+  flavorPreferences: text("flavorPreferences"),
+  designTheme: text("designTheme"),
+  budgetRange: varchar("budgetRange", { length: 100 }),
+  estimatedPrice: varchar("estimatedPrice", { length: 50 }),
+  estimateDetails: text("estimateDetails"),
+  additionalNotes: text("additionalNotes"),
+  // Image attachments (stored as JSON array of URLs)
+  imageAttachments: text("imageAttachments"),
+  status: mysqlEnum("status", ["new", "contacted", "quoted", "confirmed", "completed", "cancelled"]).default("new").notNull(),
+  adminNotes: text("adminNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomOrderInquiry = typeof customOrderInquiries.$inferSelect;
+export type InsertCustomOrderInquiry = typeof customOrderInquiries.$inferInsert;
+
+/**
+ * Chat messages for conversation history
+ */
+export const chatMessages = mysqlTable("chatMessages", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 100 }).notNull(),
+  inquiryId: int("inquiryId"),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;

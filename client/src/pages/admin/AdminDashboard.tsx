@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Package, ShoppingCart, MessageSquare, DollarSign, TrendingUp, Settings } from "lucide-react";
+import { Package, ShoppingCart, MessageSquare, DollarSign, TrendingUp, Settings, Sparkles } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -149,6 +149,18 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-xl font-bold">Site Settings</h3>
                     <p className="text-sm text-muted-foreground">Page visibility & pricing</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link href="/admin/inquiries">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-pink-50 to-rose-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <Sparkles className="h-12 w-12 mx-auto text-pink-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Custom Order Inquiries</h3>
+                    <p className="text-sm text-muted-foreground">AI chatbot order requests</p>
                   </div>
                 </CardContent>
               </Card>
