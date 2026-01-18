@@ -757,6 +757,23 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await chatbot.getInquiryConversation(input.inquiryId);
       }),
+
+    analytics: adminProcedure.query(async () => {
+      return await chatbot.getInquiryAnalytics();
+    }),
+
+    bulkUpdateStatus: adminProcedure
+      .input(z.object({
+        ids: z.array(z.number()),
+        status: z.enum(["new", "contacted", "quoted", "confirmed", "completed", "cancelled"]),
+      }))
+      .mutation(async ({ input }) => {
+        return await chatbot.bulkUpdateInquiryStatus(input.ids, input.status);
+      }),
+
+    overdue: adminProcedure.query(async () => {
+      return await chatbot.getOverdueInquiries();
+    }),
   }),
 });
 

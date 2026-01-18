@@ -463,3 +463,110 @@ export async function getInquiryConversation(inquiryId: number): Promise<Array<{
     createdAt: m.createdAt,
   }));
 }
+
+
+// Get analytics data for inquiries
+export async function getInquiryAnalytics() {
+  const db = await getDb();
+  if (!db) return {
+    totalInquiries: 0,
+    byStatus: {},
+    byDay: [],
+    conversionRate: 0,
+    avgResponseTime: 0,
+    overdueCount: 0,
+  };
+
+  const inquiries = await db
+    .select()
+    .from(customOrderInquiries)
+    .orderBy(customOrderInquiries.createdAt);
+
+  // Calculate metrics
+  const totalInquiries = inquiries.length;
+  
+  // Count by status
+  const byStatus: Record<string, number> = {};
+  inquiries.forEach((inq) => {
+    byStatus[inq.status] = (byStatus[inq.status] || 0) + 1;
+  });
+
+  // Group by day (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const byDay: { date: string; count: number }[] = [];
+  const dayMap: Record<string, number> = {};
+  
+  inquiries.forEach((inq) => {
+    const date = new Date(inq.createdAt).toISOString().split('T')[0];
+    if (new Date(inq.createdAt) >= thirtyDaysAgo) {
+      dayMap[date] = (dayMap[date] || 0) + 1;
+    }
+  });
+  
+  // Fill in missing days
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    byDay.unshift({ date: dateStr, count: dayMap[dateStr] || 0 });
+  }
+
+  // Conversion rate (confirmed + completed / total)
+  const converted = (byStatus['confirmed'] || 0) + (byStatus['completed'] || 0);
+  const conversionRate = totalInquiries > 0 ? Math.round((converted / totalInquiries) * 100) : 0;
+
+  // Count overdue (new status and older than 24 hours)
+  const twentyFourHoursAgo = new Date();
+  twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+  
+  const overdueCount = inquiries.filter(
+    (inq) => inq.status === 'new' && new Date(inq.createdAt) < twentyFourHoursAgo
+  ).length;
+
+  return {
+    totalInquiries,
+    byStatus,
+    byDay,
+    conversionRate,
+    avgResponseTime: 0, // Would need more data to calculate
+    overdueCount,
+  };
+}
+
+// Bulk update inquiry statuses
+export async function bulkUpdateInquiryStatus(
+  ids: number[],
+  status: "new" | "contacted" | "quoted" | "confirmed" | "completed" | "cancelled"
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  for (const id of ids) {
+    await db
+      .update(customOrderInquiries)
+      .set({ status })
+      .where(eq(customOrderInquiries.id, id));
+  }
+  
+  return { updated: ids.length };
+}
+
+// Get overdue inquiries (new status, older than 24 hours)
+export async function getOverdueInquiries() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const twentyFourHoursAgo = new Date();
+  twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+  const inquiries = await db
+    .select()
+    .from(customOrderInquiries)
+    .orderBy(customOrderInquiries.createdAt);
+
+  return inquiries.filter(
+    (inq) => inq.status === 'new' && new Date(inq.createdAt) < twentyFourHoursAgo
+  );
+}
