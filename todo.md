@@ -358,4 +358,11 @@
 ## Checkout/Payment Fix
 - [x] Test current checkout flow
 - [x] Fix "Pay with Stripe" button - changed from window.open (blocked by popup blockers) to window.location.href
-- [ ] Verify Stripe integration working
+- [x] Verify Stripe integration working - test purchase completed successfully
+
+
+## Customer Testimonials & Order Emails
+- [ ] Add customer testimonials section to homepage
+- [ ] Create placeholder testimonials (editable later)
+- [x] Enable Stripe automatic receipts (configured in Stripe Dashboard settings)
+- [ ] Test email delivery after successful payment

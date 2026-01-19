@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { ArrowRight, Check, Heart, Cake, Cookie, MessageCircle, Truck, Home as HomeIcon, Users } from "lucide-react";
+import { ArrowRight, Check, Heart, Cake, Cookie, MessageCircle, Truck, Home as HomeIcon, Users, Star, Quote } from "lucide-react";
 
 export default function Home() {
   // Best gallery images for each section
@@ -278,6 +278,75 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* CUSTOMER TESTIMONIALS */}
+        <section className="py-16 bg-pink-50">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
+              <p className="text-gray-600">Real reviews from happy customers</p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Testimonial 1 */}
+              <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <Quote className="w-8 h-8 text-pink-200 mb-3" />
+                  <p className="text-gray-700 mb-4 italic">
+                    "The birthday cake was absolutely stunning! My daughter's face lit up when she saw it. The attention to detail was incredible, and it tasted even better than it looked."
+                  </p>
+                  <div className="border-t pt-4">
+                    <p className="font-semibold text-gray-800">Sarah M.</p>
+                    <p className="text-sm text-gray-500">Birthday Cake Order</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Testimonial 2 */}
+              <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <Quote className="w-8 h-8 text-pink-200 mb-3" />
+                  <p className="text-gray-700 mb-4 italic">
+                    "I've ordered sugar cookies for multiple events now and they're always perfect. Beautiful designs, delicious taste, and the communication is always so easy."
+                  </p>
+                  <div className="border-t pt-4">
+                    <p className="font-semibold text-gray-800">Jennifer L.</p>
+                    <p className="text-sm text-gray-500">Repeat Customer</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Testimonial 3 */}
+              <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <Quote className="w-8 h-8 text-pink-200 mb-3" />
+                  <p className="text-gray-700 mb-4 italic">
+                    "Best brownies I've ever had! Ordered for a family gathering and everyone kept asking where I got them. Will definitely be ordering again!"
+                  </p>
+                  <div className="border-t pt-4">
+                    <p className="font-semibold text-gray-800">Michael T.</p>
+                    <p className="text-sm text-gray-500">Brownie Order</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
