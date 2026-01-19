@@ -31,6 +31,7 @@ import Lab from "./pages/Lab";
 import About from "./pages/About";
 import BickeringBros from "./pages/BickeringBros";
 import Gallery from "./pages/Gallery";
+import FAQ from "./pages/FAQ";
 
 function Router() {
   return (
@@ -56,6 +57,7 @@ function Router() {
       <Route path={"/about"} component={About} />
       <Route path={"/bickering-bros"} component={BickeringBros} />
       <Route path={"/gallery"} component={Gallery} />
+      <Route path={"/faq"} component={FAQ} />
       
       {/* Admin routes */}
       <Route path={"/admin"} component={AdminDashboard} />

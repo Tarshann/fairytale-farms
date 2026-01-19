@@ -366,3 +366,9 @@
 - [ ] Create placeholder testimonials (editable later)
 - [x] Enable Stripe automatic receipts (configured in Stripe Dashboard settings)
 - [ ] Test email delivery after successful payment
+
+
+## FAQ Page
+- [x] Create FAQ page with common questions and answers
+- [x] Add FAQ link to footer navigation
+- [x] Include sections: Ordering, Custom Orders, Pickup/Delivery, Payment, Products
