@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
@@ -12,17 +13,30 @@ import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react";
 
+const CAKE_FLAVORS = [
+  "Vanilla",
+  "Chocolate",
+  "Strawberry",
+  "Red Velvet",
+  "Lemon",
+  "Funfetti",
+];
+
 export default function ProductDetail() {
   const [, params] = useRoute("/products/:slug");
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [customizationNotes, setCustomizationNotes] = useState("");
+  const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
   
   const { data: product, isLoading } = trpc.products.getBySlug.useQuery(
     { slug: params?.slug || "" },
     { enabled: !!params?.slug }
   );
+  
+  // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
+  const isValentinesTier = product?.productType === "tier" && product?.name?.includes("Box");
   
   const utils = trpc.useUtils();
   const addToCartMutation = trpc.cart.add.useMutation({
@@ -51,10 +65,22 @@ export default function ProductDetail() {
       return;
     }
     
+    // Require cake flavor selection for Valentine's tier products
+    if (isValentinesTier && !selectedCakeFlavor) {
+      toast.error("Please select a cake flavor");
+      return;
+    }
+    
+    // Build customization notes with cake flavor if applicable
+    let notes = customizationNotes.trim();
+    if (isValentinesTier && selectedCakeFlavor) {
+      notes = `Cake Flavor: ${selectedCakeFlavor}${notes ? `\n${notes}` : ''}`;
+    }
+    
     addToCartMutation.mutate({
       productId: product.id,
       quantity,
-      customizationNotes: customizationNotes.trim() || undefined,
+      customizationNotes: notes || undefined,
     });
   };
   
@@ -176,6 +202,28 @@ export default function ProductDetail() {
                         </Button>
                       </div>
                     </div>
+                    
+                    {/* Cake Flavor Selection for Valentine's Boxes */}
+                    {isValentinesTier && (
+                      <div className="space-y-2">
+                        <Label htmlFor="cakeFlavor">Cake Flavor *</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Select your preferred cake flavor for the mini cake included in your box
+                        </p>
+                        <Select value={selectedCakeFlavor} onValueChange={setSelectedCakeFlavor}>
+                          <SelectTrigger id="cakeFlavor">
+                            <SelectValue placeholder="Choose a cake flavor..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CAKE_FLAVORS.map((flavor) => (
+                              <SelectItem key={flavor} value={flavor}>
+                                {flavor}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     
                     {product.isCustomizable && (
                       <div className="space-y-2">

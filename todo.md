@@ -399,3 +399,8 @@
 
 ## Fix Wedding Cake Image
 - [x] Replace wedding cake product image with correct wedding cake image (cake-happily-ever-after-wedding.jpeg)
+
+
+## Valentine's Box & Build Your Own Updates
+- [x] Add cake flavor dropdown selector for Valentine's boxes (Crush, Sweetheart, Romance)
+- [x] Remove $15 base price from Build Your Own - price should be sum of selected items only

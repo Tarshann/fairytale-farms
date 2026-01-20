@@ -24,25 +24,21 @@ interface SelectedItem {
 export default function BuildYourOwn() {
   const { user, isAuthenticated } = useAuth();
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  const [hasBaseBox, setHasBaseBox] = useState(false);
   
   const { data: byoItems, isLoading } = trpc.valentines.buildYourOwnItems.useQuery();
   const addToCart = trpc.cart.add.useMutation();
   const utils = trpc.useUtils();
 
-  // Separate base box from other items
-  const baseBox = byoItems?.find(item => item.slug === 'build-your-own-base');
-  const addOnItems = byoItems?.filter(item => item.slug !== 'build-your-own-base') || [];
+  // All items are available for selection (no base box required)
+  const addOnItems = byoItems || [];
 
-  // Calculate totals
+  // Calculate totals - just sum of selected items, no base price
   const totals = useMemo(() => {
-    const basePrice = hasBaseBox && baseBox ? parseFloat(baseBox.basePrice) : 0;
     const itemsTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const subtotal = basePrice + itemsTotal;
-    const total = subtotal;
+    const total = itemsTotal;
     
-    return { basePrice, itemsTotal, subtotal, total };
-  }, [selectedItems, hasBaseBox, baseBox]);
+    return { itemsTotal, total };
+  }, [selectedItems]);
 
   const updateItemQuantity = (productId: number, name: string, price: number, delta: number) => {
     setSelectedItems(prev => {
@@ -75,39 +71,25 @@ export default function BuildYourOwn() {
       return;
     }
 
-    if (!hasBaseBox) {
-      toast.error("Please add a base box first");
-      return;
-    }
-
     if (selectedItems.length === 0) {
       toast.error("Please add at least one item to your box");
       return;
     }
 
     try {
-      // Add base box
-      if (baseBox) {
-        await addToCart.mutateAsync({
-          productId: baseBox.id,
-          quantity: 1,
-          customizationNotes: `Build-Your-Own Box with: ${selectedItems.map(i => `${i.quantity}x ${i.name}`).join(', ')}`,
-        });
-      }
-
-      // Add selected items
+      // Add selected items to cart
       for (const item of selectedItems) {
         await addToCart.mutateAsync({
           productId: item.productId,
           quantity: item.quantity,
+          customizationNotes: "Build-Your-Own Valentine's Box item",
         });
       }
 
       utils.cart.get.invalidate();
-      toast.success("Build-Your-Own box added to cart!");
+      toast.success("Items added to cart!");
       
       // Reset selections
-      setHasBaseBox(false);
       setSelectedItems([]);
     } catch (error) {
       toast.error("Failed to add to cart. Please try again.");
@@ -176,61 +158,15 @@ export default function BuildYourOwn() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Item Selection */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Step 1: Base Box */}
-            <Card className={`border-2 ${hasBaseBox ? 'border-green-300 bg-green-50/50' : 'border-dashed border-pink-200'}`}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${hasBaseBox ? 'bg-green-500' : 'bg-pink-400'}`}>
-                      {hasBaseBox ? <Check className="w-5 h-5" /> : '1'}
-                    </div>
-                    <div>
-                      <CardTitle>Start with a Base Box</CardTitle>
-                      <CardDescription>Required for all Build-Your-Own orders</CardDescription>
-                    </div>
-                  </div>
-                  {baseBox && (
-                    <span className="text-2xl font-bold text-primary">${baseBox.basePrice}</span>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Includes premium packaging with Cricut labels and decorative fill
-                    </p>
-                  </div>
-                  <Button
-                    variant={hasBaseBox ? "outline" : "default"}
-                    onClick={() => setHasBaseBox(!hasBaseBox)}
-                    className={hasBaseBox ? "border-green-300 text-green-600" : ""}
-                  >
-                    {hasBaseBox ? (
-                      <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Added
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Base Box
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Step 2: Add Items */}
+            {/* Select Your Treats */}
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${selectedItems.length > 0 ? 'bg-green-500' : 'bg-lavender-400'}`}>
-                  {selectedItems.length > 0 ? <Check className="w-5 h-5" /> : '2'}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${selectedItems.length > 0 ? 'bg-green-500' : 'bg-pink-400'}`}>
+                  {selectedItems.length > 0 ? <Check className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">Add Your Treats</h2>
-                  <p className="text-muted-foreground text-sm">Select items to fill your box</p>
+                  <h2 className="text-xl font-bold">Select Your Treats</h2>
+                  <p className="text-muted-foreground text-sm">Choose items for your custom Valentine's box - pay only for what you select</p>
                 </div>
               </div>
 
@@ -330,54 +266,31 @@ export default function BuildYourOwn() {
                 </CardHeader>
                 
                 <CardContent className="p-6">
-                  {/* Base Box */}
-                  {hasBaseBox && baseBox && (
-                    <div className="flex justify-between items-center py-2">
-                      <span className="font-medium">Base Box</span>
-                      <span>${baseBox.basePrice}</span>
-                    </div>
-                  )}
-                  
                   {/* Selected Items */}
-                  {selectedItems.length > 0 && (
-                    <>
-                      <Separator className="my-3" />
-                      <div className="space-y-2">
-                        {selectedItems.map((item) => (
-                          <div key={item.productId} className="flex justify-between items-center text-sm">
-                            <span>{item.quantity}x {item.name}</span>
-                            <span>${(item.price * item.quantity).toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Empty State */}
-                  {!hasBaseBox && selectedItems.length === 0 && (
+                  {selectedItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedItems.map((item) => (
+                        <div key={item.productId} className="flex justify-between items-center text-sm">
+                          <span>{item.quantity}x {item.name}</span>
+                          <span>${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>Start by adding a base box</p>
+                      <p>Select treats to add to your box</p>
                     </div>
                   )}
                   
                   {/* Totals */}
-                  {(hasBaseBox || selectedItems.length > 0) && (
+                  {selectedItems.length > 0 && (
                     <>
                       <Separator className="my-4" />
                       
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Subtotal</span>
-                          <span>${totals.subtotal.toFixed(2)}</span>
-                        </div>
-                        
-                        <Separator className="my-2" />
-                        
-                        <div className="flex justify-between text-lg font-bold">
-                          <span>Total</span>
-                          <span className="text-primary">${totals.total.toFixed(2)}</span>
-                        </div>
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Total</span>
+                        <span className="text-primary">${totals.total.toFixed(2)}</span>
                       </div>
                     </>
                   )}
@@ -387,7 +300,7 @@ export default function BuildYourOwn() {
                     className="w-full mt-6" 
                     size="lg"
                     onClick={handleAddToCart}
-                    disabled={!hasBaseBox || selectedItems.length === 0 || addToCart.isPending}
+                    disabled={selectedItems.length === 0 || addToCart.isPending}
                   >
                     {addToCart.isPending ? (
                       "Adding..."
