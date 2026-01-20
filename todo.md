@@ -395,3 +395,7 @@
 - [x] Remove Academy discount from Build Your Own page
 - [x] Remove Academy discount reference from FAQ
 - [x] Academy members will use promo codes instead
+
+
+## Fix Wedding Cake Image
+- [x] Replace wedding cake product image with correct wedding cake image (cake-happily-ever-after-wedding.jpeg)
