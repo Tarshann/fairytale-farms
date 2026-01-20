@@ -179,7 +179,7 @@ export default function FAQ() {
         },
         {
           question: "Do you offer discounts or promotions on Valentine's boxes?",
-          answer: "Valentine's boxes are limited-quantity holiday items and are not eligible for discounts, promotions, or bundle deals. Academy members receive their standard discount."
+          answer: "Valentine's boxes are limited-quantity holiday items and are not eligible for discounts, promotions, or bundle deals."
         },
         {
           question: "Are refunds available for Valentine's orders?",

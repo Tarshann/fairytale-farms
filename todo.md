@@ -388,3 +388,10 @@
 - [x] Add Valentine's Add-Ons section to Valentine's Collection page
 - [x] Display chocolate-covered strawberries add-on options (Half Dozen $20, Dozen $35)
 - [x] Add note that add-ons must be purchased with a Valentine's box
+
+
+## Remove Academy Discount References
+- [x] Remove Academy discount display from Valentine's tier cards
+- [x] Remove Academy discount from Build Your Own page
+- [x] Remove Academy discount reference from FAQ
+- [x] Academy members will use promo codes instead

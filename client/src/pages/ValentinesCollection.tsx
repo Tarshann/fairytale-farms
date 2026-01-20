@@ -141,14 +141,7 @@ export default function ValentinesCollection() {
                     
                     <CardHeader>
                       <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-primary">${tier.basePrice}</span>
-                        {user && (
-                          <Badge variant="outline" className="text-xs">
-                            Academy: ${(parseFloat(tier.basePrice) * 0.8).toFixed(2)}
-                          </Badge>
-                        )}
-                      </div>
+                      <span className="text-3xl font-bold text-primary">${tier.basePrice}</span>
                     </CardHeader>
                     
                     <CardContent>

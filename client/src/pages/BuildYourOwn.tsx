@@ -39,13 +39,10 @@ export default function BuildYourOwn() {
     const basePrice = hasBaseBox && baseBox ? parseFloat(baseBox.basePrice) : 0;
     const itemsTotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const subtotal = basePrice + itemsTotal;
+    const total = subtotal;
     
-    // Academy member discount (15% off BYO)
-    const discount = user ? subtotal * 0.15 : 0;
-    const total = subtotal - discount;
-    
-    return { basePrice, itemsTotal, subtotal, discount, total };
-  }, [selectedItems, hasBaseBox, baseBox, user]);
+    return { basePrice, itemsTotal, subtotal, total };
+  }, [selectedItems, hasBaseBox, baseBox]);
 
   const updateItemQuantity = (productId: number, name: string, price: number, delta: number) => {
     setSelectedItems(prev => {
@@ -172,12 +169,6 @@ export default function BuildYourOwn() {
             </p>
           </div>
           
-          {user && (
-            <Badge className="bg-white text-green-600 border-green-200">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Academy Member: 15% off Build-Your-Own!
-            </Badge>
-          )}
         </div>
       </section>
 
@@ -380,13 +371,6 @@ export default function BuildYourOwn() {
                           <span>Subtotal</span>
                           <span>${totals.subtotal.toFixed(2)}</span>
                         </div>
-                        
-                        {user && totals.discount > 0 && (
-                          <div className="flex justify-between text-sm text-green-600">
-                            <span>Academy Discount (15%)</span>
-                            <span>-${totals.discount.toFixed(2)}</span>
-                          </div>
-                        )}
                         
                         <Separator className="my-2" />
                         
