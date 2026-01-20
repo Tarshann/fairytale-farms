@@ -1,0 +1,13 @@
+{
+  "query": "-- Get Valentine's category ID\nSELECT id FROM categories WHERE slug = 'valentines-2026' OR name LIKE '%Valentine%' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute -- Get Valentine's category ID\nSELECT id FROM categories WHERE slug = 'valentines-2026' OR name LIKE '%Valentine%' LIMIT 1;",
+  "rows": [
+    {
+      "id": "30001"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n30001\n",
+  "stderr": "",
+  "execution_time_ms": 369
+}

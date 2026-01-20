@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, name, slug, basePrice, productType FROM products WHERE productType = 'tier';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT id, name, slug, basePrice, productType FROM products WHERE productType = 'tier';",
+  "rows": [
+    {
+      "id": "30001",
+      "name": "Sweet Beginnings",
+      "slug": "sweet-beginnings-tier",
+      "basePrice": "28.00",
+      "productType": "tier"
+    },
+    {
+      "id": "30002",
+      "name": "Love Story",
+      "slug": "love-story-tier",
+      "basePrice": "52.00",
+      "productType": "tier"
+    },
+    {
+      "id": "30003",
+      "name": "Fairytale Romance",
+      "slug": "fairytale-romance-tier",
+      "basePrice": "85.00",
+      "productType": "tier"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\tbasePrice\tproductType\n30001\tSweet Beginnings\tsweet-beginnings-tier\t28.00\ttier\n30002\tLove Story\tlove-story-tier\t52.00\ttier\n30003\tFairytale Romance\tfairytale-romance-tier\t85.00\ttier\n",
+  "stderr": "",
+  "execution_time_ms": 369
+}

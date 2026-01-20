@@ -1,0 +1,69 @@
+{
+  "query": "-- First check existing categories\nSELECT id, name, slug FROM categories;\n\n-- Check if chocolate strawberry products already exist\nSELECT id, name, basePrice, productType FROM products WHERE name LIKE '%Strawberry%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute -- First check existing categories\nSELECT id, name, slug FROM categories;\n\n-- Check if chocolate strawberry products already exist\nSELECT id, name, basePrice, productType FROM products WHERE name LIKE '%Strawberry%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Customized Cakes",
+      "slug": "customized-cakes"
+    },
+    {
+      "id": "2",
+      "name": "Customized Sugar Cookies",
+      "slug": "customized-sugar-cookies"
+    },
+    {
+      "id": "3",
+      "name": "Cinnamon Buns",
+      "slug": "cinnamon-buns"
+    },
+    {
+      "id": "4",
+      "name": "Cake Pops",
+      "slug": "cake-pops"
+    },
+    {
+      "id": "5",
+      "name": "Brownies",
+      "slug": "brownies"
+    },
+    {
+      "id": "6",
+      "name": "Cheesecake",
+      "slug": "cheesecake"
+    },
+    {
+      "id": "7",
+      "name": "Chocolate Covered Strawberries",
+      "slug": "chocolate-strawberries"
+    },
+    {
+      "id": "30001",
+      "name": "Valentine's Day 2026",
+      "slug": "valentines-day-2026"
+    },
+    {
+      "id": "90001",
+      "name": "Bickering Bros Freeze-Dried Candy",
+      "slug": "freeze-dried-candy"
+    },
+    {
+      "id": "120002",
+      "name": "Mini Tin Cakes",
+      "slug": "mini-tin-cakes"
+    },
+    {
+      "id": "120003",
+      "name": "Classic Cookies",
+      "slug": "classic-cookies"
+    }
+  ],
+  "messages": [
+    "id\tname\tbasePrice\tproductType",
+    "30009\tChocolate-Covered Strawberry\t3.50\tbuild_your_own_item",
+    "150006\tStrawberry Crunch Mini Tin Cake\t5.00\tstandard"
+  ],
+  "stdout": "id\tname\tslug\n1\tCustomized Cakes\tcustomized-cakes\n2\tCustomized Sugar Cookies\tcustomized-sugar-cookies\n3\tCinnamon Buns\tcinnamon-buns\n4\tCake Pops\tcake-pops\n5\tBrownies\tbrownies\n6\tCheesecake\tcheesecake\n7\tChocolate Covered Strawberries\tchocolate-strawberries\n30001\tValentine's Day 2026\tvalentines-day-2026\n90001\tBickering Bros Freeze-Dried Candy\tfreeze-dried-candy\n120002\tMini Tin Cakes\tmini-tin-cakes\n120003\tClassic Cookies\tclassic-cookies\nid\tname\tbasePrice\tproductType\n30009\tChocolate-Covered Strawberry\t3.50\tbuild_your_own_item\n150006\tStrawberry Crunch Mini Tin Cake\t5.00\tstandard\n",
+  "stderr": "",
+  "execution_time_ms": 427
+}

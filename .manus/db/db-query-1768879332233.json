@@ -1,0 +1,9 @@
+{
+  "query": "-- Update freeze-dried candy prices\nUPDATE products SET basePrice = 4.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Mini%';\nUPDATE products SET basePrice = 6.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Small%';\nUPDATE products SET basePrice = 10.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Large%';\n\n-- Also update in Bickering Bros category if they exist\nUPDATE products SET basePrice = 5.00 WHERE categoryId = (SELECT id FROM categories WHERE slug = 'bickering-bros' LIMIT 1) AND basePrice != 5.00;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute -- Update freeze-dried candy prices\nUPDATE products SET basePrice = 4.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Mini%';\nUPDATE products SET basePrice = 6.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Small%';\nUPDATE products SET basePrice = 10.00 WHERE name LIKE '%Freeze%' AND name LIKE '%Large%';\n\n-- Also update in Bickering Bros category if they exist\nUPDATE products SET basePrice = 5.00 WHERE categoryId = (SELECT id FROM categories WHERE slug = 'bickering-bros' LIMIT 1) AND basePrice != 5.00;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 524
+}

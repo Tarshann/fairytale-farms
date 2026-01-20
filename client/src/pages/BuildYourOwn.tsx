@@ -161,9 +161,15 @@ export default function BuildYourOwn() {
               <Package className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold">Build Your Own Box</h1>
+              <h1 className="text-3xl md:text-4xl font-bold">Create Your Own Valentine's Box</h1>
               <p className="text-muted-foreground">Create your perfect Valentine's treat collection</p>
             </div>
+          </div>
+          
+          <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-pink-800">
+              <span className="font-semibold">✨ Advance Order Required:</span> All Create Your Own boxes must be ordered in advance. This option is not available for same-day or last-minute orders.
+            </p>
           </div>
           
           {user && (

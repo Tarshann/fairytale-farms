@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { ChevronDown, ShoppingBag, Cake, Truck, CreditCard, HelpCircle, MessageCircle } from "lucide-react";
+import { ChevronDown, ShoppingBag, Cake, Truck, CreditCard, HelpCircle, MessageCircle, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -150,6 +150,44 @@ export default function FAQ() {
         {
           question: "What is your refund policy?",
           answer: "We stand behind the quality of our products. If there's an issue with your order, please contact us immediately and we'll make it right. Custom orders are non-refundable once production has begun."
+        }
+      ]
+    },
+    {
+      title: "Valentine's Day Boxes",
+      icon: <Heart className="h-5 w-5" />,
+      items: [
+        {
+          question: "Why are Valentine's items priced differently than regular menu items?",
+          answer: "Valentine's Day is a high-demand holiday that requires additional preparation, specialty packaging, and limited production windows. Pricing reflects the time, materials, and care required to create gift-ready items during this busy season."
+        },
+        {
+          question: "Why do pre-designed boxes cost more than individual items?",
+          answer: "Our Valentine's boxes are curated gift experiences, not just individual desserts grouped together. Box pricing includes specialty Valentine's packaging, design consistency, assembly and presentation, and holiday availability. Pre-designed boxes also offer the best overall value."
+        },
+        {
+          question: "Can I build a custom box for less than a pre-designed box?",
+          answer: "No. Create Your Own boxes have order minimums to ensure fairness and availability. Pre-designed Valentine's boxes are the best value at each tier."
+        },
+        {
+          question: "Can I substitute items in the Valentine's boxes?",
+          answer: "No. All Valentine's boxes are pre-designed and cannot be customized or substituted."
+        },
+        {
+          question: "Why do Create Your Own boxes require advance ordering?",
+          answer: "Create Your Own boxes require additional planning and prep time. For this reason, advance orders are required and same-day requests cannot be accommodated."
+        },
+        {
+          question: "Do you offer discounts or promotions on Valentine's boxes?",
+          answer: "Valentine's boxes are limited-quantity holiday items and are not eligible for discounts, promotions, or bundle deals. Academy members receive their standard discount."
+        },
+        {
+          question: "Are refunds available for Valentine's orders?",
+          answer: "All Valentine's Day orders are final sale due to the custom nature of holiday items."
+        },
+        {
+          question: "Which Valentine's box is the best value?",
+          answer: "Our Fairytale Romance Box ($100) offers the most variety and value, followed closely by the Sweetheart Box ($75). The Crush Box ($50) is perfect for smaller gifts or single recipients."
         }
       ]
     },

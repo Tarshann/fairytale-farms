@@ -87,9 +87,9 @@ export default function ValentinesCollection() {
       <section className="py-20 bg-white">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Curated Valentine's Tiers</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Valentine's Dessert Boxes</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Three perfectly crafted collections, each showcasing our signature treats and technology-enhanced creations.
+              Three perfectly crafted collections, each handmade with love. Limited quantities available — no substitutions.
             </p>
           </div>
           
@@ -277,6 +277,7 @@ Turn your favorite photo into an edible keepsake. Our artists lovingly transform
                   <p className="text-lg text-muted-foreground mb-6">
                     Create a personalized Valentine's treat box with exactly what you want. 
                     Start with a base box and add your favorite items with our live pricing calculator.
+                    <span className="block mt-2 text-sm font-medium text-pink-600">✨ All Create Your Own boxes must be ordered in advance. Not available for same-day orders.</span>
                   </p>
                   
                   <div className="flex flex-wrap gap-2 mb-6">
@@ -311,6 +312,60 @@ Turn your favorite photo into an edible keepsake. Our artists lovingly transform
               </div>
             </div>
           </Card>
+        </div>
+      </section>
+
+      {/* Valentine's Add-Ons Section */}
+      <section className="py-16 bg-gradient-to-br from-pink-50 to-red-50">
+        <div className="container">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <Badge className="mb-4 bg-white text-pink-600 border-pink-200 px-4 py-2">
+                <Heart className="w-4 h-4 mr-2 fill-current" />
+                Valentine's Add-Ons
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Add Extra Sweetness</h2>
+              <p className="text-muted-foreground">
+                Looking to add a little extra sweetness? Chocolate-covered strawberries are the only add-on 
+                available for Valentine's Day and <span className="font-semibold text-pink-600">must be purchased with a Valentine's box</span>.
+              </p>
+            </div>
+            
+            <Card className="border-2 border-pink-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-pink-100 to-red-100 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-5xl">🍓</div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Chocolate-Covered Strawberries</h3>
+                    <p className="text-muted-foreground">Hand-dipped in milk or white chocolate with Valentine's-themed details</p>
+                  </div>
+                </div>
+              </div>
+              
+              <CardContent className="p-6">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-white border border-pink-100 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                    <div className="text-3xl font-bold text-primary mb-1">$20</div>
+                    <div className="text-lg font-semibold">Half Dozen (6)</div>
+                    <p className="text-sm text-muted-foreground">Perfect for sharing</p>
+                  </div>
+                  <div className="bg-white border border-pink-100 rounded-lg p-4 text-center hover:shadow-md transition-shadow relative">
+                    <Badge className="absolute -top-2 -right-2 bg-pink-500 text-white border-0">Best Value</Badge>
+                    <div className="text-3xl font-bold text-primary mb-1">$35</div>
+                    <div className="text-lg font-semibold">Dozen (12)</div>
+                    <p className="text-sm text-muted-foreground">Save $5 vs. two half dozens</p>
+                  </div>
+                </div>
+                
+                <div className="bg-pink-50 rounded-lg p-4">
+                  <p className="text-sm text-pink-800">
+                    <span className="font-semibold">Note:</span> Flavors can be mix-and-matched between milk and white chocolate. 
+                    Add-ons will be included with your Valentine's box order.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 

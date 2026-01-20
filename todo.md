@@ -372,3 +372,19 @@
 - [x] Create FAQ page with common questions and answers
 - [x] Add FAQ link to footer navigation
 - [x] Include sections: Ordering, Custom Orders, Pickup/Delivery, Payment, Products
+
+
+## Valentine's Day 2026 Updates (from user notes)
+- [x] Rename Valentine's boxes: Sweet Beginnings → Crush ($50), Love Story → Sweetheart ($75), Fairytale Romance → Romance ($100)
+- [x] Update box contents to match new specifications
+- [x] Add "Create Your Own Valentine's Box" section with advance order notice
+- [x] Update individual item prices: Mini Cakes $5, Brownies $5, Chocolate Strawberries $3.50, Oreo Pucks $3.50, Chocolate Chip Cookies $2.50
+- [x] Update freeze-dried candy pricing: Mini $4, Small $6, Large $10
+- [x] Add Valentine's Pricing FAQ section to FAQ page (8 new questions)
+- [x] Add important notes about pre-designed boxes, limited quantities, final sale policy
+
+
+## Valentine's Add-Ons
+- [x] Add Valentine's Add-Ons section to Valentine's Collection page
+- [x] Display chocolate-covered strawberries add-on options (Half Dozen $20, Dozen $35)
+- [x] Add note that add-ons must be purchased with a Valentine's box
