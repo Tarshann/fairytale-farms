@@ -442,6 +442,14 @@ function cleanupExpiredSessions(now: number = Date.now()) {
   }
 }
 
+function cleanupExpiredRateLimits(now: number = Date.now()) {
+  for (const [rateKey, state] of rateLimitState.entries()) {
+    if (state.resetAt <= now) {
+      rateLimitState.delete(rateKey);
+    }
+  }
+}
+
 function getSessionEntry(sessionId: string): SessionImageEntry {
   const existing = sessionImages.get(sessionId);
   if (existing) {
@@ -528,6 +536,7 @@ export function checkChatRateLimit(action: ChatRateLimitAction, key: string): {
   allowed: boolean;
   retryAfterMs?: number;
 } {
+  cleanupExpiredRateLimits();
   const config = RATE_LIMITS[action];
   const now = Date.now();
   const rateKey = `${action}:${key}`;
