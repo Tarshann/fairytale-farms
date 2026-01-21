@@ -413,3 +413,8 @@
 - [x] Add customer testimonials section to homepage with 3 placeholder quotes
 - [ ] Add Academy promo code setup guidance
 - [ ] Test full checkout flow with cake flavor selection
+
+
+## Homepage Duplicate Sections Fix
+- [x] Review homepage for duplicate sections
+- [x] Remove duplicate testimonials section (kept the newer styled version)
