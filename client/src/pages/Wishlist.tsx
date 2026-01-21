@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { Heart, ShoppingCart, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -125,9 +126,9 @@ export default function Wishlist() {
                   <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
                     <Link href={`/products/${item.product.slug}`}>
                       <div className="aspect-square overflow-hidden bg-muted relative">
-                        {item.product.imageUrl ? (
+                        {getProductImageUrl(item.product) ? (
                           <img
-                            src={item.product.imageUrl}
+                            src={getProductImageUrl(item.product)}
                             alt={item.product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

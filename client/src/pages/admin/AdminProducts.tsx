@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
@@ -18,6 +21,17 @@ export default function AdminProducts() {
   });
   
   const utils = trpc.useUtils();
+  const updateProductMutation = trpc.products.update.useMutation({
+    onSuccess: () => {
+      utils.products.list.invalidate();
+      utils.products.listAdmin.invalidate();
+      utils.products.featured.invalidate();
+      toast.success("Product updated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update product");
+    },
+  });
   
   const toggleStockMutation = trpc.admin.toggleProductStock.useMutation({
     onSuccess: () => {
@@ -87,8 +101,8 @@ export default function AdminProducts() {
                   <CardContent className="p-6">
                     <div className="flex gap-4">
                       <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded bg-muted">
-                        {product.imageUrl && (
-                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        {getProductImageUrl(product) && (
+                          <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" />
                         )}
                       </div>
                       
@@ -100,9 +114,6 @@ export default function AdminProducts() {
                               {product.description}
                             </p>
                             <div className="flex items-center gap-4 mt-3">
-                              <span className="text-lg font-bold text-primary">
-                                ${parseFloat(product.basePrice).toFixed(2)}
-                              </span>
                               {product.isCustomizable && (
                                 <Badge variant="secondary">Customizable</Badge>
                               )}
@@ -127,6 +138,117 @@ export default function AdminProducts() {
                               disabled={toggleFeaturedMutation.isPending}
                             />
                             <span className="text-sm">Featured</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-border grid gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor={`price-${product.id}`}>Price</Label>
+                              <Input
+                                id={`price-${product.id}`}
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                defaultValue={parseFloat(product.basePrice).toFixed(2)}
+                                onBlur={(e) => {
+                                  const nextValue = e.target.value.trim();
+                                  const parsed = Number.parseFloat(nextValue);
+                                  if (Number.isNaN(parsed) || parsed < 0) {
+                                    toast.error("Please enter a valid price");
+                                    return;
+                                  }
+                                  if (parsed.toFixed(2) === parseFloat(product.basePrice).toFixed(2)) {
+                                    return;
+                                  }
+                                  updateProductMutation.mutate({
+                                    id: product.id,
+                                    basePrice: parsed.toFixed(2),
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`inventory-${product.id}`}>Inventory Cap</Label>
+                              <Input
+                                id={`inventory-${product.id}`}
+                                type="number"
+                                min="0"
+                                placeholder="Unlimited"
+                                defaultValue={product.inventoryCap ?? ""}
+                                onBlur={(e) => {
+                                  const nextValue = e.target.value.trim();
+                                  const parsed =
+                                    nextValue.length === 0 ? null : Number.parseInt(nextValue, 10);
+                                  if (parsed !== null && (Number.isNaN(parsed) || parsed < 0)) {
+                                    toast.error("Please enter a valid inventory cap");
+                                    return;
+                                  }
+                                  if ((product.inventoryCap ?? null) === parsed) {
+                                    return;
+                                  }
+                                  updateProductMutation.mutate({
+                                    id: product.id,
+                                    inventoryCap: parsed,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`available-from-${product.id}`}>Available From</Label>
+                              <Input
+                                id={`available-from-${product.id}`}
+                                type="date"
+                                defaultValue={product.availableFrom ? new Date(product.availableFrom).toISOString().split("T")[0] : ""}
+                                onBlur={(e) => {
+                                  const nextValue = e.target.value.trim();
+                                  const currentValue = product.availableFrom
+                                    ? new Date(product.availableFrom).toISOString().split("T")[0]
+                                    : "";
+                                  if (nextValue === currentValue) return;
+                                  updateProductMutation.mutate({
+                                    id: product.id,
+                                    availableFrom: nextValue ? new Date(nextValue).toISOString() : null,
+                                  });
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`available-until-${product.id}`}>Available Until</Label>
+                              <Input
+                                id={`available-until-${product.id}`}
+                                type="date"
+                                defaultValue={product.availableUntil ? new Date(product.availableUntil).toISOString().split("T")[0] : ""}
+                                onBlur={(e) => {
+                                  const nextValue = e.target.value.trim();
+                                  const currentValue = product.availableUntil
+                                    ? new Date(product.availableUntil).toISOString().split("T")[0]
+                                    : "";
+                                  if (nextValue === currentValue) return;
+                                  updateProductMutation.mutate({
+                                    id: product.id,
+                                    availableUntil: nextValue ? new Date(nextValue).toISOString() : null,
+                                  });
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`image-${product.id}`}>Image URL</Label>
+                            <Input
+                              id={`image-${product.id}`}
+                              type="text"
+                              defaultValue={product.imageUrl ?? ""}
+                              placeholder="/images/..."
+                              onBlur={(e) => {
+                                const nextValue = e.target.value.trim();
+                                if ((product.imageUrl ?? "") === nextValue) return;
+                                updateProductMutation.mutate({
+                                  id: product.id,
+                                  imageUrl: nextValue,
+                                });
+                              }}
+                            />
                           </div>
                         </div>
                       </div>

@@ -23,6 +23,16 @@ const imageUpdates = [
   
   // Custom Pucks product
   { slug: 'custom-pucks', imageUrl: '/images/valentine-oreos-decorated.jpg' },
+  
+  // Classic cookie products
+  { slug: 'chocolate-chip-cookies', imageUrl: '/images/chocolate-chip-cookie.jpg' },
+  { slug: 'pecan-sandies', imageUrl: '/images/meringue-cookie.jpg' },
+  { slug: 'chocolate-crinkle-cookies', imageUrl: '/images/chocolate-chip-cookie.jpg' },
+  
+  // Mini tin cakes
+  { slug: 'chocolate-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
+  { slug: 'vanilla-birthday-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
+  { slug: 'strawberry-crunch-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
 ];
 
 console.log('Updating product images...\n');

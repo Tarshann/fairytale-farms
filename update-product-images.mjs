@@ -15,15 +15,16 @@ const imageUpdates = [
   { slug: 'chocolate-strawberries-dozen', imageUrl: '/images/chocolate_strawberries.jpg' },
   { slug: 'chocolate-strawberries-half-dozen', imageUrl: '/images/chocolate_strawberries.jpg' },
   
-  // Cookies - use sugar cookie gallery images
+  // Cookies - use classic cookie stock images
+  { slug: 'chocolate-chip-cookies', imageUrl: '/images/chocolate-chip-cookie.jpg' },
   { slug: 'sprinkle-sugar-cookies', imageUrl: '/images/gallery/sugar-cookies-mickey-rainbow.jpeg' },
-  { slug: 'pecan-sandies', imageUrl: '/images/gallery/sugar-cookies-70th-birthday.jpeg' },
-  { slug: 'chocolate-crinkle-cookies', imageUrl: '/images/gallery/sugar-cookies-christmas-santa-baby.jpeg' },
+  { slug: 'pecan-sandies', imageUrl: '/images/meringue-cookie.jpg' },
+  { slug: 'chocolate-crinkle-cookies', imageUrl: '/images/chocolate-chip-cookie.jpg' },
   
-  // Mini Tin Cakes - use cake gallery images
-  { slug: 'vanilla-birthday-mini-tin-cake', imageUrl: '/images/gallery/cake-pink-heart-birthday.jpeg' },
-  { slug: 'strawberry-crunch-mini-tin-cake', imageUrl: '/images/gallery/cake-strawberry-one-birthday.jpeg' },
-  { slug: 'chocolate-mini-tin-cake', imageUrl: '/images/gallery/cake-golden-oreo.jpeg' },
+  // Mini Tin Cakes - use mini cake stock image
+  { slug: 'vanilla-birthday-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
+  { slug: 'strawberry-crunch-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
+  { slug: 'chocolate-mini-tin-cake', imageUrl: '/images/mini-cake.jpg' },
   
   // Build your own items that may be missing images
   { slug: 'meringue-cookie', imageUrl: '/images/gallery/sugar-cookies-wedding-bridal.jpeg' },

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
@@ -86,15 +87,15 @@ export default function Checkout() {
                       
                       return (
                         <div key={item.id} className="flex gap-4 pb-4 border-b border-border last:border-0 last:pb-0">
-                          <div className="w-16 h-16 flex-shrink-0 overflow-hidden rounded bg-muted">
-                            {item.product.imageUrl && (
-                              <img
-                                src={item.product.imageUrl}
-                                alt={item.product.name}
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                          </div>
+                        <div className="w-16 h-16 flex-shrink-0 overflow-hidden rounded bg-muted">
+                          {getProductImageUrl(item.product) && (
+                            <img
+                              src={getProductImageUrl(item.product)}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
                           
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-sm line-clamp-1">

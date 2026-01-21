@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
@@ -216,9 +217,9 @@ export default function ProductDetail() {
           
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium">
-              {product.imageUrl && (
+              {getProductImageUrl(product) && (
                 <img
-                  src={product.imageUrl}
+                  src={getProductImageUrl(product)}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />

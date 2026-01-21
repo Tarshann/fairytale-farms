@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings } from "lucide-react";
@@ -33,7 +34,7 @@ export default function AdminSettings() {
     return SITE_PAGES.reduce((acc, page) => ({ ...acc, [page.id]: true }), {});
   });
   
-  const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery(undefined, {
+  const { data: products, isLoading: productsLoading } = trpc.products.listAdmin.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === 'admin',
   });
   
@@ -42,6 +43,7 @@ export default function AdminSettings() {
   const updateProductMutation = trpc.products.update.useMutation({
     onSuccess: () => {
       utils.products.list.invalidate();
+      utils.products.listAdmin.invalidate();
       toast.success("Product updated successfully");
     },
     onError: (error) => {
@@ -155,8 +157,8 @@ export default function AdminSettings() {
                   {products.map((product) => (
                     <div key={product.id} className="flex items-center gap-4 p-4 border rounded-lg">
                       <div className="w-16 h-16 flex-shrink-0 overflow-hidden rounded bg-muted">
-                        {product.imageUrl && (
-                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                        {getProductImageUrl(product) && (
+                          <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
