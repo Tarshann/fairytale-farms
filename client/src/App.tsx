@@ -42,6 +42,7 @@ function Router() {
       <Route path={"/products/:slug"} component={ProductDetail} />
       <Route path={"/cart"} component={Cart} />
       <Route path={"/checkout"} component={Checkout} />
+      <Route path={"/order-confirmation"} component={OrderConfirmation} />
       <Route path={"/order-confirmation/:orderNumber"} component={OrderConfirmation} />
       <Route path={"/my-orders"} component={MyOrders} />
       <Route path={"/orders/:id"} component={OrderDetail} />

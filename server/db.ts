@@ -75,12 +75,18 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    } else if (isAdminEmail(user.email)) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+    } else {
+      const normalizedEmail =
+        typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+      const isOwner =
+        (user.openId && user.openId === ENV.ownerOpenId) ||
+        (ENV.ownerEmail && normalizedEmail === ENV.ownerEmail) ||
+        (normalizedEmail && ENV.adminEmails.includes(normalizedEmail));
+
+      if (isOwner) {
+        values.role = "admin";
+        updateSet.role = "admin";
+      }
     }
 
     if (!values.lastSignedIn) {
@@ -298,6 +304,17 @@ export async function getOrderByNumber(orderNumber: string) {
   const db = await getDb();
   if (!db) return undefined;
   const result = await db.select().from(orders).where(eq(orders.orderNumber, orderNumber)).limit(1);
+  return result[0];
+}
+
+export async function getOrderByPaymentIntentId(paymentIntentId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.stripePaymentIntentId, paymentIntentId))
+    .limit(1);
   return result[0];
 }
 

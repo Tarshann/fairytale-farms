@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import type { Request } from "express";
 import { z } from "zod";
 import * as db from "./db";
 import * as chatbot from "./chatbot";
@@ -14,6 +15,53 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+const getClientIp = (req: Request): string => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+    return forwardedFor[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || "unknown";
+};
+
+const buildChatRateKey = (req: Request, sessionId: string) =>
+  `${getClientIp(req)}:${sessionId}`;
+
+const enforceChatRateLimit = (
+  action: "sendMessage" | "uploadImage",
+  req: Request,
+  sessionId: string
+) => {
+  const { allowed, retryAfterMs } = chatbot.checkChatRateLimit(
+    action,
+    buildChatRateKey(req, sessionId)
+  );
+
+  if (!allowed) {
+    const retryAfterSeconds = retryAfterMs
+      ? Math.max(1, Math.ceil(retryAfterMs / 1000))
+      : 60;
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: `Too many requests. Try again in ${retryAfterSeconds}s.`,
+    });
+  }
+};
+
+const assertValidChatImages = (imageDataList: string[]) => {
+  for (const imageData of imageDataList) {
+    const validation = chatbot.validateImagePayload(imageData);
+    if (!validation.ok) {
+      throw new TRPCError({
+        code: validation.code,
+        message: validation.message,
+      });
+    }
+  }
+};
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -58,6 +106,10 @@ export const appRouter = router({
   products: router({
     list: publicProcedure.query(async () => {
       return await db.getAllProducts();
+    }),
+
+    listAdmin: adminProcedure.query(async () => {
+      return await db.getAllProductsAdmin();
     }),
     
     listByCategory: publicProcedure
@@ -200,17 +252,28 @@ export const appRouter = router({
         }
         
         // Create line items for Stripe
-        const lineItems = cartItemsList.map((item) => ({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: item.product?.name || 'Product',
-              description: item.customizationNotes || undefined,
+        const lineItems = cartItemsList.map((item) => {
+          const metadata: Record<string, string> = {};
+          if (item.product?.id) {
+            metadata.productId = item.product.id.toString();
+          }
+          if (item.customizationNotes) {
+            metadata.customizationNotes = item.customizationNotes;
+          }
+
+          return {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: item.product?.name || 'Product',
+                description: item.customizationNotes || undefined,
+                ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
+              },
+              unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100),
             },
-            unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100),
-          },
-          quantity: item.quantity,
-        }));
+            quantity: item.quantity,
+          };
+        });
         
         // Get origin from request headers
         const origin = ctx.req.headers.origin || 'http://localhost:3000';
@@ -220,7 +283,7 @@ export const appRouter = router({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${origin}/order-confirmation/{CHECKOUT_SESSION_ID}`,
+          success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/cart`,
           client_reference_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || undefined,
@@ -312,6 +375,47 @@ export const appRouter = router({
         const items = await db.getOrderItems(order.id);
         return { ...order, items };
       }),
+
+    getByCheckoutSession: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const Stripe = (await import('stripe')).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: '2025-12-15.clover',
+        });
+
+        const session = await stripe.checkout.sessions.retrieve(input.sessionId);
+
+        const sessionUserId = session.client_reference_id
+          ? parseInt(session.client_reference_id)
+          : session.metadata?.user_id
+          ? parseInt(session.metadata.user_id)
+          : null;
+
+        if (sessionUserId && sessionUserId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
+
+        const paymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id;
+
+        if (!paymentIntentId) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Order not found' });
+        }
+
+        const order = await db.getOrderByPaymentIntentId(paymentIntentId);
+        if (!order) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Order not found' });
+        }
+        if (order.userId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
+
+        const items = await db.getOrderItems(order.id);
+        return { ...order, items };
+      }),
     
     myOrders: protectedProcedure.query(async ({ ctx }) => {
       return await db.getOrdersByUser(ctx.user.id);
@@ -346,7 +450,7 @@ export const appRouter = router({
   // ============= ADMIN ROUTES =============
   admin: router({    
     stats: adminProcedure.query(async () => {
-      const products = await db.getAllProducts();
+      const products = await db.getAllProductsAdmin();
       const orders = await db.getAllOrders();
       const contacts = await db.getAllContactSubmissions();
       
@@ -561,17 +665,28 @@ export const appRouter = router({
         const chargeAmount = hasDepositItem ? totalAfterDiscount * 0.5 : totalAfterDiscount;
         
         // Create line items
-        const lineItems = cartItems.map((item) => ({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: item.product?.name || 'Product',
-              description: item.customizationNotes || undefined,
+        const lineItems = cartItems.map((item) => {
+          const metadata: Record<string, string> = {};
+          if (item.product?.id) {
+            metadata.productId = item.product.id.toString();
+          }
+          if (item.customizationNotes) {
+            metadata.customizationNotes = item.customizationNotes;
+          }
+
+          return {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: item.product?.name || 'Product',
+                description: item.customizationNotes || undefined,
+                ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
+              },
+              unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100 * (hasDepositItem ? 0.5 : 1)),
             },
-            unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100 * (hasDepositItem ? 0.5 : 1)),
-          },
-          quantity: item.quantity,
-        }));
+            quantity: item.quantity,
+          };
+        });
         
         // Add discount line if applicable
         if (discountAmount > 0) {
@@ -594,7 +709,7 @@ export const appRouter = router({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${origin}/order-confirmation/{CHECKOUT_SESSION_ID}`,
+          success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/cart`,
           client_reference_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || undefined,
@@ -706,25 +821,52 @@ export const appRouter = router({
   chatbot: router({
     sendMessage: publicProcedure
       .input(z.object({
-        sessionId: z.string(),
-        message: z.string(),
+        sessionId: z.string().min(1).max(chatbot.CHAT_LIMITS.maxSessionIdLength),
+        message: z.string().min(1).max(chatbot.CHAT_LIMITS.maxMessageLength),
         conversationHistory: z.array(z.object({
           role: z.enum(["user", "assistant"]),
-          content: z.string(),
-        })).optional(),
-        imageUrls: z.array(z.string()).optional(),
+          content: z.string().min(1).max(chatbot.CHAT_LIMITS.maxMessageLength),
+        })).max(chatbot.CHAT_LIMITS.maxHistoryMessages).optional(),
+        imageUrls: z.array(z.string()).max(chatbot.CHAT_LIMITS.maxImagesPerMessage).optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        enforceChatRateLimit("sendMessage", ctx.req, input.sessionId);
+        if (input.imageUrls && input.imageUrls.length > 0) {
+          assertValidChatImages(input.imageUrls);
+          const existingImages = chatbot.getSessionImages(input.sessionId);
+          const combinedImages = new Set([...existingImages, ...input.imageUrls]);
+          if (combinedImages.size > chatbot.CHAT_LIMITS.maxImagesPerSession) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `You can attach up to ${chatbot.CHAT_LIMITS.maxImagesPerSession} images per session.`,
+            });
+          }
+        }
         return await chatbot.processChat(input);
       }),
 
     uploadImage: publicProcedure
       .input(z.object({
-        sessionId: z.string(),
-        imageData: z.string(),
-        fileName: z.string(),
+        sessionId: z.string().min(1).max(chatbot.CHAT_LIMITS.maxSessionIdLength),
+        imageData: z.string().min(1),
+        fileName: z.string().min(1).max(200),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        enforceChatRateLimit("uploadImage", ctx.req, input.sessionId);
+        const validation = chatbot.validateImagePayload(input.imageData);
+        if (!validation.ok) {
+          throw new TRPCError({
+            code: validation.code,
+            message: validation.message,
+          });
+        }
+        const existingImages = chatbot.getSessionImages(input.sessionId);
+        if (existingImages.length >= chatbot.CHAT_LIMITS.maxImagesPerSession) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You can upload up to ${chatbot.CHAT_LIMITS.maxImagesPerSession} images per session.`,
+          });
+        }
         return await chatbot.uploadImage(input.sessionId, input.imageData, input.fileName);
       }),
 
