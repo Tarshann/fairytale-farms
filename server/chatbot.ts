@@ -101,6 +101,30 @@ Includes vanilla or chocolate. Custom flavors, fillings, and detailed designs ma
 
 When the customer has provided all necessary information (item type, event details, quantity, contact info), summarize the order and indicate you're submitting it for follow-up.`;
 
+export const CHAT_LIMITS = {
+  maxSessionIdLength: 100,
+  maxMessageLength: 2000,
+  maxHistoryMessages: 20,
+  maxImagesPerSession: 5,
+  maxImagesPerMessage: 5,
+  maxImageBytes: 5 * 1024 * 1024,
+  sessionTtlMs: 1000 * 60 * 60,
+};
+
+type SessionImageEntry = { images: string[]; updatedAt: number };
+const sessionImages: Map<string, SessionImageEntry> = new Map();
+
+type ChatRateLimitAction = "sendMessage" | "uploadImage";
+type RateLimitState = { count: number; resetAt: number };
+
+const RATE_LIMITS: Record<ChatRateLimitAction, { limit: number; windowMs: number }> = {
+  sendMessage: { limit: 12, windowMs: 60_000 },
+  uploadImage: { limit: 5, windowMs: 60_000 },
+};
+
+const rateLimitState: Map<string, RateLimitState> = new Map();
+const IMAGE_DATA_URL_PATTERN = /^data:(image\/(?:jpeg|png));base64,(.+)$/i;
+
 export interface ChatRequest {
   sessionId: string;
   message: string;
@@ -126,9 +150,10 @@ export async function processChat(request: ChatRequest): Promise<ChatResponse> {
   const { sessionId, message, conversationHistory = [], imageUrls = [] } = request;
   
   // Store images for this session if provided
+  cleanupExpiredSessions();
+  touchSession(sessionId);
   if (imageUrls.length > 0) {
-    const existingImages = sessionImages.get(sessionId) || [];
-    sessionImages.set(sessionId, [...existingImages, ...imageUrls]);
+    mergeSessionImages(sessionId, imageUrls);
   }
 
   // Store user message
@@ -142,8 +167,12 @@ export async function processChat(request: ChatRequest): Promise<ChatResponse> {
   });
 
   // Build messages array for Claude
+  const trimmedHistory = conversationHistory.slice(
+    -CHAT_LIMITS.maxHistoryMessages
+  );
+
   const messages: Array<{ role: "user" | "assistant"; content: string }> = [
-    ...conversationHistory,
+    ...trimmedHistory,
     { role: "user", content: message },
   ];
 
@@ -262,7 +291,7 @@ Only return the JSON object, no other text.`,
     if (!db) throw new Error("Database not available");
     
     // Get any images attached during this session
-    const attachedImages = sessionImages.get(sessionId) || [];
+    const attachedImages = getSessionImages(sessionId);
     
     await db.insert(customOrderInquiries).values({
       inquiryNumber,
@@ -281,6 +310,8 @@ Only return the JSON object, no other text.`,
       imageAttachments: attachedImages.length > 0 ? JSON.stringify(attachedImages) : null,
       status: "new",
     });
+
+    clearSessionImages(sessionId);
 
     // Update chat messages to link to inquiry
     const [inquiry] = await db
@@ -403,26 +434,136 @@ export async function updateInquiryStatus(
 }
 
 
-// Store uploaded image for a session
-const sessionImages: Map<string, string[]> = new Map();
+function cleanupExpiredSessions(now: number = Date.now()) {
+  for (const [sessionId, entry] of sessionImages.entries()) {
+    if (now - entry.updatedAt > CHAT_LIMITS.sessionTtlMs) {
+      sessionImages.delete(sessionId);
+    }
+  }
+}
+
+function getSessionEntry(sessionId: string): SessionImageEntry {
+  const existing = sessionImages.get(sessionId);
+  if (existing) {
+    existing.updatedAt = Date.now();
+    return existing;
+  }
+  const entry = { images: [], updatedAt: Date.now() };
+  sessionImages.set(sessionId, entry);
+  return entry;
+}
+
+function touchSession(sessionId: string) {
+  getSessionEntry(sessionId);
+}
+
+export function mergeSessionImages(sessionId: string, imageUrls: string[]) {
+  cleanupExpiredSessions();
+  const entry = getSessionEntry(sessionId);
+  const merged = new Set(entry.images);
+  imageUrls.forEach((url) => merged.add(url));
+  if (merged.size > CHAT_LIMITS.maxImagesPerSession) {
+    return false;
+  }
+  entry.images = Array.from(merged);
+  entry.updatedAt = Date.now();
+  return true;
+}
+
+export function clearSessionImages(sessionId: string) {
+  sessionImages.delete(sessionId);
+}
+
+export function parseImageData(imageData: string): {
+  mimeType: string;
+  byteLength: number;
+} | null {
+  const match = imageData.match(IMAGE_DATA_URL_PATTERN);
+  if (!match) return null;
+  const mimeType = match[1].toLowerCase();
+  const base64Payload = match[2];
+  if (!base64Payload) return null;
+  const padding = base64Payload.endsWith("==")
+    ? 2
+    : base64Payload.endsWith("=")
+    ? 1
+    : 0;
+  const byteLength = Math.max(
+    0,
+    Math.floor((base64Payload.length * 3) / 4) - padding
+  );
+  return { mimeType, byteLength };
+}
+
+export function validateImagePayload(imageData: string): {
+  ok: true;
+  mimeType: string;
+  byteLength: number;
+} | {
+  ok: false;
+  code: "BAD_REQUEST" | "PAYLOAD_TOO_LARGE";
+  message: string;
+} {
+  const parsed = parseImageData(imageData);
+  if (!parsed) {
+    return {
+      ok: false,
+      code: "BAD_REQUEST",
+      message: "Invalid image data. Please upload a JPG or PNG file.",
+    };
+  }
+
+  if (parsed.byteLength > CHAT_LIMITS.maxImageBytes) {
+    return {
+      ok: false,
+      code: "PAYLOAD_TOO_LARGE",
+      message: `Image must be smaller than ${Math.floor(CHAT_LIMITS.maxImageBytes / (1024 * 1024))}MB.`,
+    };
+  }
+
+  return { ok: true, mimeType: parsed.mimeType, byteLength: parsed.byteLength };
+}
+
+export function checkChatRateLimit(action: ChatRateLimitAction, key: string): {
+  allowed: boolean;
+  retryAfterMs?: number;
+} {
+  const config = RATE_LIMITS[action];
+  const now = Date.now();
+  const rateKey = `${action}:${key}`;
+  const current = rateLimitState.get(rateKey);
+
+  if (!current || current.resetAt <= now) {
+    rateLimitState.set(rateKey, { count: 1, resetAt: now + config.windowMs });
+    return { allowed: true };
+  }
+
+  if (current.count >= config.limit) {
+    return { allowed: false, retryAfterMs: current.resetAt - now };
+  }
+
+  current.count += 1;
+  return { allowed: true };
+}
 
 export async function uploadImage(
   sessionId: string,
   imageData: string,
   fileName: string
 ): Promise<{ url: string }> {
-  // Store the base64 image data directly for now
-  // In production, you'd upload to S3 and return the URL
-  const images = sessionImages.get(sessionId) || [];
-  images.push(imageData);
-  sessionImages.set(sessionId, images);
+  cleanupExpiredSessions();
+  const added = mergeSessionImages(sessionId, [imageData]);
+  if (!added) {
+    throw new Error("Image limit reached for this session");
+  }
   
   return { url: imageData };
 }
 
 // Get images for a session
 export function getSessionImages(sessionId: string): string[] {
-  return sessionImages.get(sessionId) || [];
+  cleanupExpiredSessions();
+  return sessionImages.get(sessionId)?.images ?? [];
 }
 
 // Store images with an inquiry

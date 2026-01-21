@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
+import type { Request } from "express";
 import { z } from "zod";
 import * as db from "./db";
 import * as chatbot from "./chatbot";
@@ -14,6 +15,53 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   }
   return next({ ctx });
 });
+
+const getClientIp = (req: Request): string => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+    return forwardedFor[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || "unknown";
+};
+
+const buildChatRateKey = (req: Request, sessionId: string) =>
+  `${getClientIp(req)}:${sessionId}`;
+
+const enforceChatRateLimit = (
+  action: "sendMessage" | "uploadImage",
+  req: Request,
+  sessionId: string
+) => {
+  const { allowed, retryAfterMs } = chatbot.checkChatRateLimit(
+    action,
+    buildChatRateKey(req, sessionId)
+  );
+
+  if (!allowed) {
+    const retryAfterSeconds = retryAfterMs
+      ? Math.max(1, Math.ceil(retryAfterMs / 1000))
+      : 60;
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: `Too many requests. Try again in ${retryAfterSeconds}s.`,
+    });
+  }
+};
+
+const assertValidChatImages = (imageDataList: string[]) => {
+  for (const imageData of imageDataList) {
+    const validation = chatbot.validateImagePayload(imageData);
+    if (!validation.ok) {
+      throw new TRPCError({
+        code: validation.code,
+        message: validation.message,
+      });
+    }
+  }
+};
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -773,25 +821,52 @@ export const appRouter = router({
   chatbot: router({
     sendMessage: publicProcedure
       .input(z.object({
-        sessionId: z.string(),
-        message: z.string(),
+        sessionId: z.string().min(1).max(chatbot.CHAT_LIMITS.maxSessionIdLength),
+        message: z.string().min(1).max(chatbot.CHAT_LIMITS.maxMessageLength),
         conversationHistory: z.array(z.object({
           role: z.enum(["user", "assistant"]),
-          content: z.string(),
-        })).optional(),
-        imageUrls: z.array(z.string()).optional(),
+          content: z.string().min(1).max(chatbot.CHAT_LIMITS.maxMessageLength),
+        })).max(chatbot.CHAT_LIMITS.maxHistoryMessages).optional(),
+        imageUrls: z.array(z.string()).max(chatbot.CHAT_LIMITS.maxImagesPerMessage).optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        enforceChatRateLimit("sendMessage", ctx.req, input.sessionId);
+        if (input.imageUrls && input.imageUrls.length > 0) {
+          assertValidChatImages(input.imageUrls);
+          const existingImages = chatbot.getSessionImages(input.sessionId);
+          const combinedImages = new Set([...existingImages, ...input.imageUrls]);
+          if (combinedImages.size > chatbot.CHAT_LIMITS.maxImagesPerSession) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `You can attach up to ${chatbot.CHAT_LIMITS.maxImagesPerSession} images per session.`,
+            });
+          }
+        }
         return await chatbot.processChat(input);
       }),
 
     uploadImage: publicProcedure
       .input(z.object({
-        sessionId: z.string(),
-        imageData: z.string(),
-        fileName: z.string(),
+        sessionId: z.string().min(1).max(chatbot.CHAT_LIMITS.maxSessionIdLength),
+        imageData: z.string().min(1),
+        fileName: z.string().min(1).max(200),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        enforceChatRateLimit("uploadImage", ctx.req, input.sessionId);
+        const validation = chatbot.validateImagePayload(input.imageData);
+        if (!validation.ok) {
+          throw new TRPCError({
+            code: validation.code,
+            message: validation.message,
+          });
+        }
+        const existingImages = chatbot.getSessionImages(input.sessionId);
+        if (existingImages.length >= chatbot.CHAT_LIMITS.maxImagesPerSession) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You can upload up to ${chatbot.CHAT_LIMITS.maxImagesPerSession} images per session.`,
+          });
+        }
         return await chatbot.uploadImage(input.sessionId, input.imageData, input.fileName);
       }),
 
