@@ -13,8 +13,11 @@ import {
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
-// ENV.adminEmails is already an array of trimmed, lowercased strings
-const ADMIN_EMAILS = ENV.adminEmails.filter(Boolean);
+// Normalize all admin emails: trim and lowercase to ensure consistency
+// (DEFAULT_ADMIN_EMAILS may not be normalized, while parseAdminEmails() results are)
+const ADMIN_EMAILS = ENV.adminEmails
+  .map(email => email.trim().toLowerCase())
+  .filter(Boolean);
 
 export const isAdminEmail = (email: string | null | undefined) => {
   if (!email) return false;
