@@ -154,7 +154,7 @@ export default function Wishlist() {
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-primary">
-                          ${(parseInt(item.product.basePrice) / 100).toFixed(2)}
+                          ${parseFloat(item.product.basePrice).toFixed(2)}
                         </span>
                         <div className="flex gap-2">
                           <Button
