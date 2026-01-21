@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
@@ -125,9 +126,9 @@ export default function Cart() {
                       <CardContent className="p-6">
                         <div className="flex gap-4">
                           <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded bg-muted">
-                            {item.product.imageUrl && (
+                            {getProductImageUrl(item.product) && (
                               <img
-                                src={item.product.imageUrl}
+                                src={getProductImageUrl(item.product)}
                                 alt={item.product.name}
                                 className="w-full h-full object-cover"
                               />

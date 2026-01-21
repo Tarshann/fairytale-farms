@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -49,6 +50,8 @@ function QuickViewModal({
   });
 
   const placeholder = categoryPlaceholders[categoryName?.toLowerCase() || ""] || { emoji: "🧁", gradient: "from-pastel-pink/30 to-pastel-lavender/30" };
+  const imageUrl = getProductImageUrl(product);
+  const imageUrl = getProductImageUrl(product);
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -67,9 +70,9 @@ function QuickViewModal({
         <div className="grid md:grid-cols-2 gap-6">
           {/* Product Image */}
           <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-            {product.imageUrl ? (
+            {imageUrl ? (
               <img
-                src={product.imageUrl}
+                src={imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -156,9 +159,9 @@ function ProductCard({
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full relative">
       <Link href={`/products/${product.slug}`}>
         <div className="aspect-square overflow-hidden bg-muted relative">
-          {product.imageUrl ? (
+          {imageUrl ? (
             <img
-              src={product.imageUrl}
+              src={imageUrl}
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -238,13 +241,6 @@ function CategorySection({
               <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
             )}
           </div>
-          <Link href={`/products?category=${category.id}`}>
-            <a>
-              <Button variant="ghost" size="sm" className="text-primary">
-                View All <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </a>
-          </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {products.slice(0, 6).map((product) => (
@@ -264,8 +260,13 @@ function CategorySection({
 }
 
 export default function Products() {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
+  const [location, setLocation] = useLocation();
+  const searchValue = location.includes("?")
+    ? location.split("?")[1]
+    : typeof window !== "undefined"
+      ? window.location.search.slice(1)
+      : "";
+  const searchParams = new URLSearchParams(searchValue);
   const categoryParam = searchParams.get('category');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     categoryParam ? parseInt(categoryParam) : null
@@ -316,6 +317,13 @@ export default function Products() {
       setSelectedCategory(null);
     }
   }, [categoryParam]);
+
+  const handleCategorySelect = (categoryId?: number) => {
+    const nextCategory = categoryId ?? null;
+    setSelectedCategory(nextCategory);
+    setShowCategories(false);
+    setLocation(nextCategory ? `/products?category=${nextCategory}` : "/products");
+  };
 
   // Filter and search products
   const filteredAndSearchedProducts = useMemo(() => {
@@ -534,38 +542,38 @@ export default function Products() {
                   <ChevronRight className={`h-4 w-4 transition-transform ${showCategories ? 'rotate-90' : ''}`} />
                 </Button>
                 {selectedCategory !== null && (
-                  <Link href="/products">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      <X className="h-4 w-4 mr-1" />
-                      Clear
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => handleCategorySelect(undefined)}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear
+                  </Button>
                 )}
               </div>
               
               {showCategories && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-border rounded-lg shadow-lg p-2 z-30 min-w-[200px] max-h-[300px] overflow-y-auto">
-                  <Link href="/products">
+                  <Button
+                    variant={selectedCategory === null ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start rounded-md mb-1"
+                    onClick={() => handleCategorySelect(undefined)}
+                  >
+                    All Treats
+                  </Button>
+                  {categories?.map((category) => (
                     <Button
-                      variant={selectedCategory === null ? "default" : "ghost"}
+                      key={category.id}
+                      variant={selectedCategory === category.id ? "default" : "ghost"}
                       size="sm"
                       className="w-full justify-start rounded-md mb-1"
-                      onClick={() => setShowCategories(false)}
+                      onClick={() => handleCategorySelect(category.id)}
                     >
-                      All Treats
+                      {category.name}
                     </Button>
-                  </Link>
-                  {categories?.map((category) => (
-                    <Link key={category.id} href={`/products?category=${category.id}`}>
-                      <Button
-                        variant={selectedCategory === category.id ? "default" : "ghost"}
-                        size="sm"
-                        className="w-full justify-start rounded-md mb-1"
-                        onClick={() => setShowCategories(false)}
-                      >
-                        {category.name}
-                      </Button>
-                    </Link>
                   ))}
                 </div>
               )}
