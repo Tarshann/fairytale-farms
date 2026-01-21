@@ -239,9 +239,11 @@ function CategorySection({
             )}
           </div>
           <Link href={`/products?category=${category.id}`}>
-            <Button variant="ghost" size="sm" className="text-primary">
-              View All <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
+            <a>
+              <Button variant="ghost" size="sm" className="text-primary">
+                View All <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </a>
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -274,6 +276,7 @@ export default function Products() {
   const [sortBy, setSortBy] = useState("name");
   const [priceRange, setPriceRange] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   
   // Quick view state
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
@@ -515,28 +518,57 @@ export default function Products() {
               </div>
             )}
             
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Link href="/products">
+            {/* Category Filter Dropdown */}
+            <div className="relative">
+              <div className="flex items-center gap-2 justify-center">
                 <Button
-                  variant={selectedCategory === null ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
-                  className="rounded-full"
+                  onClick={() => setShowCategories(!showCategories)}
+                  className="rounded-full gap-2"
                 >
-                  All Treats
+                  {selectedCategory !== null 
+                    ? categories?.find(c => c.id === selectedCategory)?.name || "Category"
+                    : "All Treats"
+                  }
+                  <ChevronRight className={`h-4 w-4 transition-transform ${showCategories ? 'rotate-90' : ''}`} />
                 </Button>
-              </Link>
-              {categories?.map((category) => (
-                <Link key={category.id} href={`/products?category=${category.id}`}>
-                  <Button
-                    variant={selectedCategory === category.id ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-full"
-                  >
-                    {category.name}
-                  </Button>
-                </Link>
-              ))}
+                {selectedCategory !== null && (
+                  <Link href="/products">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                  </Link>
+                )}
+              </div>
+              
+              {showCategories && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white border border-border rounded-lg shadow-lg p-2 z-30 min-w-[200px] max-h-[300px] overflow-y-auto">
+                  <Link href="/products">
+                    <Button
+                      variant={selectedCategory === null ? "default" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start rounded-md mb-1"
+                      onClick={() => setShowCategories(false)}
+                    >
+                      All Treats
+                    </Button>
+                  </Link>
+                  {categories?.map((category) => (
+                    <Link key={category.id} href={`/products?category=${category.id}`}>
+                      <Button
+                        variant={selectedCategory === category.id ? "default" : "ghost"}
+                        size="sm"
+                        className="w-full justify-start rounded-md mb-1"
+                        onClick={() => setShowCategories(false)}
+                      >
+                        {category.name}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>

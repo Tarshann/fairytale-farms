@@ -351,6 +351,81 @@ export default function Home() {
           </div>
         </section>
 
+        {/* CUSTOMER TESTIMONIALS */}
+        <section className="py-16 bg-white">
+          <div className="container">
+            <div className="max-w-4xl mx-auto text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
+              <p className="text-gray-600">Real stories from real celebrations</p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {/* Testimonial 1 */}
+              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
+                <div className="absolute top-4 left-4 text-pink-200">
+                  <Quote className="w-10 h-10" />
+                </div>
+                <CardContent className="pt-8 space-y-4">
+                  <div className="flex gap-1 justify-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 italic">
+                    "The custom birthday cake for my daughter was absolutely stunning! The attention to detail was incredible, and it tasted even better than it looked. Everyone at the party was asking where we got it."
+                  </p>
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900">Sarah M.</p>
+                    <p className="text-sm text-gray-500">Birthday Cake Order</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Testimonial 2 */}
+              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
+                <div className="absolute top-4 left-4 text-pink-200">
+                  <Quote className="w-10 h-10" />
+                </div>
+                <CardContent className="pt-8 space-y-4">
+                  <div className="flex gap-1 justify-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 italic">
+                    "We ordered custom sugar cookies for our wedding, and they were a huge hit! Beautiful designs, delicious flavor, and perfectly packaged. Fairytale Farms made our special day even sweeter."
+                  </p>
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900">Jessica & Tom</p>
+                    <p className="text-sm text-gray-500">Wedding Cookie Order</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Testimonial 3 */}
+              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
+                <div className="absolute top-4 left-4 text-pink-200">
+                  <Quote className="w-10 h-10" />
+                </div>
+                <CardContent className="pt-8 space-y-4">
+                  <div className="flex gap-1 justify-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 italic">
+                    "The chocolate chip cookies are my family's favorite! Fresh, perfectly baked, and always consistent. We order them for every gathering now. Highly recommend!"
+                  </p>
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900">Michael R.</p>
+                    <p className="text-sm text-gray-500">Regular Customer</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
         {/* ABOUT SECTION */}
         <section className="py-16 bg-gray-50">
           <div className="container">

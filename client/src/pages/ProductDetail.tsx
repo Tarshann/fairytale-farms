@@ -122,6 +122,85 @@ export default function ProductDetail() {
     );
   }
   
+  // Redirect custom cakes to inquiry/chatbot instead of showing product detail
+  const isCustomCake = product.categoryId === 1; // Customized Cakes category
+  if (isCustomCake) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <main className="flex-1 py-12">
+          <div className="container max-w-2xl">
+            <Link href="/products">
+              <Button variant="ghost" className="mb-6">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Products
+              </Button>
+            </Link>
+            
+            <Card className="p-8">
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-pastel-pink to-pastel-lavender rounded-full flex items-center justify-center">
+                  <span className="text-4xl">🎂</span>
+                </div>
+                
+                <div>
+                  <h1 className="text-3xl font-bold mb-3 font-display">{product.name}</h1>
+                  <p className="text-muted-foreground text-lg">
+                    {product.description}
+                  </p>
+                </div>
+                
+                <div className="bg-pastel-lavender/10 p-6 rounded-lg">
+                  <h2 className="font-semibold text-lg mb-2">Custom Cake Ordering</h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Every custom cake is unique and made to order. To get started, please use our AI chat assistant to discuss your vision, preferences, and requirements.
+                  </p>
+                  <div className="text-left space-y-2 text-sm">
+                    <p className="flex items-start gap-2">
+                      <span className="text-primary">✓</span>
+                      <span>Share your cake design ideas and theme</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-primary">✓</span>
+                      <span>Choose flavors, colors, and decorations</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-primary">✓</span>
+                      <span>Get a personalized quote and timeline</span>
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Button 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => {
+                      // Open chatbot
+                      const chatButton = document.querySelector('[data-chatbot-trigger]') as HTMLElement;
+                      if (chatButton) {
+                        chatButton.click();
+                      } else {
+                        toast.info("Please use the chat button in the bottom right to start your custom cake inquiry");
+                      }
+                    }}
+                  >
+                    Start Custom Cake Inquiry
+                  </Button>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    Or click the chat icon in the bottom right corner
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />

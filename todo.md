@@ -404,3 +404,12 @@
 ## Valentine's Box & Build Your Own Updates
 - [x] Add cake flavor dropdown selector for Valentine's boxes (Crush, Sweetheart, Romance)
 - [x] Remove $15 base price from Build Your Own - price should be sum of selected items only
+
+
+## Bug Fixes & New Features (Jan 20, 2026)
+- [x] Fix navigation dropdown - converted category pills to collapsible dropdown
+- [x] Fix "View All" button on products page - wrapped with proper Link anchor
+- [x] Custom cake redirects to ordering/inquiry page instead of product detail
+- [x] Add customer testimonials section to homepage with 3 placeholder quotes
+- [ ] Add Academy promo code setup guidance
+- [ ] Test full checkout flow with cake flavor selection
