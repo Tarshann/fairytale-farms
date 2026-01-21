@@ -177,10 +177,26 @@ export const appRouter = router({
         inStock: z.boolean().optional(),
         featured: z.boolean().optional(),
         displayOrder: z.number().optional(),
+        inventoryCap: z.number().nullable().optional(),
+        inventorySold: z.number().optional(),
+        availableFrom: z.string().nullable().optional(),
+        availableUntil: z.string().nullable().optional(),
       }))
       .mutation(async ({ input }) => {
-        const { id, ...updates } = input;
-        await db.updateProduct(id, updates);
+        const { id, availableFrom, availableUntil, ...updates } = input;
+        const resolvedUpdates = { ...updates } as typeof updates & {
+          availableFrom?: Date | null;
+          availableUntil?: Date | null;
+        };
+
+        if (availableFrom !== undefined) {
+          resolvedUpdates.availableFrom = availableFrom ? new Date(availableFrom) : null;
+        }
+        if (availableUntil !== undefined) {
+          resolvedUpdates.availableUntil = availableUntil ? new Date(availableUntil) : null;
+        }
+
+        await db.updateProduct(id, resolvedUpdates);
         return { success: true };
       }),
     
