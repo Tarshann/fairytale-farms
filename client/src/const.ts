@@ -4,6 +4,20 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 export const getLoginUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
+  const authMode = import.meta.env.VITE_AUTH_MODE;
+  const devLoginEmail = import.meta.env.VITE_DEV_LOGIN_EMAIL;
+
+  if (authMode === "dev" || !oauthPortalUrl || !appId) {
+    const devUrl = new URL("/api/dev-login", window.location.origin);
+    if (devLoginEmail) {
+      devUrl.searchParams.set("email", devLoginEmail);
+    }
+    devUrl.searchParams.set(
+      "redirect",
+      `${window.location.pathname}${window.location.search}`
+    );
+    return devUrl.toString();
+  }
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
