@@ -59,6 +59,10 @@ export const appRouter = router({
     list: publicProcedure.query(async () => {
       return await db.getAllProducts();
     }),
+
+    listAdmin: adminProcedure.query(async () => {
+      return await db.getAllProductsAdmin();
+    }),
     
     listByCategory: publicProcedure
       .input(z.object({ categoryId: z.number() }))
@@ -346,7 +350,7 @@ export const appRouter = router({
   // ============= ADMIN ROUTES =============
   admin: router({    
     stats: adminProcedure.query(async () => {
-      const products = await db.getAllProducts();
+      const products = await db.getAllProductsAdmin();
       const orders = await db.getAllOrders();
       const contacts = await db.getAllContactSubmissions();
       

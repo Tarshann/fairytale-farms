@@ -13,7 +13,7 @@ import { Loader2, ArrowLeft, Edit } from "lucide-react";
 
 export default function AdminProducts() {
   const { user, isAuthenticated } = useAuth();
-  const { data: products, isLoading } = trpc.products.list.useQuery(undefined, {
+  const { data: products, isLoading } = trpc.products.listAdmin.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === 'admin',
   });
   
@@ -22,6 +22,7 @@ export default function AdminProducts() {
   const toggleStockMutation = trpc.admin.toggleProductStock.useMutation({
     onSuccess: () => {
       utils.products.list.invalidate();
+      utils.products.listAdmin.invalidate();
       toast.success("Product stock status updated");
     },
     onError: (error) => {
@@ -32,6 +33,7 @@ export default function AdminProducts() {
   const toggleFeaturedMutation = trpc.admin.toggleProductFeatured.useMutation({
     onSuccess: () => {
       utils.products.list.invalidate();
+      utils.products.listAdmin.invalidate();
       utils.products.featured.invalidate();
       toast.success("Product featured status updated");
     },
