@@ -14,8 +14,7 @@ import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 const ADMIN_EMAILS = ENV.adminEmails
-  .split(",")
-  .map(email => email.trim())
+  .map(email => email.trim().toLowerCase())
   .filter(Boolean);
 
 export const isAdminEmail = (email: string | null | undefined) => {
@@ -81,7 +80,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       const isOwner =
         (user.openId && user.openId === ENV.ownerOpenId) ||
         (ENV.ownerEmail && normalizedEmail === ENV.ownerEmail) ||
-        (normalizedEmail && ENV.adminEmails.includes(normalizedEmail));
+        isAdminEmail(normalizedEmail);
 
       if (isOwner) {
         values.role = "admin";
