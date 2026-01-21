@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import Stripe from "stripe";
 import { getDb } from "./db";
-import { orders, orderItems, cartItems, products } from "../drizzle/schema";
+import { orders, orderItems, cartItems } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { notifyOwner } from "./_core/notification";
 
@@ -86,19 +86,46 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // Get cart items for this user
-  const userCartItems = await db
-    .select()
-    .from(cartItems)
-    .where(eq(cartItems.userId, userId));
+  const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id, {
+    expand: ["data.price.product"],
+  });
 
-  if (userCartItems.length === 0) {
-    console.error("[Webhook] No cart items found for user:", userId);
+  const purchasedItems = lineItemsResponse.data
+    .map((item) => {
+      const price = item.price;
+      const product = price?.product;
+      if (!product || typeof product === "string") return null;
+
+      const productIdValue = product.metadata?.productId;
+      if (!productIdValue) return null;
+      const productId = Number.parseInt(productIdValue, 10);
+      if (!Number.isFinite(productId)) return null;
+
+      const quantity = item.quantity ?? 1;
+      const unitAmount =
+        price?.unit_amount ??
+        (item.amount_total && quantity > 0
+          ? Math.round(item.amount_total / quantity)
+          : 0);
+
+      return {
+        productId,
+        productName: product.name || item.description || "Product",
+        quantity,
+        unitPrice: unitAmount / 100,
+        customizationNotes: product.metadata?.customizationNotes || undefined,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  if (purchasedItems.length === 0) {
+    console.error("[Webhook] No purchasable line items found for session:", session.id);
     return;
   }
 
-  // Calculate total amount
-  const totalAmount = session.amount_total ? (session.amount_total / 100).toString() : "0";
+  const totalAmount = session.amount_total
+    ? (session.amount_total / 100).toFixed(2)
+    : "0.00";
 
   // Generate order number
   const orderNumber = `FF${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -107,6 +134,28 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const customerEmail = session.customer_email || session.metadata?.customer_email || "";
   const customerName = session.metadata?.customer_name || session.customer_details?.name || "Customer";
   
+  const isDeposit = session.metadata?.is_deposit === "true";
+  const discountAmount = session.metadata?.discount_amount
+    ? Number.parseFloat(session.metadata.discount_amount)
+    : null;
+  const promoCode = session.metadata?.promo_code || undefined;
+  const deliveryZipCode = session.metadata?.delivery_zip || undefined;
+  const deliveryType =
+    session.metadata?.delivery_type === "same_day" ||
+    session.metadata?.delivery_type === "scheduled"
+      ? session.metadata.delivery_type
+      : undefined;
+  const scheduledDeliveryDate = session.metadata?.scheduled_date
+    ? new Date(session.metadata.scheduled_date)
+    : undefined;
+  const remainingAmount = session.metadata?.remaining_amount
+    ? Number.parseFloat(session.metadata.remaining_amount)
+    : null;
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
   const [orderResult] = await db.insert(orders).values({
     userId,
     orderNumber,
@@ -114,37 +163,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     customerName,
     customerEmail,
     status: "pending",
-    stripePaymentIntentId: session.payment_intent as string,
+    stripePaymentIntentId: paymentIntentId,
+    stripePaymentStatus: session.payment_status,
+    promoCode,
+    discountAmount: discountAmount !== null ? discountAmount.toFixed(2) : undefined,
+    deliveryZipCode,
+    deliveryType,
+    scheduledDeliveryDate,
+    depositPaid: isDeposit ? true : undefined,
+    depositAmount: isDeposit ? totalAmount : undefined,
+    remainingAmount:
+      isDeposit && remainingAmount !== null ? remainingAmount.toFixed(2) : undefined,
   });
 
   const orderId = Number(orderResult.insertId);
 
-  // Create order items from cart
-  for (const cartItem of userCartItems) {
-    // Get product details for this cart item
-    const [product] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, cartItem.productId))
-      .limit(1);
-    
-    if (product) {
-      const unitPrice = parseFloat(product.basePrice);
-      const subtotal = unitPrice * cartItem.quantity;
-      
-      await db.insert(orderItems).values({
-        orderId,
-        productId: cartItem.productId,
-        productName: product.name,
-        quantity: cartItem.quantity,
-        unitPrice: unitPrice.toFixed(2),
-        subtotal: subtotal.toFixed(2),
-        customizationNotes: cartItem.customizationNotes,
-      });
-    }
+  for (const item of purchasedItems) {
+    const subtotal = item.unitPrice * item.quantity;
+
+    await db.insert(orderItems).values({
+      orderId,
+      productId: item.productId,
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toFixed(2),
+      subtotal: subtotal.toFixed(2),
+      customizationNotes: item.customizationNotes,
+    });
   }
 
-  // Clear user's cart
   await db.delete(cartItems).where(eq(cartItems.userId, userId));
 
   // Update order status to completed
@@ -157,12 +204,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Send order confirmation email to customer
   if (customerEmail) {
+    const itemDetails = purchasedItems.map((item) => ({
+      name: item.productName,
+      quantity: item.quantity,
+      price: `$${(item.unitPrice * item.quantity).toFixed(2)}`,
+      customizationNotes: item.customizationNotes,
+    }));
+
     await sendOrderConfirmationEmail({
       orderNumber,
       customerName,
       customerEmail,
       totalAmount,
-      items: userCartItems,
+      items: itemDetails,
     });
   }
 }
@@ -172,33 +226,22 @@ interface OrderEmailData {
   customerName: string;
   customerEmail: string;
   totalAmount: string;
-  items: Array<{ productId: number; quantity: number; customizationNotes?: string | null }>;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: string;
+    customizationNotes?: string | null | undefined;
+  }>;
 }
 
 async function sendOrderConfirmationEmail(data: OrderEmailData) {
-  const db = await getDb();
-  if (!db) return;
-
-  // Get product details for email
-  const itemDetails: Array<{ name: string; quantity: number; price: string }> = [];
-  for (const item of data.items) {
-    const [product] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, item.productId))
-      .limit(1);
-    
-    if (product) {
-      itemDetails.push({
-        name: product.name,
-        quantity: item.quantity,
-        price: `$${(parseFloat(product.basePrice) * item.quantity).toFixed(2)}`,
-      });
-    }
-  }
-
-  const itemsList = itemDetails
-    .map(item => `• ${item.name} (x${item.quantity}) - ${item.price}`)
+  const itemsList = data.items
+    .map(item => {
+      const notes = item.customizationNotes
+        ? ` (Notes: ${item.customizationNotes})`
+        : "";
+      return `• ${item.name} (x${item.quantity}) - ${item.price}${notes}`;
+    })
     .join("\n");
 
   const emailContent = `

@@ -204,17 +204,28 @@ export const appRouter = router({
         }
         
         // Create line items for Stripe
-        const lineItems = cartItemsList.map((item) => ({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: item.product?.name || 'Product',
-              description: item.customizationNotes || undefined,
+        const lineItems = cartItemsList.map((item) => {
+          const metadata: Record<string, string> = {};
+          if (item.product?.id) {
+            metadata.productId = item.product.id.toString();
+          }
+          if (item.customizationNotes) {
+            metadata.customizationNotes = item.customizationNotes;
+          }
+
+          return {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: item.product?.name || 'Product',
+                description: item.customizationNotes || undefined,
+                ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
+              },
+              unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100),
             },
-            unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100),
-          },
-          quantity: item.quantity,
-        }));
+            quantity: item.quantity,
+          };
+        });
         
         // Get origin from request headers
         const origin = ctx.req.headers.origin || 'http://localhost:3000';
@@ -224,7 +235,7 @@ export const appRouter = router({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${origin}/order-confirmation/{CHECKOUT_SESSION_ID}`,
+          success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/cart`,
           client_reference_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || undefined,
@@ -313,6 +324,47 @@ export const appRouter = router({
         if (order.userId !== ctx.user.id && ctx.user.role !== 'admin') {
           throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
         }
+        const items = await db.getOrderItems(order.id);
+        return { ...order, items };
+      }),
+
+    getByCheckoutSession: protectedProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const Stripe = (await import('stripe')).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: '2025-12-15.clover',
+        });
+
+        const session = await stripe.checkout.sessions.retrieve(input.sessionId);
+
+        const sessionUserId = session.client_reference_id
+          ? parseInt(session.client_reference_id)
+          : session.metadata?.user_id
+          ? parseInt(session.metadata.user_id)
+          : null;
+
+        if (sessionUserId && sessionUserId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
+
+        const paymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id;
+
+        if (!paymentIntentId) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Order not found' });
+        }
+
+        const order = await db.getOrderByPaymentIntentId(paymentIntentId);
+        if (!order) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Order not found' });
+        }
+        if (order.userId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
+
         const items = await db.getOrderItems(order.id);
         return { ...order, items };
       }),
@@ -565,17 +617,28 @@ export const appRouter = router({
         const chargeAmount = hasDepositItem ? totalAfterDiscount * 0.5 : totalAfterDiscount;
         
         // Create line items
-        const lineItems = cartItems.map((item) => ({
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: item.product?.name || 'Product',
-              description: item.customizationNotes || undefined,
+        const lineItems = cartItems.map((item) => {
+          const metadata: Record<string, string> = {};
+          if (item.product?.id) {
+            metadata.productId = item.product.id.toString();
+          }
+          if (item.customizationNotes) {
+            metadata.customizationNotes = item.customizationNotes;
+          }
+
+          return {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: item.product?.name || 'Product',
+                description: item.customizationNotes || undefined,
+                ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
+              },
+              unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100 * (hasDepositItem ? 0.5 : 1)),
             },
-            unit_amount: Math.round(parseFloat(item.product?.basePrice || '0') * 100 * (hasDepositItem ? 0.5 : 1)),
-          },
-          quantity: item.quantity,
-        }));
+            quantity: item.quantity,
+          };
+        });
         
         // Add discount line if applicable
         if (discountAmount > 0) {
@@ -598,7 +661,7 @@ export const appRouter = router({
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
-          success_url: `${origin}/order-confirmation/{CHECKOUT_SESSION_ID}`,
+          success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${origin}/cart`,
           client_reference_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || undefined,

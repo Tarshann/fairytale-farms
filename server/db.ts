@@ -287,6 +287,17 @@ export async function getOrderByNumber(orderNumber: string) {
   return result[0];
 }
 
+export async function getOrderByPaymentIntentId(paymentIntentId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.stripePaymentIntentId, paymentIntentId))
+    .limit(1);
+  return result[0];
+}
+
 export async function getOrdersByUser(userId: number) {
   const db = await getDb();
   if (!db) return [];
