@@ -13,9 +13,12 @@ import {
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
-const ADMIN_EMAILS = ["fairytalefarms.net@gmail.com"];
+const ADMIN_EMAILS = ENV.adminEmails
+  .split(",")
+  .map(email => email.trim())
+  .filter(Boolean);
 
-const isAdminEmail = (email: string | null | undefined) => {
+export const isAdminEmail = (email: string | null | undefined) => {
   if (!email) return false;
   return ADMIN_EMAILS.some(
     adminEmail => adminEmail.toLowerCase() === email.toLowerCase().trim()

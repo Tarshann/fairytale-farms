@@ -292,6 +292,14 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
+    if (user.role !== "admin" && db.isAdminEmail(user.email)) {
+      await db.upsertUser({
+        openId: user.openId,
+        role: "admin",
+      });
+      user = { ...user, role: "admin" };
+    }
+
     await db.upsertUser({
       openId: user.openId,
       lastSignedIn: signedInAt,
