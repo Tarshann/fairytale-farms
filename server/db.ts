@@ -13,6 +13,17 @@ import {
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+const ADMIN_EMAILS = ENV.adminEmails
+  .split(",")
+  .map(email => email.trim())
+  .filter(Boolean);
+
+export const isAdminEmail = (email: string | null | undefined) => {
+  if (!email) return false;
+  return ADMIN_EMAILS.some(
+    adminEmail => adminEmail.toLowerCase() === email.toLowerCase().trim()
+  );
+};
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
