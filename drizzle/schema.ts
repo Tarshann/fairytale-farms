@@ -1,4 +1,13 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean } from "drizzle-orm/mysql-core";
+import {
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+  decimal,
+  boolean,
+} from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -17,6 +26,21 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+/**
+ * One-time login codes for passwordless sign-in
+ */
+export const loginCodes = mysqlTable("loginCodes", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  codeHash: varchar("codeHash", { length: 128 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LoginCode = typeof loginCodes.$inferSelect;
+export type InsertLoginCode = typeof loginCodes.$inferInsert;
 
 /**
  * Product categories for the bakery
@@ -59,7 +83,14 @@ export const products = mysqlTable("products", {
   requiresPhotoUpload: boolean("requiresPhotoUpload").default(false).notNull(), // For custom portrait pucks
   requiresDeposit: boolean("requiresDeposit").default(false).notNull(), // 50% deposit required
   depositPercentage: int("depositPercentage").default(50), // Percentage for deposit
-  productType: mysqlEnum("productType", ["standard", "tier", "build_your_own_item", "custom_portrait"]).default("standard").notNull(),
+  productType: mysqlEnum("productType", [
+    "standard",
+    "tier",
+    "build_your_own_item",
+    "custom_portrait",
+  ])
+    .default("standard")
+    .notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -90,7 +121,14 @@ export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   orderNumber: varchar("orderNumber", { length: 50 }).notNull().unique(),
-  status: mysqlEnum("status", ["pending", "processing", "completed", "cancelled"]).default("pending").notNull(),
+  status: mysqlEnum("status", [
+    "pending",
+    "processing",
+    "completed",
+    "cancelled",
+  ])
+    .default("pending")
+    .notNull(),
   totalAmount: decimal("totalAmount", { precision: 10, scale: 2 }).notNull(),
   customerName: varchar("customerName", { length: 200 }).notNull(),
   customerEmail: varchar("customerEmail", { length: 320 }).notNull(),
@@ -99,7 +137,9 @@ export const orders = mysqlTable("orders", {
   deliveryZipCode: varchar("deliveryZipCode", { length: 10 }), // For delivery zone validation
   deliveryNotes: text("deliveryNotes"),
   scheduledDeliveryDate: timestamp("scheduledDeliveryDate"), // For Feb 13-14 scheduled deliveries
-  deliveryType: mysqlEnum("deliveryType", ["same_day", "scheduled"]).default("same_day"),
+  deliveryType: mysqlEnum("deliveryType", ["same_day", "scheduled"]).default(
+    "same_day"
+  ),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
   stripePaymentStatus: varchar("stripePaymentStatus", { length: 50 }),
   depositPaid: boolean("depositPaid").default(false).notNull(), // Track if deposit was paid
@@ -107,7 +147,10 @@ export const orders = mysqlTable("orders", {
   remainingAmount: decimal("remainingAmount", { precision: 10, scale: 2 }), // Remaining balance
   remainingCharged: boolean("remainingCharged").default(false).notNull(), // Track if remaining was charged
   promoCode: varchar("promoCode", { length: 50 }), // Applied promo code
-  discountAmount: decimal("discountAmount", { precision: 10, scale: 2 }).default("0.00"), // Discount applied
+  discountAmount: decimal("discountAmount", {
+    precision: 10,
+    scale: 2,
+  }).default("0.00"), // Discount applied
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -143,7 +186,9 @@ export const contactSubmissions = mysqlTable("contactSubmissions", {
   phone: varchar("phone", { length: 50 }),
   subject: varchar("subject", { length: 200 }),
   message: text("message").notNull(),
-  status: mysqlEnum("status", ["new", "read", "replied"]).default("new").notNull(),
+  status: mysqlEnum("status", ["new", "read", "replied"])
+    .default("new")
+    .notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -162,7 +207,9 @@ export const photoUploads = mysqlTable("photoUploads", {
   fileName: varchar("fileName", { length: 255 }).notNull(),
   fileSize: int("fileSize").notNull(), // in bytes
   mimeType: varchar("mimeType", { length: 100 }).notNull(),
-  status: mysqlEnum("status", ["pending_review", "approved", "rejected"]).default("pending_review").notNull(),
+  status: mysqlEnum("status", ["pending_review", "approved", "rejected"])
+    .default("pending_review")
+    .notNull(),
   reviewNotes: text("reviewNotes"), // Admin notes for rejection/approval
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -178,8 +225,14 @@ export const promoCodes = mysqlTable("promoCodes", {
   id: int("id").autoincrement().primaryKey(),
   code: varchar("code", { length: 50 }).notNull().unique(),
   description: text("description"),
-  discountType: mysqlEnum("discountType", ["percentage", "fixed_amount"]).notNull(),
-  discountValue: decimal("discountValue", { precision: 10, scale: 2 }).notNull(),
+  discountType: mysqlEnum("discountType", [
+    "percentage",
+    "fixed_amount",
+  ]).notNull(),
+  discountValue: decimal("discountValue", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
   minOrderAmount: decimal("minOrderAmount", { precision: 10, scale: 2 }),
   maxUses: int("maxUses"), // null = unlimited
   usedCount: int("usedCount").default(0).notNull(),
@@ -203,13 +256,14 @@ export const deliveryZones = mysqlTable("deliveryZones", {
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 2 }),
   isActive: boolean("isActive").default(true).notNull(),
-  deliveryFee: decimal("deliveryFee", { precision: 10, scale: 2 }).default("0.00"),
+  deliveryFee: decimal("deliveryFee", { precision: 10, scale: 2 }).default(
+    "0.00"
+  ),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type DeliveryZone = typeof deliveryZones.$inferSelect;
 export type InsertDeliveryZone = typeof deliveryZones.$inferInsert;
-
 
 /**
  * Wishlist/Favorites for users to save products
@@ -223,7 +277,6 @@ export const wishlistItems = mysqlTable("wishlistItems", {
 
 export type WishlistItem = typeof wishlistItems.$inferSelect;
 export type InsertWishlistItem = typeof wishlistItems.$inferInsert;
-
 
 /**
  * Custom order inquiries from AI chatbot
@@ -245,7 +298,16 @@ export const customOrderInquiries = mysqlTable("customOrderInquiries", {
   additionalNotes: text("additionalNotes"),
   // Image attachments (stored as JSON array of URLs)
   imageAttachments: text("imageAttachments"),
-  status: mysqlEnum("status", ["new", "contacted", "quoted", "confirmed", "completed", "cancelled"]).default("new").notNull(),
+  status: mysqlEnum("status", [
+    "new",
+    "contacted",
+    "quoted",
+    "confirmed",
+    "completed",
+    "cancelled",
+  ])
+    .default("new")
+    .notNull(),
   adminNotes: text("adminNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

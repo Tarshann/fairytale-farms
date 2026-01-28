@@ -66,9 +66,7 @@
       "compositePrimaryKeys": {
         "cartItems_id": {
           "name": "cartItems_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -136,23 +134,17 @@
       "compositePrimaryKeys": {
         "categories_id": {
           "name": "categories_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "categories_name_unique": {
           "name": "categories_name_unique",
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         },
         "categories_slug_unique": {
           "name": "categories_slug_unique",
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "checkConstraint": {}
@@ -209,9 +201,7 @@
       "compositePrimaryKeys": {
         "chatMessages_id": {
           "name": "chatMessages_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -284,9 +274,7 @@
       "compositePrimaryKeys": {
         "contactSubmissions_id": {
           "name": "contactSubmissions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -438,17 +426,13 @@
       "compositePrimaryKeys": {
         "customOrderInquiries_id": {
           "name": "customOrderInquiries_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "customOrderInquiries_inquiryNumber_unique": {
           "name": "customOrderInquiries_inquiryNumber_unique",
-          "columns": [
-            "inquiryNumber"
-          ]
+          "columns": ["inquiryNumber"]
         }
       },
       "checkConstraint": {}
@@ -514,17 +498,13 @@
       "compositePrimaryKeys": {
         "deliveryZones_id": {
           "name": "deliveryZones_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "deliveryZones_zipCode_unique": {
           "name": "deliveryZones_zipCode_unique",
-          "columns": [
-            "zipCode"
-          ]
+          "columns": ["zipCode"]
         }
       },
       "checkConstraint": {}
@@ -602,9 +582,7 @@
       "compositePrimaryKeys": {
         "orderItems_id": {
           "name": "orderItems_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -788,17 +766,13 @@
       "compositePrimaryKeys": {
         "orders_id": {
           "name": "orders_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "orders_orderNumber_unique": {
           "name": "orders_orderNumber_unique",
-          "columns": [
-            "orderNumber"
-          ]
+          "columns": ["orderNumber"]
         }
       },
       "checkConstraint": {}
@@ -900,9 +874,7 @@
       "compositePrimaryKeys": {
         "photoUploads_id": {
           "name": "photoUploads_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1090,17 +1062,13 @@
       "compositePrimaryKeys": {
         "products_id": {
           "name": "products_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "products_slug_unique": {
           "name": "products_slug_unique",
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "checkConstraint": {}
@@ -1217,17 +1185,13 @@
       "compositePrimaryKeys": {
         "promoCodes_id": {
           "name": "promoCodes_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "promoCodes_code_unique": {
           "name": "promoCodes_code_unique",
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "checkConstraint": {}
@@ -1309,17 +1273,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_openId_unique": {
           "name": "users_openId_unique",
-          "columns": [
-            "openId"
-          ]
+          "columns": ["openId"]
         }
       },
       "checkConstraint": {}
@@ -1362,9 +1322,7 @@
       "compositePrimaryKeys": {
         "wishlistItems_id": {
           "name": "wishlistItems_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
