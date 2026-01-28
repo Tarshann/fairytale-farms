@@ -9,6 +9,12 @@ const parseAdminEmails = (raw: string) =>
     .map(value => value.trim().toLowerCase())
     .filter(Boolean);
 
+const nodeEnv = process.env.NODE_ENV ?? "development";
+
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = nodeEnv;
+}
+
 const allowDevLogin =
   process.env.DEV_LOGIN_ENABLED === "true" ||
   process.env.ALLOW_DEV_LOGIN === "true";
@@ -31,7 +37,7 @@ export const ENV = {
     ])
   ),
   allowDevLogin,
-  isProduction: process.env.NODE_ENV === "production",
+  isProduction: nodeEnv === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
 };
