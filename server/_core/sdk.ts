@@ -31,11 +31,6 @@ const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserI
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
     console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
-    }
   }
 
   private decodeState(state: string): string {
@@ -84,11 +79,16 @@ const createOAuthHttpClient = (): AxiosInstance =>
 
 class SDKServer {
   private readonly client: AxiosInstance;
-  private readonly oauthService: OAuthService;
+  private readonly oauthService: OAuthService | null;
 
   constructor(client: AxiosInstance = createOAuthHttpClient()) {
     this.client = client;
-    this.oauthService = new OAuthService(this.client);
+    this.oauthService = ENV.oauthEnabled ? new OAuthService(this.client) : null;
+    if (!ENV.oauthEnabled && ENV.isProduction) {
+      console.error(
+        "[OAuth] ERROR: OAUTH_SERVER_URL is required in production."
+      );
+    }
   }
 
   private deriveLoginMethod(
@@ -122,6 +122,9 @@ class SDKServer {
     code: string,
     state: string
   ): Promise<ExchangeTokenResponse> {
+    if (!this.oauthService) {
+      throw new Error("OAuth is not configured in this environment.");
+    }
     return this.oauthService.getTokenByCode(code, state);
   }
 
@@ -131,6 +134,9 @@ class SDKServer {
    * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
    */
   async getUserInfo(accessToken: string): Promise<GetUserInfoResponse> {
+    if (!this.oauthService) {
+      throw new Error("OAuth is not configured in this environment.");
+    }
     const data = await this.oauthService.getUserInfoByToken({
       accessToken,
     } as ExchangeTokenResponse);

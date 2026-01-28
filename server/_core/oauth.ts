@@ -3,11 +3,15 @@ import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { ENV } from "./env";
-import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
   return typeof value === "string" ? value : undefined;
+}
+
+async function getSdk() {
+  const mod = await import("./sdk");
+  return mod.sdk;
 }
 
 export function registerOAuthRoutes(app: Express) {
@@ -67,6 +71,7 @@ export function registerOAuthRoutes(app: Express) {
       lastSignedIn: new Date(),
     });
 
+    const sdk = await getSdk();
     const sessionToken = await sdk.createSessionToken(openId, {
       name: displayName,
       expiresInMs: ONE_YEAR_MS,
@@ -79,6 +84,16 @@ export function registerOAuthRoutes(app: Express) {
     res.redirect(302, redirectParam);
   });
 
+  if (!ENV.oauthEnabled) {
+    app.get("/api/oauth/callback", (_req: Request, res: Response) => {
+      res.status(503).json({
+        error:
+          "OAuth is not configured in this environment. Set OAUTH_SERVER_URL to enable login.",
+      });
+    });
+    return;
+  }
+
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
@@ -89,6 +104,7 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
+      const sdk = await getSdk();
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
 

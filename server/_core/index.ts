@@ -1,4 +1,6 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -7,6 +9,14 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+
+const envPath = process.env.NODE_ENV === "production" ? ".env" : ".env.local";
+const resolvedEnvPath = path.resolve(process.cwd(), envPath);
+if (fs.existsSync(resolvedEnvPath)) {
+  dotenv.config({ path: resolvedEnvPath });
+} else {
+  dotenv.config();
+}
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
