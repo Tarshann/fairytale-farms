@@ -9,6 +9,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { ENV } from "./env";
 
 const envPath = process.env.NODE_ENV === "production" ? ".env" : ".env.local";
 const resolvedEnvPath = path.resolve(process.cwd(), envPath);
@@ -56,6 +57,13 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  app.get("/health", (_req, res) => {
+    res.json({
+      ok: true,
+      env: ENV.isProduction ? "production" : "development",
+      oauthEnabled: ENV.oauthEnabled,
+    });
+  });
   // tRPC API
   app.use(
     "/api/trpc",
