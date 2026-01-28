@@ -1,5 +1,10 @@
 import { drizzle } from "drizzle-orm/mysql2";
-import { products, categories, promoCodes, deliveryZones } from "./drizzle/schema.ts";
+import {
+  products,
+  categories,
+  promoCodes,
+  deliveryZones,
+} from "./drizzle/schema.ts";
 import mysql from "mysql2/promise";
 
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -20,13 +25,18 @@ try {
   const [valentinesCategory] = await db.insert(categories).values({
     name: "Valentine's Day 2026",
     slug: "valentines-day-2026",
-    description: "Special Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks",
+    description:
+      "Special Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks",
     displayOrder: 0,
   });
   categoryId = valentinesCategory?.insertId;
 } catch (error) {
   // Category already exists, fetch it
-  const [existing] = await db.select().from(categories).where({ slug: "valentines-day-2026" }).limit(1);
+  const [existing] = await db
+    .select()
+    .from(categories)
+    .where({ slug: "valentines-day-2026" })
+    .limit(1);
   categoryId = existing?.id || 1;
 }
 
@@ -41,11 +51,11 @@ console.log("Creating Valentine's Day tier products...");
 
 // Tier 1: Sweet Beginnings - $28
 try {
-await db.insert(products).values({
-  categoryId,
-  name: "Sweet Beginnings",
-  slug: "sweet-beginnings-tier",
-  description: `Perfect for first dates, Galentine's gatherings, or "just because" sweetness. Classic cookies meet modern craft.
+  await db.insert(products).values({
+    categoryId,
+    name: "Sweet Beginnings",
+    slug: "sweet-beginnings-tier",
+    description: `Perfect for first dates, Galentine's gatherings, or "just because" sweetness. Classic cookies meet modern craft.
 
 **Includes:**
 - 6 Chocolate Chip Cookies
@@ -54,30 +64,32 @@ await db.insert(products).values({
 - Custom Cricut packaging
 
 **Academy Members: 20% off**`,
-  basePrice: "28.00",
-  imageUrl: "/images/tier1-sweet-beginnings.jpg",
-  isCustomizable: false,
-  inStock: true,
-  featured: true,
-  displayOrder: 1,
-  inventoryCap: 40,
-  inventorySold: 0,
-  availableFrom: launchDate,
-  availableUntil: tierCutoff,
-  requiresPhotoUpload: false,
-  requiresDeposit: false,
-  productType: "tier",
-});
-console.log("Created: Sweet Beginnings");
-} catch (e) { console.log("Sweet Beginnings already exists, skipping"); }
+    basePrice: "28.00",
+    imageUrl: "/images/tier1-sweet-beginnings.jpg",
+    isCustomizable: false,
+    inStock: true,
+    featured: true,
+    displayOrder: 1,
+    inventoryCap: 40,
+    inventorySold: 0,
+    availableFrom: launchDate,
+    availableUntil: tierCutoff,
+    requiresPhotoUpload: false,
+    requiresDeposit: false,
+    productType: "tier",
+  });
+  console.log("Created: Sweet Beginnings");
+} catch (e) {
+  console.log("Sweet Beginnings already exists, skipping");
+}
 
 // Tier 2: Love Story - $52
 try {
-await db.insert(products).values({
-  categoryId,
-  name: "Love Story",
-  slug: "love-story-tier",
-  description: `The complete Fairytale Farms experience. Where our signature dam-system royal icing meets chocolate-dipped decadence.
+  await db.insert(products).values({
+    categoryId,
+    name: "Love Story",
+    slug: "love-story-tier",
+    description: `The complete Fairytale Farms experience. Where our signature dam-system royal icing meets chocolate-dipped decadence.
 
 **Includes:**
 - 6 Royal Icing Sugar Cookies (Classic Heart + XOXO designs)
@@ -88,30 +100,32 @@ await db.insert(products).values({
 - Premium Cricut packaging
 
 **Academy Members: 20% off**`,
-  basePrice: "52.00",
-  imageUrl: "/images/tier2-love-story.jpg",
-  isCustomizable: false,
-  inStock: true,
-  featured: true,
-  displayOrder: 2,
-  inventoryCap: 35,
-  inventorySold: 0,
-  availableFrom: launchDate,
-  availableUntil: tierCutoff,
-  requiresPhotoUpload: false,
-  requiresDeposit: false,
-  productType: "tier",
-});
-console.log("Created: Love Story");
-} catch (e) { console.log("Love Story already exists, skipping"); }
+    basePrice: "52.00",
+    imageUrl: "/images/tier2-love-story.jpg",
+    isCustomizable: false,
+    inStock: true,
+    featured: true,
+    displayOrder: 2,
+    inventoryCap: 35,
+    inventorySold: 0,
+    availableFrom: launchDate,
+    availableUntil: tierCutoff,
+    requiresPhotoUpload: false,
+    requiresDeposit: false,
+    productType: "tier",
+  });
+  console.log("Created: Love Story");
+} catch (e) {
+  console.log("Love Story already exists, skipping");
+}
 
 // Tier 3: Fairytale Romance - $85
 try {
-await db.insert(products).values({
-  categoryId,
-  name: "Fairytale Romance",
-  slug: "fairytale-romance-tier",
-  description: `Go all-in with our flagship showcase: mini cake centerpiece, full cookie variety, premium freeze-dried treats, and packaging that says "you're worth it."
+  await db.insert(products).values({
+    categoryId,
+    name: "Fairytale Romance",
+    slug: "fairytale-romance-tier",
+    description: `Go all-in with our flagship showcase: mini cake centerpiece, full cookie variety, premium freeze-dried treats, and packaging that says "you're worth it."
 
 **Includes:**
 - 1 Mini Cake (vanilla birthday, chocolate, or strawberry crunch)
@@ -123,49 +137,55 @@ await db.insert(products).values({
 - Deluxe Cricut packaging + message card
 
 **Academy Members: 20% off**`,
-  basePrice: "85.00",
-  imageUrl: "/images/tier3-fairytale-romance.jpg",
-  isCustomizable: true,
-  customizationInstructions: "Select your mini cake flavor: Vanilla Birthday, Chocolate, or Strawberry Crunch",
-  inStock: true,
-  featured: true,
-  displayOrder: 3,
-  inventoryCap: 15,
-  inventorySold: 0,
-  availableFrom: launchDate,
-  availableUntil: tierCutoff,
-  requiresPhotoUpload: false,
-  requiresDeposit: false,
-  productType: "tier",
-});
-console.log("Created: Fairytale Romance");
-} catch (e) { console.log("Fairytale Romance already exists, skipping"); }
+    basePrice: "85.00",
+    imageUrl: "/images/tier3-fairytale-romance.jpg",
+    isCustomizable: true,
+    customizationInstructions:
+      "Select your mini cake flavor: Vanilla Birthday, Chocolate, or Strawberry Crunch",
+    inStock: true,
+    featured: true,
+    displayOrder: 3,
+    inventoryCap: 15,
+    inventorySold: 0,
+    availableFrom: launchDate,
+    availableUntil: tierCutoff,
+    requiresPhotoUpload: false,
+    requiresDeposit: false,
+    productType: "tier",
+  });
+  console.log("Created: Fairytale Romance");
+} catch (e) {
+  console.log("Fairytale Romance already exists, skipping");
+}
 
 console.log("Creating Build-Your-Own items...");
 
 // Build-Your-Own Base Box
 try {
-await db.insert(products).values({
-  categoryId,
-  name: "Build-Your-Own Base Box",
-  slug: "build-your-own-base",
-  description: "Start with our base box and add your favorite treats. Required for all Build-Your-Own orders.",
-  basePrice: "15.00",
-  imageUrl: "/images/base-box.jpg",
-  isCustomizable: false,
-  inStock: true,
-  featured: false,
-  displayOrder: 10,
-  inventoryCap: 10,
-  inventorySold: 0,
-  availableFrom: launchDate,
-  availableUntil: tierCutoff,
-  requiresPhotoUpload: false,
-  requiresDeposit: false,
-  productType: "build_your_own_item",
-});
-console.log("Created: Build-Your-Own Base Box");
-} catch (e) { console.log("Build-Your-Own Base Box already exists, skipping"); }
+  await db.insert(products).values({
+    categoryId,
+    name: "Build-Your-Own Base Box",
+    slug: "build-your-own-base",
+    description:
+      "Start with our base box and add your favorite treats. Required for all Build-Your-Own orders.",
+    basePrice: "15.00",
+    imageUrl: "/images/base-box.jpg",
+    isCustomizable: false,
+    inStock: true,
+    featured: false,
+    displayOrder: 10,
+    inventoryCap: 10,
+    inventorySold: 0,
+    availableFrom: launchDate,
+    availableUntil: tierCutoff,
+    requiresPhotoUpload: false,
+    requiresDeposit: false,
+    productType: "build_your_own_item",
+  });
+  console.log("Created: Build-Your-Own Base Box");
+} catch (e) {
+  console.log("Build-Your-Own Base Box already exists, skipping");
+}
 
 // Build-Your-Own Individual Items
 const byoItems = [
@@ -184,22 +204,22 @@ let displayOrder = 11;
 for (const item of byoItems) {
   try {
     await db.insert(products).values({
-    categoryId,
-    name: item.name,
-    slug: item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    description: `Add ${item.name} to your Build-Your-Own box`,
-    basePrice: item.price,
-    imageUrl: `/images/${item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.jpg`,
-    isCustomizable: false,
-    inStock: true,
-    featured: false,
-    displayOrder: displayOrder++,
-    availableFrom: launchDate,
-    availableUntil: tierCutoff,
-    requiresPhotoUpload: false,
-    requiresDeposit: false,
-    productType: "build_your_own_item",
-  });
+      categoryId,
+      name: item.name,
+      slug: item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      description: `Add ${item.name} to your Build-Your-Own box`,
+      basePrice: item.price,
+      imageUrl: `/images/${item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.jpg`,
+      isCustomizable: false,
+      inStock: true,
+      featured: false,
+      displayOrder: displayOrder++,
+      availableFrom: launchDate,
+      availableUntil: tierCutoff,
+      requiresPhotoUpload: false,
+      requiresDeposit: false,
+      productType: "build_your_own_item",
+    });
   } catch (error) {
     console.log(`  - ${item.name} already exists, skipping`);
   }
@@ -209,11 +229,11 @@ console.log("Creating Custom Portrait Pucks product...");
 
 // Custom Portrait Pucks
 try {
-await db.insert(products).values({
-  categoryId,
-  name: "Custom Portrait Pucks",
-  slug: "custom-portrait-pucks",
-  description: `Turn your favorite photo into an edible keepsake.
+  await db.insert(products).values({
+    categoryId,
+    name: "Custom Portrait Pucks",
+    slug: "custom-portrait-pucks",
+    description: `Turn your favorite photo into an edible keepsake.
 
 Using projection technology exclusive to Fairytale Farms, we transform your memories into hand-traced Oreo masterpieces.
 
@@ -233,68 +253,82 @@ Using projection technology exclusive to Fairytale Farms, we transform your memo
 - Photo submission within 24 hours of order
 
 **Delivery:** Scheduled delivery only (Feb 13-14)`,
-  basePrice: "8.00",
-  imageUrl: "/images/custom-portrait-pucks.jpg",
-  isCustomizable: true,
-  customizationInstructions: "Upload your high-resolution photo (JPG or PNG, minimum 1MB). Photo must show clear faces and good lighting.",
-  inStock: true,
-  featured: true,
-  displayOrder: 4,
-  inventoryCap: 10, // 10 orders max
-  inventorySold: 0,
-  availableFrom: launchDate,
-  availableUntil: customCutoff,
-  requiresPhotoUpload: true,
-  requiresDeposit: true,
-  depositPercentage: 50,
-  productType: "custom_portrait",
-});
-console.log("Created: Custom Portrait Pucks");
-} catch (e) { console.log("Custom Portrait Pucks already exists, skipping"); }
+    basePrice: "8.00",
+    imageUrl: "/images/custom-portrait-pucks.jpg",
+    isCustomizable: true,
+    customizationInstructions:
+      "Upload your high-resolution photo (JPG or PNG, minimum 1MB). Photo must show clear faces and good lighting.",
+    inStock: true,
+    featured: true,
+    displayOrder: 4,
+    inventoryCap: 10, // 10 orders max
+    inventorySold: 0,
+    availableFrom: launchDate,
+    availableUntil: customCutoff,
+    requiresPhotoUpload: true,
+    requiresDeposit: true,
+    depositPercentage: 50,
+    productType: "custom_portrait",
+  });
+  console.log("Created: Custom Portrait Pucks");
+} catch (e) {
+  console.log("Custom Portrait Pucks already exists, skipping");
+}
 
 console.log("Creating promo codes...");
 
 // Academy Member Promo Code
 try {
-await db.insert(promoCodes).values({
-  code: "ACADEMY2026",
-  description: "Academy member exclusive: 20% off tier boxes, 15% off build-your-own",
-  discountType: "percentage",
-  discountValue: "20.00",
-  validFrom: launchDate,
-  validUntil: new Date("2026-02-14T23:59:59"),
-  applicableProductTypes: JSON.stringify(["tier", "build_your_own_item"]),
-  isActive: true,
-});
-} catch (e) { console.log("ACADEMY2026 promo code already exists"); }
+  await db.insert(promoCodes).values({
+    code: "ACADEMY2026",
+    description:
+      "Academy member exclusive: 20% off tier boxes, 15% off build-your-own",
+    discountType: "percentage",
+    discountValue: "20.00",
+    validFrom: launchDate,
+    validUntil: new Date("2026-02-14T23:59:59"),
+    applicableProductTypes: JSON.stringify(["tier", "build_your_own_item"]),
+    isActive: true,
+  });
+} catch (e) {
+  console.log("ACADEMY2026 promo code already exists");
+}
 
 // Returning Customer Promo Code
 try {
-await db.insert(promoCodes).values({
-  code: "FAIRYTALEFAM15",
-  description: "Returning customer discount: 15% off all products",
-  discountType: "percentage",
-  discountValue: "15.00",
-  validFrom: launchDate,
-  validUntil: new Date("2026-02-14T23:59:59"),
-  applicableProductTypes: JSON.stringify(["tier", "build_your_own_item", "custom_portrait"]),
-  isActive: true,
-});
-} catch (e) { console.log("FAIRYTALEFAM15 promo code already exists"); }
+  await db.insert(promoCodes).values({
+    code: "FAIRYTALEFAM15",
+    description: "Returning customer discount: 15% off all products",
+    discountType: "percentage",
+    discountValue: "15.00",
+    validFrom: launchDate,
+    validUntil: new Date("2026-02-14T23:59:59"),
+    applicableProductTypes: JSON.stringify([
+      "tier",
+      "build_your_own_item",
+      "custom_portrait",
+    ]),
+    isActive: true,
+  });
+} catch (e) {
+  console.log("FAIRYTALEFAM15 promo code already exists");
+}
 
 // General Valentine's Promo
 try {
-await db.insert(promoCodes).values({
-  code: "LOVE2026",
-  description: "Valentine's Day special: 10% off",
-  discountType: "percentage",
-  discountValue: "10.00",
-  validFrom: launchDate,
-  validUntil: new Date("2026-02-14T23:59:59"),
-  applicableProductTypes: JSON.stringify(["tier", "build_your_own_item"]),
-  isActive: true,
-});
-} catch (e) { console.log("LOVE2026 promo code already exists"); }
+  await db.insert(promoCodes).values({
+    code: "LOVE2026",
+    description: "Valentine's Day special: 10% off",
+    discountType: "percentage",
+    discountValue: "10.00",
+    validFrom: launchDate,
+    validUntil: new Date("2026-02-14T23:59:59"),
+    applicableProductTypes: JSON.stringify(["tier", "build_your_own_item"]),
+    isActive: true,
+  });
+} catch (e) {
+  console.log("LOVE2026 promo code already exists");
+}
 
 console.log("Creating delivery zones...");
 
@@ -319,19 +353,25 @@ const zipCodes = [
 
 // Nashville core ZIP codes (37201-37250)
 for (let i = 201; i <= 250; i++) {
-  zipCodes.push({ zip: `372${i.toString().padStart(2, '0')}`, city: "Nashville", state: "TN" });
+  zipCodes.push({
+    zip: `372${i.toString().padStart(2, "0")}`,
+    city: "Nashville",
+    state: "TN",
+  });
 }
 
 for (const zone of zipCodes) {
   try {
-  await db.insert(deliveryZones).values({
-    zipCode: zone.zip,
-    city: zone.city,
-    state: zone.state,
-    isActive: true,
-    deliveryFee: "0.00", // Free delivery
-  });
-  } catch (e) { /* Zone already exists */ }
+    await db.insert(deliveryZones).values({
+      zipCode: zone.zip,
+      city: zone.city,
+      state: zone.state,
+      isActive: true,
+      deliveryFee: "0.00", // Free delivery
+    });
+  } catch (e) {
+    /* Zone already exists */
+  }
 }
 
 console.log("✅ Valentine's Day 2026 seed completed!");

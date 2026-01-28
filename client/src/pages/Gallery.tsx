@@ -13,55 +13,180 @@ interface GalleryImage {
 
 const galleryImages: GalleryImage[] = [
   // Custom Cakes
-  { src: "/images/gallery/cake-happily-ever-after-wedding.jpeg", alt: "Happily Ever After Wedding Cake", category: "cakes" },
-  { src: "/images/gallery/cake-ufc-boxing-birthday.jpeg", alt: "UFC Boxing Birthday Cake - Michael", category: "cakes" },
-  { src: "/images/gallery/cake-mickey-clubhouse-birthday.jpeg", alt: "Mickey Mouse Clubhouse Birthday - Cooper", category: "cakes" },
-  { src: "/images/gallery/cake-frozen-elsa-birthday.jpeg", alt: "Frozen Elsa Birthday Cake - Addison", category: "cakes" },
-  { src: "/images/gallery/cake-elegant-blue-two-tier.jpeg", alt: "Elegant Blue Two-Tier Cake", category: "cakes" },
-  { src: "/images/gallery/cake-minnie-pink-rosettes.jpeg", alt: "Minnie Mouse Pink Rosettes Cake", category: "cakes" },
-  { src: "/images/gallery/cake-pink-heart-birthday.jpeg", alt: "Pink Heart 12th Birthday Cake", category: "cakes" },
-  { src: "/images/gallery/cake-spidey-twins-birthday.jpeg", alt: "Spidey & Friends Twin Birthday - Miles & Selah", category: "cakes" },
-  { src: "/images/gallery/cake-cinnamoroll-sanrio.jpeg", alt: "Cinnamoroll Sanrio Birthday - Auden", category: "cakes" },
-  { src: "/images/gallery/cake-golden-oreo.jpeg", alt: "Giant Golden Oreo Cake", category: "cakes" },
-  { src: "/images/gallery/cake-kansas-city-chiefs-oliver.jpeg", alt: "Kansas City Chiefs Birthday - Oliver", category: "cakes" },
-  { src: "/images/gallery/cake-graduation-julian-wku.jpeg", alt: "Graduation Cake - Julian Hawks to WKU Hilltoppers", category: "cakes" },
-  { src: "/images/gallery/cake-demon-slayer-abby.jpeg", alt: "Demon Slayer Anime Birthday - Abby", category: "cakes" },
-  { src: "/images/gallery/cake-taco-bell.jpeg", alt: "Taco Bell Birthday Cake", category: "cakes" },
-  { src: "/images/gallery/cake-royal-crown-gold.jpeg", alt: "Royal Crown Gold Birthday Cake", category: "cakes" },
-  { src: "/images/gallery/cake-minnie-polka-dot-luna.png", alt: "Minnie Mouse Pink Polka Dot - Luna 4th Birthday", category: "cakes" },
-  
+  {
+    src: "/images/gallery/cake-happily-ever-after-wedding.jpeg",
+    alt: "Happily Ever After Wedding Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-ufc-boxing-birthday.jpeg",
+    alt: "UFC Boxing Birthday Cake - Michael",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-mickey-clubhouse-birthday.jpeg",
+    alt: "Mickey Mouse Clubhouse Birthday - Cooper",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-frozen-elsa-birthday.jpeg",
+    alt: "Frozen Elsa Birthday Cake - Addison",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-elegant-blue-two-tier.jpeg",
+    alt: "Elegant Blue Two-Tier Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-minnie-pink-rosettes.jpeg",
+    alt: "Minnie Mouse Pink Rosettes Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-pink-heart-birthday.jpeg",
+    alt: "Pink Heart 12th Birthday Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-spidey-twins-birthday.jpeg",
+    alt: "Spidey & Friends Twin Birthday - Miles & Selah",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-cinnamoroll-sanrio.jpeg",
+    alt: "Cinnamoroll Sanrio Birthday - Auden",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-golden-oreo.jpeg",
+    alt: "Giant Golden Oreo Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-kansas-city-chiefs-oliver.jpeg",
+    alt: "Kansas City Chiefs Birthday - Oliver",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-graduation-julian-wku.jpeg",
+    alt: "Graduation Cake - Julian Hawks to WKU Hilltoppers",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-demon-slayer-abby.jpeg",
+    alt: "Demon Slayer Anime Birthday - Abby",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-taco-bell.jpeg",
+    alt: "Taco Bell Birthday Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-royal-crown-gold.jpeg",
+    alt: "Royal Crown Gold Birthday Cake",
+    category: "cakes",
+  },
+  {
+    src: "/images/gallery/cake-minnie-polka-dot-luna.png",
+    alt: "Minnie Mouse Pink Polka Dot - Luna 4th Birthday",
+    category: "cakes",
+  },
+
   // Sugar Cookies
-  { src: "/images/gallery/sugar-cookies-housewarming.jpeg", alt: "Housewarming Welcome Home Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-70th-birthday.jpeg", alt: "70th Birthday Linda - Pink Roses", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-mickey-rainbow.jpeg", alt: "Mickey Minnie Rainbow Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-watermelon.jpeg", alt: "One in a Melon Watermelon Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-harry-potter-graduation.jpeg", alt: "Harry Potter Graduation Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-baseball-team.jpeg", alt: "Baseball Team Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-pink-dinosaur.jpeg", alt: "Pink Dinosaur Ava 3rd Birthday", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-nurse-medical.jpeg", alt: "Nurse Medical Themed Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-christmas-santa-baby.jpeg", alt: "Christmas Santa Baby Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-wedding-bridal.jpeg", alt: "Wedding Bridal Soon to be Mrs Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-baby-girl-caroline.jpeg", alt: "Baby Girl Caroline 1st Birthday", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-tennessee-soccer.jpeg", alt: "Tennessee United Soccer Club Cookies", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-unc-graduation.jpeg", alt: "UNC Tar Heels Graduation Julia", category: "cookies" },
-  { src: "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg", alt: "Wedding Kelsea and Tommy Cookies", category: "cookies" },
+  {
+    src: "/images/gallery/sugar-cookies-housewarming.jpeg",
+    alt: "Housewarming Welcome Home Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-70th-birthday.jpeg",
+    alt: "70th Birthday Linda - Pink Roses",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-mickey-rainbow.jpeg",
+    alt: "Mickey Minnie Rainbow Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-watermelon.jpeg",
+    alt: "One in a Melon Watermelon Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-harry-potter-graduation.jpeg",
+    alt: "Harry Potter Graduation Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-baseball-team.jpeg",
+    alt: "Baseball Team Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-pink-dinosaur.jpeg",
+    alt: "Pink Dinosaur Ava 3rd Birthday",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-nurse-medical.jpeg",
+    alt: "Nurse Medical Themed Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-christmas-santa-baby.jpeg",
+    alt: "Christmas Santa Baby Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-wedding-bridal.jpeg",
+    alt: "Wedding Bridal Soon to be Mrs Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-baby-girl-caroline.jpeg",
+    alt: "Baby Girl Caroline 1st Birthday",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-tennessee-soccer.jpeg",
+    alt: "Tennessee United Soccer Club Cookies",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-unc-graduation.jpeg",
+    alt: "UNC Tar Heels Graduation Julia",
+    category: "cookies",
+  },
+  {
+    src: "/images/gallery/sugar-cookies-wedding-kelsea-tommy.jpeg",
+    alt: "Wedding Kelsea and Tommy Cookies",
+    category: "cookies",
+  },
 ];
 
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
-  const filteredImages = selectedCategory === "all" 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === selectedCategory);
+  const filteredImages =
+    selectedCategory === "all"
+      ? galleryImages
+      : galleryImages.filter(img => img.category === selectedCategory);
 
-  const cakeCount = galleryImages.filter(img => img.category === "cakes").length;
-  const cookieCount = galleryImages.filter(img => img.category === "cookies").length;
+  const cakeCount = galleryImages.filter(
+    img => img.category === "cakes"
+  ).length;
+  const cookieCount = galleryImages.filter(
+    img => img.category === "cookies"
+  ).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-purple-50">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-pink-100/50 to-purple-100/50" />
@@ -71,10 +196,10 @@ export default function Gallery() {
               Our <span className="text-pink-500">Gallery</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Browse our collection of custom cakes and decorated sugar cookies. 
+              Browse our collection of custom cakes and decorated sugar cookies.
               Each creation is handcrafted with love in Castalian Springs, TN.
             </p>
-            
+
             {/* Category Filter */}
             <div className="flex flex-wrap justify-center gap-3 mb-8">
               <button
@@ -153,8 +278,8 @@ export default function Gallery() {
             Ready to Order Your Custom Creation?
           </h2>
           <p className="text-pink-100 text-lg mb-8 max-w-2xl mx-auto">
-            Every cake and cookie set is made to order with your unique vision in mind. 
-            Contact us to discuss your next celebration!
+            Every cake and cookie set is made to order with your unique vision
+            in mind. Contact us to discuss your next celebration!
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/contact">
@@ -173,26 +298,33 @@ export default function Gallery() {
 
       {/* Lightbox Modal */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <button 
+          <button
             className="absolute top-4 right-4 text-white text-4xl hover:text-pink-300 transition-colors"
             onClick={() => setSelectedImage(null)}
           >
             ×
           </button>
-          <div className="max-w-4xl max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
+          <div
+            className="max-w-4xl max-h-[90vh] relative"
+            onClick={e => e.stopPropagation()}
+          >
             <img
               src={selectedImage.src}
               alt={selectedImage.alt}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
-              <p className="text-white text-lg font-medium">{selectedImage.alt}</p>
+              <p className="text-white text-lg font-medium">
+                {selectedImage.alt}
+              </p>
               <span className="inline-block mt-2 px-3 py-1 bg-pink-500 rounded-full text-sm text-white">
-                {selectedImage.category === "cakes" ? "🎂 Custom Cake" : "🍪 Sugar Cookies"}
+                {selectedImage.category === "cakes"
+                  ? "🎂 Custom Cake"
+                  : "🍪 Sugar Cookies"}
               </span>
             </div>
           </div>

@@ -3,6 +3,8 @@ import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeDb = hasDatabase ? describe : describe.skip;
 
 function createTestContext(user?: AuthenticatedUser): { ctx: TrpcContext } {
   const testUser: AuthenticatedUser = user || {
@@ -29,7 +31,7 @@ function createTestContext(user?: AuthenticatedUser): { ctx: TrpcContext } {
   return { ctx };
 }
 
-describe("Products", () => {
+describeDb("Products", () => {
   it("should list all products", async () => {
     const { ctx } = createTestContext();
     const caller = appRouter.createCaller(ctx);
@@ -70,13 +72,15 @@ describe("Products", () => {
 
     const categories = await caller.categories.list();
     if (categories.length > 0) {
-      const products = await caller.products.listByCategory({ categoryId: categories[0].id });
+      const products = await caller.products.listByCategory({
+        categoryId: categories[0].id,
+      });
       expect(Array.isArray(products)).toBe(true);
     }
   });
 });
 
-describe("Shopping Cart", () => {
+describeDb("Shopping Cart", () => {
   it("should add item to cart", async () => {
     const { ctx } = createTestContext();
     const caller = appRouter.createCaller(ctx);
@@ -116,7 +120,7 @@ describe("Shopping Cart", () => {
       });
 
       expect(addResult.success).toBe(true);
-      
+
       // Get cart to find the item ID
       const cartItems = await caller.cart.get();
       if (cartItems.length > 0) {
@@ -144,7 +148,7 @@ describe("Shopping Cart", () => {
       });
 
       expect(addResult.success).toBe(true);
-      
+
       // Get cart to find the item ID
       const cartItems = await caller.cart.get();
       if (cartItems.length > 0) {

@@ -45,9 +45,9 @@ describe("Valentine's Day Features", () => {
     it("returns tier products for Valentine's collection", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const tiers = await caller.valentines.tiers();
-      
+
       expect(Array.isArray(tiers)).toBe(true);
       // Tiers should be products with productType 'tier'
     });
@@ -57,9 +57,9 @@ describe("Valentine's Day Features", () => {
     it("returns build-your-own items for Valentine's collection", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const items = await caller.valentines.buildYourOwnItems();
-      
+
       expect(Array.isArray(items)).toBe(true);
     });
   });
@@ -68,9 +68,9 @@ describe("Valentine's Day Features", () => {
     it("returns list of delivery zones", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const zones = await caller.valentines.deliveryZones();
-      
+
       expect(Array.isArray(zones)).toBe(true);
     });
   });
@@ -79,10 +79,12 @@ describe("Valentine's Day Features", () => {
     it("validates a valid ZIP code", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       // Test with Nashville ZIP code
-      const result = await caller.valentines.validateDeliveryZone({ zipCode: "37201" });
-      
+      const result = await caller.valentines.validateDeliveryZone({
+        zipCode: "37201",
+      });
+
       expect(result).toHaveProperty("valid");
       expect(typeof result.valid).toBe("boolean");
     });
@@ -90,10 +92,12 @@ describe("Valentine's Day Features", () => {
     it("rejects invalid ZIP code format", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       // Test with invalid ZIP code
-      const result = await caller.valentines.validateDeliveryZone({ zipCode: "00000" });
-      
+      const result = await caller.valentines.validateDeliveryZone({
+        zipCode: "00000",
+      });
+
       expect(result.valid).toBe(false);
     });
   });
@@ -102,9 +106,11 @@ describe("Valentine's Day Features", () => {
     it("validates ACADEMY2026 promo code", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
-      const result = await caller.valentines.validatePromoCode({ code: "ACADEMY2026" });
-      
+
+      const result = await caller.valentines.validatePromoCode({
+        code: "ACADEMY2026",
+      });
+
       expect(result).toHaveProperty("valid");
       // Code should be valid if it exists in database
     });
@@ -112,9 +118,11 @@ describe("Valentine's Day Features", () => {
     it("rejects invalid promo code", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
-      const result = await caller.valentines.validatePromoCode({ code: "INVALIDCODE" });
-      
+
+      const result = await caller.valentines.validatePromoCode({
+        code: "INVALIDCODE",
+      });
+
       expect(result.valid).toBe(false);
     });
   });
@@ -125,9 +133,9 @@ describe("Products Router", () => {
     it("returns featured products", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const products = await caller.products.featured();
-      
+
       expect(Array.isArray(products)).toBe(true);
     });
   });
@@ -136,9 +144,9 @@ describe("Products Router", () => {
     it("returns all products", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const products = await caller.products.list();
-      
+
       expect(Array.isArray(products)).toBe(true);
     });
   });
@@ -147,9 +155,9 @@ describe("Products Router", () => {
     it("returns all categories", async () => {
       const ctx = createPublicContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const categories = await caller.categories.list();
-      
+
       expect(Array.isArray(categories)).toBe(true);
     });
   });
@@ -160,9 +168,9 @@ describe("Cart Router", () => {
     it("returns cart items for authenticated user", async () => {
       const ctx = createAuthContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const cartItems = await caller.cart.get();
-      
+
       expect(Array.isArray(cartItems)).toBe(true);
     });
   });
@@ -173,9 +181,9 @@ describe("Orders Router", () => {
     it("returns orders for authenticated user", async () => {
       const ctx = createAuthContext();
       const caller = appRouter.createCaller(ctx);
-      
+
       const orders = await caller.orders.myOrders();
-      
+
       expect(Array.isArray(orders)).toBe(true);
     });
   });

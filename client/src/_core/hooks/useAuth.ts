@@ -46,11 +46,14 @@ export function useAuth(options?: UseAuthOptions) {
       "manus-runtime-user-info",
       JSON.stringify(meQuery.data)
     );
+    const isGuest = meQuery.data?.loginMethod === "guest";
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      isAuthenticated: Boolean(meQuery.data) && !isGuest,
+      isGuest,
+      hasSession: Boolean(meQuery.data),
     };
   }, [
     meQuery.data,
@@ -67,7 +70,7 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

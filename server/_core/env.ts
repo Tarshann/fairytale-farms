@@ -21,7 +21,9 @@ export const ENV = {
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  ownerEmail: (process.env.OWNER_EMAIL ?? process.env.ADMIN_EMAIL ?? "").trim().toLowerCase(),
+  ownerEmail: (process.env.OWNER_EMAIL ?? process.env.ADMIN_EMAIL ?? "")
+    .trim()
+    .toLowerCase(),
   adminEmails: Array.from(
     new Set([
       ...DEFAULT_ADMIN_EMAILS,

@@ -117,7 +117,10 @@ const sessionImages: Map<string, SessionImageEntry> = new Map();
 type ChatRateLimitAction = "sendMessage" | "uploadImage";
 type RateLimitState = { count: number; resetAt: number };
 
-const RATE_LIMITS: Record<ChatRateLimitAction, { limit: number; windowMs: number }> = {
+const RATE_LIMITS: Record<
+  ChatRateLimitAction,
+  { limit: number; windowMs: number }
+> = {
   sendMessage: { limit: 12, windowMs: 60_000 },
   uploadImage: { limit: 5, windowMs: 60_000 },
 };
@@ -147,8 +150,13 @@ export interface ChatResponse {
 }
 
 export async function processChat(request: ChatRequest): Promise<ChatResponse> {
-  const { sessionId, message, conversationHistory = [], imageUrls = [] } = request;
-  
+  const {
+    sessionId,
+    message,
+    conversationHistory = [],
+    imageUrls = [],
+  } = request;
+
   // Store images for this session if provided
   cleanupExpiredSessions();
   touchSession(sessionId);
@@ -159,7 +167,7 @@ export async function processChat(request: ChatRequest): Promise<ChatResponse> {
   // Store user message
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   await db.insert(chatMessages).values({
     sessionId,
     role: "user",
@@ -232,7 +240,7 @@ async function checkAndSubmitOrder(
     "get back to you within 24 hours",
   ];
 
-  const shouldSubmit = submissionIndicators.some((indicator) =>
+  const shouldSubmit = submissionIndicators.some(indicator =>
     latestResponse.toLowerCase().includes(indicator.toLowerCase())
   );
 
@@ -264,7 +272,7 @@ Only return the JSON object, no other text.`,
         {
           role: "user",
           content: `Extract order details from this conversation:\n\n${conversationHistory
-            .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+            .map(m => `${m.role.toUpperCase()}: ${m.content}`)
             .join("\n\n")}`,
         },
       ],
@@ -289,16 +297,18 @@ Only return the JSON object, no other text.`,
     // Store the order inquiry
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    
+
     // Get any images attached during this session
     const attachedImages = getSessionImages(sessionId);
-    
+
     await db.insert(customOrderInquiries).values({
       inquiryNumber,
       customerName: orderDetails.customerName,
       customerEmail: orderDetails.customerEmail,
       customerPhone: orderDetails.customerPhone,
-      eventDate: orderDetails.eventDate ? new Date(orderDetails.eventDate) : null,
+      eventDate: orderDetails.eventDate
+        ? new Date(orderDetails.eventDate)
+        : null,
       eventType: orderDetails.eventType,
       quantity: orderDetails.quantity,
       flavorPreferences: orderDetails.flavorPreferences,
@@ -307,7 +317,8 @@ Only return the JSON object, no other text.`,
       estimatedPrice: orderDetails.estimatedPrice?.toString(),
       estimateDetails: orderDetails.estimateDetails,
       additionalNotes: `Session ID: ${sessionId}`,
-      imageAttachments: attachedImages.length > 0 ? JSON.stringify(attachedImages) : null,
+      imageAttachments:
+        attachedImages.length > 0 ? JSON.stringify(attachedImages) : null,
       status: "new",
     });
 
@@ -394,7 +405,7 @@ export async function getConversationHistory(
 ): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
   const db = await getDb();
   if (!db) return [];
-  
+
   const messages = await db
     .select()
     .from(chatMessages)
@@ -411,7 +422,7 @@ export async function getConversationHistory(
 export async function getAllInquiries() {
   const db = await getDb();
   if (!db) return [];
-  
+
   return await db
     .select()
     .from(customOrderInquiries)
@@ -421,21 +432,26 @@ export async function getAllInquiries() {
 // Update inquiry status
 export async function updateInquiryStatus(
   id: number,
-  status: "new" | "contacted" | "quoted" | "confirmed" | "completed" | "cancelled",
+  status:
+    | "new"
+    | "contacted"
+    | "quoted"
+    | "confirmed"
+    | "completed"
+    | "cancelled",
   adminNotes?: string
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   await db
     .update(customOrderInquiries)
     .set({ status, adminNotes })
     .where(eq(customOrderInquiries.id, id));
 }
 
-
 function cleanupExpiredSessions(now: number = Date.now()) {
-  for (const [sessionId, entry] of sessionImages.entries()) {
+  for (const [sessionId, entry] of Array.from(sessionImages.entries())) {
     if (now - entry.updatedAt > CHAT_LIMITS.sessionTtlMs) {
       sessionImages.delete(sessionId);
     }
@@ -443,7 +459,7 @@ function cleanupExpiredSessions(now: number = Date.now()) {
 }
 
 function cleanupExpiredRateLimits(now: number = Date.now()) {
-  for (const [rateKey, state] of rateLimitState.entries()) {
+  for (const [rateKey, state] of Array.from(rateLimitState.entries())) {
     if (state.resetAt <= now) {
       rateLimitState.delete(rateKey);
     }
@@ -469,7 +485,7 @@ export function mergeSessionImages(sessionId: string, imageUrls: string[]) {
   cleanupExpiredSessions();
   const entry = getSessionEntry(sessionId);
   const merged = new Set(entry.images);
-  imageUrls.forEach((url) => merged.add(url));
+  imageUrls.forEach(url => merged.add(url));
   if (merged.size > CHAT_LIMITS.maxImagesPerSession) {
     return false;
   }
@@ -494,8 +510,8 @@ export function parseImageData(imageData: string): {
   const padding = base64Payload.endsWith("==")
     ? 2
     : base64Payload.endsWith("=")
-    ? 1
-    : 0;
+      ? 1
+      : 0;
   const byteLength = Math.max(
     0,
     Math.floor((base64Payload.length * 3) / 4) - padding
@@ -503,15 +519,17 @@ export function parseImageData(imageData: string): {
   return { mimeType, byteLength };
 }
 
-export function validateImagePayload(imageData: string): {
-  ok: true;
-  mimeType: string;
-  byteLength: number;
-} | {
-  ok: false;
-  code: "BAD_REQUEST" | "PAYLOAD_TOO_LARGE";
-  message: string;
-} {
+export function validateImagePayload(imageData: string):
+  | {
+      ok: true;
+      mimeType: string;
+      byteLength: number;
+    }
+  | {
+      ok: false;
+      code: "BAD_REQUEST" | "PAYLOAD_TOO_LARGE";
+      message: string;
+    } {
   const parsed = parseImageData(imageData);
   if (!parsed) {
     return {
@@ -532,7 +550,10 @@ export function validateImagePayload(imageData: string): {
   return { ok: true, mimeType: parsed.mimeType, byteLength: parsed.byteLength };
 }
 
-export function checkChatRateLimit(action: ChatRateLimitAction, key: string): {
+export function checkChatRateLimit(
+  action: ChatRateLimitAction,
+  key: string
+): {
   allowed: boolean;
   retryAfterMs?: number;
 } {
@@ -565,7 +586,7 @@ export async function uploadImage(
   if (!added) {
     throw new Error("Image limit reached for this session");
   }
-  
+
   return { url: imageData };
 }
 
@@ -582,31 +603,32 @@ export async function attachImagesToInquiry(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   await db
     .update(customOrderInquiries)
     .set({ imageAttachments: JSON.stringify(imageUrls) })
     .where(eq(customOrderInquiries.id, inquiryId));
 }
 
-
 // Get conversation history for an inquiry by inquiry ID
-export async function getInquiryConversation(inquiryId: number): Promise<Array<{
-  id: number;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
-}>> {
+export async function getInquiryConversation(inquiryId: number): Promise<
+  Array<{
+    id: number;
+    role: "user" | "assistant";
+    content: string;
+    createdAt: Date;
+  }>
+> {
   const db = await getDb();
   if (!db) return [];
-  
+
   const messages = await db
     .select()
     .from(chatMessages)
     .where(eq(chatMessages.inquiryId, inquiryId))
     .orderBy(chatMessages.createdAt);
 
-  return messages.map((m) => ({
+  return messages.map(m => ({
     id: m.id,
     role: m.role as "user" | "assistant",
     content: m.content,
@@ -614,18 +636,18 @@ export async function getInquiryConversation(inquiryId: number): Promise<Array<{
   }));
 }
 
-
 // Get analytics data for inquiries
 export async function getInquiryAnalytics() {
   const db = await getDb();
-  if (!db) return {
-    totalInquiries: 0,
-    byStatus: {},
-    byDay: [],
-    conversionRate: 0,
-    avgResponseTime: 0,
-    overdueCount: 0,
-  };
+  if (!db)
+    return {
+      totalInquiries: 0,
+      byStatus: {},
+      byDay: [],
+      conversionRate: 0,
+      avgResponseTime: 0,
+      overdueCount: 0,
+    };
 
   const inquiries = await db
     .select()
@@ -634,45 +656,46 @@ export async function getInquiryAnalytics() {
 
   // Calculate metrics
   const totalInquiries = inquiries.length;
-  
+
   // Count by status
   const byStatus: Record<string, number> = {};
-  inquiries.forEach((inq) => {
+  inquiries.forEach(inq => {
     byStatus[inq.status] = (byStatus[inq.status] || 0) + 1;
   });
 
   // Group by day (last 30 days)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
+
   const byDay: { date: string; count: number }[] = [];
   const dayMap: Record<string, number> = {};
-  
-  inquiries.forEach((inq) => {
-    const date = new Date(inq.createdAt).toISOString().split('T')[0];
+
+  inquiries.forEach(inq => {
+    const date = new Date(inq.createdAt).toISOString().split("T")[0];
     if (new Date(inq.createdAt) >= thirtyDaysAgo) {
       dayMap[date] = (dayMap[date] || 0) + 1;
     }
   });
-  
+
   // Fill in missing days
   for (let i = 0; i < 30; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = d.toISOString().split("T")[0];
     byDay.unshift({ date: dateStr, count: dayMap[dateStr] || 0 });
   }
 
   // Conversion rate (confirmed + completed / total)
-  const converted = (byStatus['confirmed'] || 0) + (byStatus['completed'] || 0);
-  const conversionRate = totalInquiries > 0 ? Math.round((converted / totalInquiries) * 100) : 0;
+  const converted = (byStatus["confirmed"] || 0) + (byStatus["completed"] || 0);
+  const conversionRate =
+    totalInquiries > 0 ? Math.round((converted / totalInquiries) * 100) : 0;
 
   // Count overdue (new status and older than 24 hours)
   const twentyFourHoursAgo = new Date();
   twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-  
+
   const overdueCount = inquiries.filter(
-    (inq) => inq.status === 'new' && new Date(inq.createdAt) < twentyFourHoursAgo
+    inq => inq.status === "new" && new Date(inq.createdAt) < twentyFourHoursAgo
   ).length;
 
   return {
@@ -688,7 +711,13 @@ export async function getInquiryAnalytics() {
 // Bulk update inquiry statuses
 export async function bulkUpdateInquiryStatus(
   ids: number[],
-  status: "new" | "contacted" | "quoted" | "confirmed" | "completed" | "cancelled"
+  status:
+    | "new"
+    | "contacted"
+    | "quoted"
+    | "confirmed"
+    | "completed"
+    | "cancelled"
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -699,7 +728,7 @@ export async function bulkUpdateInquiryStatus(
       .set({ status })
       .where(eq(customOrderInquiries.id, id));
   }
-  
+
   return { updated: ids.length };
 }
 
@@ -717,6 +746,6 @@ export async function getOverdueInquiries() {
     .orderBy(customOrderInquiries.createdAt);
 
   return inquiries.filter(
-    (inq) => inq.status === 'new' && new Date(inq.createdAt) < twentyFourHoursAgo
+    inq => inq.status === "new" && new Date(inq.createdAt) < twentyFourHoursAgo
   );
 }
