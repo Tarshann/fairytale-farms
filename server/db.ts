@@ -227,6 +227,7 @@ export async function createPasswordlessLoginCode(input: {
 
 export async function consumePasswordlessLoginCode(input: {
   email: string;
+  codeHash: string;
 }): Promise<null | { codeHash: string; expiresAt: Date }> {
   const db = await getDb();
   if (!db) {
@@ -250,6 +251,7 @@ export async function consumePasswordlessLoginCode(input: {
       .where(
         and(
           eq(loginCodes.email, normalizedEmail),
+          eq(loginCodes.codeHash, input.codeHash),
           isNull(loginCodes.usedAt),
           gt(loginCodes.expiresAt, now)
         )

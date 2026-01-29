@@ -4,7 +4,7 @@ import { ENV } from "./env";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import * as db from "../db";
-import { createLoginCode, verifyLoginCode } from "./authCodes";
+import { createLoginCode, hashLoginCode } from "./authCodes";
 
 function json(res: Response, status: number, body: Record<string, unknown>) {
   res.status(status).json(body);
@@ -76,11 +76,8 @@ export function registerAuthRoutes(app: Express) {
       });
     }
 
-    const secret = ENV.cookieSecret || process.env.JWT_SECRET || "dev-secret";
-
     const { code, expiresAt, codeHash } = createLoginCode(
       email,
-      secret,
       CODE_TTL_MINUTES
     );
 
@@ -127,9 +124,8 @@ export function registerAuthRoutes(app: Express) {
       });
     }
 
-    const secret = ENV.cookieSecret || process.env.JWT_SECRET || "dev-secret";
-
-    const record = await db.consumePasswordlessLoginCode({ email });
+    const codeHash = hashLoginCode(email, code);
+    const record = await db.consumePasswordlessLoginCode({ email, codeHash });
 
     if (!record) {
       return json(res, 400, {
@@ -140,11 +136,6 @@ export function registerAuthRoutes(app: Express) {
     const now = new Date();
     if (record.expiresAt.getTime() < now.getTime()) {
       return json(res, 400, { error: "Code expired. Request a new code." });
-    }
-
-    const ok = verifyLoginCode(email, code, secret, record.codeHash);
-    if (!ok) {
-      return json(res, 400, { error: "Invalid code." });
     }
 
     const openId = `email:${email}`;

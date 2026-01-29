@@ -16,30 +16,20 @@ export function sha256(input: string): string {
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
+export function hashLoginCode(email: string, code: string): string {
+  const normalized = email.trim().toLowerCase();
+  return sha256(`${normalized}:${code}`);
+}
+
 export function createLoginCode(
   email: string,
-  secret: string,
   ttlMinutes = 15
 ): CreateCodeResult {
   const normalized = email.trim().toLowerCase();
   const code = generateNumericCode(6);
   const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
-  const codeHash = sha256(`${normalized}:${code}:${secret}`);
+  const codeHash = hashLoginCode(normalized, code);
 
   return { code, expiresAt, codeHash };
-}
-
-export function verifyLoginCode(
-  email: string,
-  code: string,
-  secret: string,
-  expectedHash: string
-): boolean {
-  const normalized = email.trim().toLowerCase();
-  const candidate = sha256(`${normalized}:${code}:${secret}`);
-  return crypto.timingSafeEqual(
-    Buffer.from(candidate),
-    Buffer.from(expectedHash)
-  );
 }
