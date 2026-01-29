@@ -6,65 +6,56 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 export default function Cart() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useAuth();
-  
+  const { hasSession, loading } = useAuth();
+
   const { data: cartItems, isLoading } = trpc.cart.get.useQuery(undefined, {
-    enabled: isAuthenticated,
+    enabled: hasSession,
   });
-  
+
   const utils = trpc.useUtils();
-  
+
   const updateQuantityMutation = trpc.cart.updateQuantity.useMutation({
     onSuccess: () => {
       utils.cart.get.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to update quantity");
     },
   });
-  
+
   const removeItemMutation = trpc.cart.remove.useMutation({
     onSuccess: () => {
       utils.cart.get.invalidate();
       toast.success("Item removed from cart");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to remove item");
     },
   });
-  
-  if (!isAuthenticated) {
+
+  if (loading || !hasSession) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
-        <main className="flex-1 py-12">
-          <div className="container text-center space-y-6">
-            <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Sign In Required</h1>
-            <p className="text-muted-foreground">
-              Please sign in to view your shopping cart
-            </p>
-            <a href={getLoginUrl()}>
-              <Button size="lg">Sign In</Button>
-            </a>
-          </div>
+        <main className="flex-1 flex items-center justify-center">
+          <ShoppingBag className="h-8 w-8 animate-pulse text-primary" />
         </main>
         <Footer />
       </div>
     );
   }
-  
-  const subtotal = cartItems?.reduce((sum, item) => {
-    if (!item.product) return sum;
-    return sum + parseFloat(item.product.basePrice) * item.quantity;
-  }, 0) || 0;
-  
+
+  const subtotal =
+    cartItems?.reduce((sum, item) => {
+      if (!item.product) return sum;
+      return sum + parseFloat(item.product.basePrice) * item.quantity;
+    }, 0) || 0;
+
   const handleCheckout = () => {
     if (!cartItems || cartItems.length === 0) {
       toast.error("Your cart is empty");
@@ -72,17 +63,17 @@ export default function Cart() {
     }
     setLocation("/checkout");
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      
+
       <main className="flex-1 py-12">
         <div className="container">
           <h1 className="text-3xl md:text-4xl font-bold mb-8">
             Shopping <span className="text-gradient-gold">Cart</span>
           </h1>
-          
+
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
@@ -103,7 +94,9 @@ export default function Cart() {
             <div className="text-center py-12 space-y-6">
               <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground" />
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
+                <h2 className="text-2xl font-semibold mb-2">
+                  Your cart is empty
+                </h2>
                 <p className="text-muted-foreground">
                   Add some delicious treats to get started!
                 </p>
@@ -118,9 +111,9 @@ export default function Cart() {
           ) : (
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
-                {cartItems.map((item) => {
+                {cartItems.map(item => {
                   if (!item.product) return null;
-                  
+
                   return (
                     <Card key={item.id}>
                       <CardContent className="p-6">
@@ -134,7 +127,7 @@ export default function Cart() {
                               />
                             )}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <Link href={`/products/${item.product.slug}`}>
                               <h3 className="font-semibold hover:text-primary transition-colors line-clamp-1">
@@ -142,9 +135,10 @@ export default function Cart() {
                               </h3>
                             </Link>
                             <p className="text-sm text-muted-foreground mt-1">
-                              ${parseFloat(item.product.basePrice).toFixed(2)} each
+                              ${parseFloat(item.product.basePrice).toFixed(2)}{" "}
+                              each
                             </p>
-                            
+
                             {item.customizationNotes && (
                               <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
                                 <p className="font-medium text-xs text-muted-foreground mb-1">
@@ -155,7 +149,7 @@ export default function Cart() {
                                 </p>
                               </div>
                             )}
-                            
+
                             <div className="flex items-center gap-4 mt-4">
                               <div className="flex items-center gap-2">
                                 <Button
@@ -168,7 +162,10 @@ export default function Cart() {
                                       quantity: Math.max(1, item.quantity - 1),
                                     })
                                   }
-                                  disabled={item.quantity <= 1 || updateQuantityMutation.isPending}
+                                  disabled={
+                                    item.quantity <= 1 ||
+                                    updateQuantityMutation.isPending
+                                  }
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
@@ -190,12 +187,14 @@ export default function Cart() {
                                   <Plus className="h-3 w-3" />
                                 </Button>
                               </div>
-                              
+
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="text-destructive hover:text-destructive"
-                                onClick={() => removeItemMutation.mutate({ id: item.id })}
+                                onClick={() =>
+                                  removeItemMutation.mutate({ id: item.id })
+                                }
                                 disabled={removeItemMutation.isPending}
                               >
                                 <Trash2 className="h-4 w-4 mr-1" />
@@ -203,10 +202,14 @@ export default function Cart() {
                               </Button>
                             </div>
                           </div>
-                          
+
                           <div className="text-right">
                             <p className="font-bold text-lg">
-                              ${(parseFloat(item.product.basePrice) * item.quantity).toFixed(2)}
+                              $
+                              {(
+                                parseFloat(item.product.basePrice) *
+                                item.quantity
+                              ).toFixed(2)}
                             </p>
                           </div>
                         </div>
@@ -215,30 +218,37 @@ export default function Cart() {
                   );
                 })}
               </div>
-              
+
               <div className="lg:col-span-1">
                 <Card className="sticky top-20">
                   <CardContent className="p-6 space-y-4">
                     <h2 className="text-xl font-bold">Order Summary</h2>
-                    
+
                     <div className="space-y-2 py-4 border-y border-border">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span className="font-medium">${subtotal.toFixed(2)}</span>
+                        <span className="font-medium">
+                          ${subtotal.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Items</span>
                         <span className="font-medium">
-                          {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                          {cartItems.reduce(
+                            (sum, item) => sum + item.quantity,
+                            0
+                          )}
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span className="text-primary">${subtotal.toFixed(2)}</span>
+                      <span className="text-primary">
+                        ${subtotal.toFixed(2)}
+                      </span>
                     </div>
-                    
+
                     <Button
                       size="lg"
                       className="w-full"
@@ -247,7 +257,7 @@ export default function Cart() {
                       Proceed to Checkout
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                    
+
                     <Link href="/products">
                       <Button variant="outline" className="w-full">
                         Continue Shopping
@@ -260,7 +270,7 @@ export default function Cart() {
           )}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

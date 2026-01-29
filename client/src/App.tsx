@@ -20,6 +20,7 @@ import AdminContacts from "./pages/admin/AdminContacts";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminInquiries from "./pages/admin/AdminInquiries";
 import ChatWidget from "./components/ChatWidget";
+import Login from "./pages/Login";
 
 // Valentine's Day 2026 Collection
 import ValentinesCollection from "./pages/ValentinesCollection";
@@ -43,12 +44,17 @@ function Router() {
       <Route path={"/cart"} component={Cart} />
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/order-confirmation"} component={OrderConfirmation} />
-      <Route path={"/order-confirmation/:orderNumber"} component={OrderConfirmation} />
+      <Route
+        path={"/order-confirmation/:orderNumber"}
+        component={OrderConfirmation}
+      />
       <Route path={"/my-orders"} component={MyOrders} />
       <Route path={"/orders/:id"} component={OrderDetail} />
       <Route path={"/contact"} component={Contact} />
+      <Route path={"/login"} component={Login} />
       <Route path={"/wishlist"} component={Wishlist} />
-      
+      <Route path={"/account/orders"} component={MyOrders} />
+
       {/* Valentine's Day 2026 Collection */}
       <Route path={"/valentines"} component={ValentinesCollection} />
       <Route path={"/build-your-own"} component={BuildYourOwn} />
@@ -59,7 +65,7 @@ function Router() {
       <Route path={"/bickering-bros"} component={BickeringBros} />
       <Route path={"/gallery"} component={Gallery} />
       <Route path={"/faq"} component={FAQ} />
-      
+
       {/* Admin routes */}
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/admin/products"} component={AdminProducts} />
@@ -67,7 +73,7 @@ function Router() {
       <Route path={"/admin/contacts"} component={AdminContacts} />
       <Route path={"/admin/settings"} component={AdminSettings} />
       <Route path={"/admin/inquiries"} component={AdminInquiries} />
-      
+
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

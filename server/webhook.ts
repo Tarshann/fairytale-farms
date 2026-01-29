@@ -32,7 +32,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
 
   // Handle test events
   if (event.id.startsWith("evt_test_")) {
-    console.log("[Webhook] Test event detected, returning verification response");
+    console.log(
+      "[Webhook] Test event detected, returning verification response"
+    );
     return res.json({
       verified: true,
     });
@@ -78,23 +80,27 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const userId = session.client_reference_id
     ? parseInt(session.client_reference_id)
     : session.metadata?.user_id
-    ? parseInt(session.metadata.user_id)
-    : null;
+      ? parseInt(session.metadata.user_id)
+      : null;
 
   if (!userId) {
     console.error("[Webhook] No user ID found in session");
     return;
   }
 
-  const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id, {
-    expand: ["data.price.product"],
-  });
+  const lineItemsResponse = await stripe.checkout.sessions.listLineItems(
+    session.id,
+    {
+      expand: ["data.price.product"],
+    }
+  );
 
   const purchasedItems = lineItemsResponse.data
-    .map((item) => {
+    .map(item => {
       const price = item.price;
       const product = price?.product;
       if (!product || typeof product === "string") return null;
+      if ("deleted" in product && product.deleted) return null;
 
       const productIdValue = product.metadata?.productId;
       if (!productIdValue) return null;
@@ -119,7 +125,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
   if (purchasedItems.length === 0) {
-    console.error("[Webhook] No purchasable line items found for session:", session.id);
+    console.error(
+      "[Webhook] No purchasable line items found for session:",
+      session.id
+    );
     return;
   }
 
@@ -131,9 +140,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const orderNumber = `FF${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
   // Create order
-  const customerEmail = session.customer_email || session.metadata?.customer_email || "";
-  const customerName = session.metadata?.customer_name || session.customer_details?.name || "Customer";
-  
+  const customerEmail =
+    session.customer_email || session.metadata?.customer_email || "";
+  const customerName =
+    session.metadata?.customer_name ||
+    session.customer_details?.name ||
+    "Customer";
+
   const isDeposit = session.metadata?.is_deposit === "true";
   const discountAmount = session.metadata?.discount_amount
     ? Number.parseFloat(session.metadata.discount_amount)
@@ -166,14 +179,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripePaymentIntentId: paymentIntentId,
     stripePaymentStatus: session.payment_status,
     promoCode,
-    discountAmount: discountAmount !== null ? discountAmount.toFixed(2) : undefined,
+    discountAmount:
+      discountAmount !== null ? discountAmount.toFixed(2) : undefined,
     deliveryZipCode,
     deliveryType,
     scheduledDeliveryDate,
     depositPaid: isDeposit ? true : undefined,
     depositAmount: isDeposit ? totalAmount : undefined,
     remainingAmount:
-      isDeposit && remainingAmount !== null ? remainingAmount.toFixed(2) : undefined,
+      isDeposit && remainingAmount !== null
+        ? remainingAmount.toFixed(2)
+        : undefined,
   });
 
   const orderId = Number(orderResult.insertId);
@@ -194,17 +210,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   await db.delete(cartItems).where(eq(cartItems.userId, userId));
 
-  // Update order status to completed
-  await db
-    .update(orders)
-    .set({ status: "completed" })
-    .where(eq(orders.id, orderId));
-
   console.log("[Webhook] Order created successfully:", orderNumber);
 
   // Send order confirmation email to customer
   if (customerEmail) {
-    const itemDetails = purchasedItems.map((item) => ({
+    const itemDetails = purchasedItems.map(item => ({
       name: item.productName,
       quantity: item.quantity,
       price: `$${(item.unitPrice * item.quantity).toFixed(2)}`,
@@ -287,8 +297,14 @@ Fairytale Farms 🧁
       title: `🎂 New Order #${data.orderNumber}`,
       content: `New order from ${data.customerName} (${data.customerEmail})\n\nItems:\n${itemsList}\n\nTotal: $${parseFloat(data.totalAmount).toFixed(2)}`,
     });
-    console.log("[Webhook] Owner notification sent for order:", data.orderNumber);
-    console.log("[Webhook] Customer email would be sent to:", data.customerEmail);
+    console.log(
+      "[Webhook] Owner notification sent for order:",
+      data.orderNumber
+    );
+    console.log(
+      "[Webhook] Customer email would be sent to:",
+      data.customerEmail
+    );
     console.log("[Webhook] Email content:", emailContent);
   } catch (error) {
     console.error("[Webhook] Failed to send notifications:", error);

@@ -10,15 +10,17 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/">
               <a className="block">
-                <img 
-                  src="/images/fairytale-farms-logo.png" 
-                  alt="Fairytale Farms" 
+                <img
+                  src="/images/fairytale-farms-logo.png"
+                  alt="Fairytale Farms"
                   className="h-24 w-auto object-contain"
                 />
               </a>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Where every treat tells a story! Handcrafted with love, our magical creations turn ordinary moments into extraordinary memories.
+              Where every treat tells a story! Handcrafted with love, our
+              magical creations turn ordinary moments into extraordinary
+              memories.
             </p>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>Made with</span>
@@ -26,7 +28,7 @@ export default function Footer() {
               <span>in Castalian Springs, TN</span>
             </div>
           </div>
-          
+
           {/* Quick Links */}
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Quick Links</h4>
@@ -60,7 +62,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/my-orders">
+                <Link href="/account/orders">
                   <a className="text-muted-foreground hover:text-primary transition-colors">
                     My Orders
                   </a>
@@ -82,18 +84,27 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          
+
           {/* Contact Info */}
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Contact</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start space-x-2">
                 <Mail className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-lavender" />
-                <a href="mailto:fairytalefarms.net@gmail.com" className="hover:text-primary transition-colors">fairytalefarms.net@gmail.com</a>
+                <a
+                  href="mailto:fairytalefarms.net@gmail.com"
+                  className="hover:text-primary transition-colors"
+                >
+                  fairytalefarms.net@gmail.com
+                </a>
               </li>
               <li className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-pastel-mint" />
-                <span>Castalian Springs, TN<br />Sumner County • DoorDash & Uber Eats</span>
+                <span>
+                  Castalian Springs, TN
+                  <br />
+                  Sumner County • DoorDash & Uber Eats
+                </span>
               </li>
             </ul>
             <div className="pt-2">
@@ -104,7 +115,7 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-          
+
           {/* Social & Hours */}
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Follow Us</h4>
@@ -137,17 +148,24 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        
+
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Fairytale Farms Bakery. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Fairytale Farms Bakery. All
+              rights reserved.
+            </p>
             <div className="flex items-center gap-4">
               <Link href="/privacy">
-                <a className="hover:text-primary transition-colors">Privacy Policy</a>
+                <a className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </a>
               </Link>
               <Link href="/terms">
-                <a className="hover:text-primary transition-colors">Terms of Service</a>
+                <a className="hover:text-primary transition-colors">
+                  Terms of Service
+                </a>
               </Link>
             </div>
           </div>

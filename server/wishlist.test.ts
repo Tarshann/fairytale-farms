@@ -53,7 +53,7 @@ describe("wishlist", () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.wishlist.list();
-      
+
       expect(Array.isArray(result)).toBe(true);
     });
   });
@@ -64,7 +64,7 @@ describe("wishlist", () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.wishlist.productIds();
-      
+
       expect(Array.isArray(result)).toBe(true);
     });
   });
@@ -75,7 +75,7 @@ describe("wishlist", () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.wishlist.count();
-      
+
       expect(typeof result).toBe("number");
       expect(result).toBeGreaterThanOrEqual(0);
     });
@@ -87,7 +87,7 @@ describe("wishlist", () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.wishlist.isInWishlist({ productId: 1 });
-      
+
       expect(typeof result).toBe("boolean");
     });
   });
@@ -100,7 +100,7 @@ describe("wishlist", () => {
       // First toggle - should add
       const addResult = await caller.wishlist.toggle({ productId: 999 });
       expect(addResult.success).toBe(true);
-      
+
       // Second toggle - should remove
       const removeResult = await caller.wishlist.toggle({ productId: 999 });
       expect(removeResult.success).toBe(true);
@@ -113,9 +113,9 @@ describe("wishlist", () => {
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.wishlist.add({ productId: 998 });
-      
+
       expect(result.success).toBe(true);
-      
+
       // Cleanup - remove the item
       await caller.wishlist.remove({ productId: 998 });
     });
@@ -128,10 +128,10 @@ describe("wishlist", () => {
 
       // First add an item
       await caller.wishlist.add({ productId: 997 });
-      
+
       // Then remove it
       const result = await caller.wishlist.remove({ productId: 997 });
-      
+
       expect(result.success).toBe(true);
     });
   });

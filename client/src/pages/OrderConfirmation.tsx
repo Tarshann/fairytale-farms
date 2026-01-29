@@ -5,22 +5,23 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { CheckCircle, Package, ArrowRight, Loader2 } from "lucide-react";
 
 export default function OrderConfirmation() {
   const [, params] = useRoute("/order-confirmation/:orderNumber");
   const [location] = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasSession } = useAuth();
   const searchParams = new URLSearchParams(location.split("?")[1] || "");
   const sessionId = searchParams.get("session_id");
 
-  const shouldFetchOrder = Boolean(sessionId && isAuthenticated);
+  const shouldFetchOrder = Boolean(sessionId && hasSession);
   const { data: sessionOrder, isLoading } =
     trpc.orders.getByCheckoutSession.useQuery(
       { sessionId: sessionId ?? "" },
       {
         enabled: shouldFetchOrder,
-        refetchInterval: (query) => (query.state.data ? false : 3000),
+        refetchInterval: query => (query.state.data ? false : 3000),
         retry: true,
       }
     );
@@ -28,7 +29,7 @@ export default function OrderConfirmation() {
   const orderNumber = params?.orderNumber ?? sessionOrder?.orderNumber;
   const showLoading = shouldFetchOrder && isLoading && !sessionOrder;
   const showPending = Boolean(sessionId && !orderNumber && !showLoading);
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -41,11 +42,15 @@ export default function OrderConfirmation() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold">Order Confirmed!</h1>
-                <p className="text-lg text-muted-foreground">Thank you for your order</p>
+                <p className="text-lg text-muted-foreground">
+                  Thank you for your order
+                </p>
               </div>
               {orderNumber && (
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Order Number</p>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Order Number
+                  </p>
                   <p className="text-2xl font-bold font-mono">{orderNumber}</p>
                 </div>
               )}
@@ -67,17 +72,32 @@ export default function OrderConfirmation() {
                   <div>
                     <p className="font-semibold">What's Next?</p>
                     <p className="text-sm text-muted-foreground">
-                      We've received your order and will begin preparing your items.
+                      We've received your order and will begin preparing your
+                      items.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Link href="/my-orders">
-                  <Button size="lg">View My Orders<ArrowRight className="ml-2 h-4 w-4" /></Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link href="/account/orders">
+                    <Button size="lg">
+                      Track this order
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <a href={getLoginUrl()}>
+                    <Button size="lg">
+                      Track this order
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+                )}
                 <Link href="/products">
-                  <Button size="lg" variant="outline">Continue Shopping</Button>
+                  <Button size="lg" variant="outline">
+                    Continue Shopping
+                  </Button>
                 </Link>
               </div>
             </CardContent>
