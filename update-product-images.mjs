@@ -28,12 +28,12 @@ const imageUpdates = [
   },
   {
     slug: "sprinkle-sugar-cookies",
-    imageUrl: "/images/gallery/sugar-cookies-mickey-rainbow.jpeg",
+    imageUrl: "/images/sprinkle-sugar-cookies.svg",
   },
-  { slug: "pecan-sandies", imageUrl: "/images/meringue-cookie.jpg" },
+  { slug: "pecan-sandies", imageUrl: "/images/pecan-sandies.svg" },
   {
     slug: "chocolate-crinkle-cookies",
-    imageUrl: "/images/chocolate-chip-cookie.jpg",
+    imageUrl: "/images/chocolate-crinkle-cookies.svg",
   },
 
   // Mini Tin Cakes - use mini cake stock image
