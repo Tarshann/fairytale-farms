@@ -47,9 +47,7 @@ export default function OrderConfirmation() {
       typeof window !== "undefined"
         ? localStorage.getItem("lastCheckoutEmail")
         : "";
-    return (emailFromQuery || saved || user?.email || "")
-      .trim()
-      .toLowerCase();
+    return (emailFromQuery || saved || user?.email || "").trim().toLowerCase();
   });
   const [step, setStep] = useState<"idle" | "sent" | "verifying">("idle");
   const [code, setCode] = useState("");
@@ -152,15 +150,11 @@ export default function OrderConfirmation() {
                   <p className="text-sm text-muted-foreground mb-1">
                     Order Number
                   </p>
-                  <p className="text-2xl font-bold font-mono">
-                    {orderNumber}
-                  </p>
+                  <p className="text-2xl font-bold font-mono">{orderNumber}</p>
                 </div>
               ) : orderId ? (
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Order ID
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-1">Order ID</p>
                   <p className="text-2xl font-bold font-mono">{orderId}</p>
                 </div>
               ) : null}

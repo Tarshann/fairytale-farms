@@ -210,8 +210,16 @@ export async function createPasswordlessLoginCode(input: {
     return;
   }
 
+  const normalizedEmail = input.email.trim().toLowerCase();
+  await db
+    .update(loginCodes)
+    .set({ usedAt: new Date() })
+    .where(
+      and(eq(loginCodes.email, normalizedEmail), isNull(loginCodes.usedAt))
+    );
+
   await db.insert(loginCodes).values({
-    email: input.email.trim().toLowerCase(),
+    email: normalizedEmail,
     codeHash: input.codeHash,
     expiresAt: input.expiresAt,
   });
@@ -220,13 +228,50 @@ export async function createPasswordlessLoginCode(input: {
 export async function consumePasswordlessLoginCode(input: {
   email: string;
 }): Promise<null | { codeHash: string; expiresAt: Date }> {
-  const record = await getLatestActiveLoginCode(input.email);
-  if (!record) {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot consume login code: database not available"
+    );
     return null;
   }
 
-  await markLoginCodeUsed(record.id);
-  return { codeHash: record.codeHash, expiresAt: record.expiresAt };
+  const normalizedEmail = input.email.trim().toLowerCase();
+
+  return db.transaction(async tx => {
+    const [record] = await tx
+      .select()
+      .from(loginCodes)
+      .where(
+        and(
+          eq(loginCodes.email, normalizedEmail),
+          isNull(loginCodes.usedAt),
+          gt(loginCodes.expiresAt, new Date())
+        )
+      )
+      .orderBy(desc(loginCodes.createdAt))
+      .limit(1);
+
+    if (!record) {
+      return null;
+    }
+
+    const updateResult: any = await tx
+      .update(loginCodes)
+      .set({ usedAt: new Date() })
+      .where(and(eq(loginCodes.id, record.id), isNull(loginCodes.usedAt)));
+
+    const affected =
+      typeof updateResult?.rowsAffected === "number"
+        ? updateResult.rowsAffected
+        : updateResult?.affectedRows;
+
+    if (!affected) {
+      return null;
+    }
+
+    return { codeHash: record.codeHash, expiresAt: record.expiresAt };
+  });
 }
 
 export async function attachGuestOrdersByEmail(input: {
@@ -235,7 +280,9 @@ export async function attachGuestOrdersByEmail(input: {
 }) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot attach guest orders: database not available");
+    console.warn(
+      "[Database] Cannot attach guest orders: database not available"
+    );
     return;
   }
 

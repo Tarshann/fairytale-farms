@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME } from "@shared/const";
 import { ENV } from "./env";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
@@ -8,6 +8,46 @@ import { createLoginCode, verifyLoginCode } from "./authCodes";
 
 function json(res: Response, status: number, body: Record<string, unknown>) {
   res.status(status).json(body);
+}
+
+type RateLimitState = {
+  count: number;
+  resetAt: number;
+};
+
+const requestIpLimits = new Map<string, RateLimitState>();
+const requestEmailLimits = new Map<string, RateLimitState>();
+const verifyIpLimits = new Map<string, RateLimitState>();
+const verifyEmailLimits = new Map<string, RateLimitState>();
+
+const REQUEST_IP_MAX = 10;
+const REQUEST_EMAIL_MAX = 3;
+const VERIFY_IP_MAX = 15;
+const VERIFY_EMAIL_MAX = 5;
+const WINDOW_MS = 60_000;
+const CODE_TTL_MINUTES = 15;
+const CODE_LOGIN_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+
+function enforceRateLimit(
+  store: Map<string, RateLimitState>,
+  key: string,
+  max: number,
+  windowMs: number
+) {
+  if (!key) return;
+
+  const now = Date.now();
+  const state = store.get(key);
+  if (!state || state.resetAt <= now) {
+    store.set(key, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+
+  if (state.count >= max) {
+    throw new Error("rate_limit");
+  }
+
+  state.count += 1;
 }
 
 function getIp(req: Request): string {
@@ -26,9 +66,23 @@ export function registerAuthRoutes(app: Express) {
       return json(res, 400, { error: "invalid email" });
     }
 
+    try {
+      const ip = getIp(req);
+      enforceRateLimit(requestIpLimits, ip, REQUEST_IP_MAX, WINDOW_MS);
+      enforceRateLimit(requestEmailLimits, email, REQUEST_EMAIL_MAX, WINDOW_MS);
+    } catch {
+      return json(res, 429, {
+        error: "Too many requests. Please wait and try again.",
+      });
+    }
+
     const secret = ENV.cookieSecret || process.env.JWT_SECRET || "dev-secret";
 
-    const { code, expiresAt, codeHash } = createLoginCode(email, secret, 15);
+    const { code, expiresAt, codeHash } = createLoginCode(
+      email,
+      secret,
+      CODE_TTL_MINUTES
+    );
 
     await db.createPasswordlessLoginCode({
       email,
@@ -43,6 +97,7 @@ export function registerAuthRoutes(app: Express) {
         ok: true,
         devCode: code,
         expiresAt: expiresAt.toISOString(),
+        message: "If this email exists, a code was sent.",
       });
     }
 
@@ -60,6 +115,16 @@ export function registerAuthRoutes(app: Express) {
 
     if (!email || !code) {
       return json(res, 400, { error: "email and code are required" });
+    }
+
+    try {
+      const ip = getIp(req);
+      enforceRateLimit(verifyIpLimits, ip, VERIFY_IP_MAX, WINDOW_MS);
+      enforceRateLimit(verifyEmailLimits, email, VERIFY_EMAIL_MAX, WINDOW_MS);
+    } catch {
+      return json(res, 429, {
+        error: "Too many attempts. Please wait and try again.",
+      });
     }
 
     const secret = ENV.cookieSecret || process.env.JWT_SECRET || "dev-secret";
@@ -97,11 +162,14 @@ export function registerAuthRoutes(app: Express) {
 
     const sessionToken = await sdk.createSessionToken(openId, {
       name: displayName,
-      expiresInMs: ONE_YEAR_MS,
+      expiresInMs: CODE_LOGIN_SESSION_MS,
     });
 
     const cookieOptions = getSessionCookieOptions(req);
-    res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+    res.cookie(COOKIE_NAME, sessionToken, {
+      ...cookieOptions,
+      maxAge: CODE_LOGIN_SESSION_MS,
+    });
 
     return json(res, 200, { ok: true });
   });
