@@ -1,7 +1,13 @@
 import { useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +17,23 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { 
-  Camera, Upload, Heart, Clock, Star, ArrowLeft, Check, 
-  AlertCircle, Image, X, Plus, Minus, ShoppingCart, Info,
-  Sparkles, Calendar
+import {
+  Camera,
+  Upload,
+  Heart,
+  Clock,
+  Star,
+  ArrowLeft,
+  Check,
+  AlertCircle,
+  Image,
+  X,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Info,
+  Sparkles,
+  Calendar,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -27,7 +46,7 @@ export default function CustomPortraitPucks() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [specialInstructions, setSpecialInstructions] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { data: product } = trpc.valentines.customPortrait.useQuery();
   const addToCart = trpc.cart.add.useMutation();
   const utils = trpc.useUtils();
@@ -37,15 +56,19 @@ export default function CustomPortraitPucks() {
   const maxQuantity = 24;
   const basePricePerPuck = 4;
   const portraitPricePerPuck = 8;
-  const pricePerPuck = isCustomPortrait ? portraitPricePerPuck : basePricePerPuck;
-  
+  const pricePerPuck = isCustomPortrait
+    ? portraitPricePerPuck
+    : basePricePerPuck;
+
   const subtotal = quantity * pricePerPuck;
   const deposit = subtotal * 0.5;
-  
+
   // Check availability
-  const remaining = product?.inventoryCap ? product.inventoryCap - (product.inventorySold || 0) : 10;
+  const remaining = product?.inventoryCap
+    ? product.inventoryCap - (product.inventorySold || 0)
+    : 10;
   const isAvailable = remaining > 0;
-  
+
   // Check cutoff date (Feb 10, 2026)
   const cutoffDate = new Date("2026-02-10T23:59:59");
   const now = new Date();
@@ -56,7 +79,7 @@ export default function CustomPortraitPucks() {
     if (!file) return;
 
     // Validate file type
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
       toast.error("Please upload a JPG or PNG image");
       return;
     }
@@ -85,7 +108,7 @@ export default function CustomPortraitPucks() {
       setPreviewUrl(null);
     }
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -111,12 +134,14 @@ export default function CustomPortraitPucks() {
       await addToCart.mutateAsync({
         productId: product.id,
         quantity: quantity,
-        customizationNotes: `Custom Portrait Pucks - Photo: ${uploadedFile.name} (${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB). Instructions: ${specialInstructions || 'None'}`,
+        customizationNotes: `Custom Portrait Pucks - Photo: ${uploadedFile.name} (${(uploadedFile.size / 1024 / 1024).toFixed(2)}MB). Instructions: ${specialInstructions || "None"}`,
       });
 
       utils.cart.get.invalidate();
-      toast.success("Custom Portrait Pucks added to cart! 50% deposit will be charged at checkout.");
-      
+      toast.success(
+        "Custom Portrait Pucks added to cart! 50% deposit will be charged at checkout."
+      );
+
       // Reset form
       setQuantity(6);
       removeFile();
@@ -129,25 +154,31 @@ export default function CustomPortraitPucks() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navigation />
-      
+
       {/* Header */}
       <section className="bg-gradient-rainbow-soft py-12">
         <div className="container">
-          <Link href="/valentines" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4">
+          <Link
+            href="/valentines"
+            className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Valentine's Collection
           </Link>
-          
+
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-2xl bg-white shadow-pastel flex items-center justify-center">
               <Camera className="w-8 h-8 text-purple-500" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">Custom Pucks</h1>
-              <p className="text-muted-foreground">Edible art on delicious Oreo pucks - standard designs or custom portraits!</p>
+              <p className="text-muted-foreground">
+                Edible art on delicious Oreo pucks - standard designs or custom
+                portraits!
+              </p>
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             <Badge className="bg-white text-purple-600 border-purple-200">
               <Sparkles className="w-4 h-4 mr-2" />
@@ -172,19 +203,19 @@ export default function CustomPortraitPucks() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Order Cutoff Passed</AlertTitle>
             <AlertDescription>
-              Custom portrait orders for Valentine's Day 2026 are no longer available. 
-              The cutoff was February 10, 2026.
+              Custom portrait orders for Valentine's Day 2026 are no longer
+              available. The cutoff was February 10, 2026.
             </AlertDescription>
           </Alert>
         )}
-        
+
         {!isAvailable && !isPastCutoff && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Sold Out</AlertTitle>
             <AlertDescription>
-              All custom portrait slots for Valentine's Day 2026 have been filled. 
-              Check back for future availability!
+              All custom portrait slots for Valentine's Day 2026 have been
+              filled. Check back for future availability!
             </AlertDescription>
           </Alert>
         )}
@@ -196,7 +227,7 @@ export default function CustomPortraitPucks() {
             <Card>
               <CardHeader>
                 <CardTitle>How It Works</CardTitle>
-<CardDescription>Our magical creation process</CardDescription>
+                <CardDescription>Our magical creation process</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
@@ -206,11 +237,12 @@ export default function CustomPortraitPucks() {
                   <div>
                     <h4 className="font-semibold">Upload Your Photo</h4>
                     <p className="text-sm text-muted-foreground">
-                      Submit a high-resolution photo (minimum 1MB, JPG or PNG). Clear faces and good lighting work best.
+                      Submit a high-resolution photo (minimum 1MB, JPG or PNG).
+                      Clear faces and good lighting work best.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-full bg-pastel-lavender flex items-center justify-center flex-shrink-0">
                     <span className="font-bold text-purple-600">2</span>
@@ -218,11 +250,12 @@ export default function CustomPortraitPucks() {
                   <div>
                     <h4 className="font-semibold">We Project & Trace</h4>
                     <p className="text-sm text-muted-foreground">
-                      Your photo is projected onto Oreo pucks, and our artists hand-trace every detail with precision.
+                      Your photo is projected onto Oreo pucks, and our artists
+                      hand-trace every detail with precision.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-full bg-pastel-mint flex items-center justify-center flex-shrink-0">
                     <span className="font-bold text-green-600">3</span>
@@ -230,7 +263,8 @@ export default function CustomPortraitPucks() {
                   <div>
                     <h4 className="font-semibold">Delivered with Love</h4>
                     <p className="text-sm text-muted-foreground">
-                      Your custom portrait pucks are carefully packaged and delivered on your scheduled date.
+                      Your custom portrait pucks are carefully packaged and
+                      delivered on your scheduled date.
                     </p>
                   </div>
                 </div>
@@ -238,77 +272,88 @@ export default function CustomPortraitPucks() {
             </Card>
 
             {/* Photo Upload - Only show for custom portraits */}
-            {isCustomPortrait && (<>
-            <Card className="border-2 border-dashed border-purple-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="w-5 h-5" />
-                  Upload Your Photo
-                </CardTitle>
-                <CardDescription>
-                  High-resolution photo required (minimum 1MB, JPG or PNG)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!uploadedFile ? (
-                  <div 
-                    className="border-2 border-dashed border-muted rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Image className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <p className="font-medium mb-2">Click to upload your photo</p>
-                    <p className="text-sm text-muted-foreground">
-                      JPG or PNG, minimum 1MB, maximum 10MB
-                    </p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <img 
-                      src={previewUrl || ''} 
-                      alt="Preview" 
-                      className="w-full h-64 object-cover rounded-lg"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={removeFile}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                    <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
-                      <Check className="w-4 h-4" />
-                      <span>{uploadedFile.name} ({(uploadedFile.size / 1024 / 1024).toFixed(2)}MB)</span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {isCustomPortrait && (
+              <>
+                <Card className="border-2 border-dashed border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="w-5 h-5" />
+                      Upload Your Photo
+                    </CardTitle>
+                    <CardDescription>
+                      High-resolution photo required (minimum 1MB, JPG or PNG)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!uploadedFile ? (
+                      <div
+                        className="border-2 border-dashed border-muted rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Image className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                        <p className="font-medium mb-2">
+                          Click to upload your photo
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          JPG or PNG, minimum 1MB, maximum 10MB
+                        </p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <img
+                          src={previewUrl || ""}
+                          alt="Preview"
+                          className="w-full h-64 object-cover rounded-lg"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={removeFile}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                        <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
+                          <Check className="w-4 h-4" />
+                          <span>
+                            {uploadedFile.name} (
+                            {(uploadedFile.size / 1024 / 1024).toFixed(2)}MB)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Photo Tips - Only show for custom portraits */}
-            <Card className="bg-muted/30">
-              <CardContent className="p-4">
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Info className="w-4 h-4" />
-                  Photo Tips for Best Results
-                </h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Use photos with clear, well-lit faces</li>
-                  <li>• Avoid blurry or low-resolution images</li>
-                  <li>• Simple backgrounds work best</li>
-                  <li>• High contrast photos translate better to Oreo art</li>
-                  <li>• We'll contact you if your photo needs adjustment</li>
-                </ul>
-              </CardContent>
-            </Card>
-            </>)}
+                {/* Photo Tips - Only show for custom portraits */}
+                <Card className="bg-muted/30">
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Info className="w-4 h-4" />
+                      Photo Tips for Best Results
+                    </h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Use photos with clear, well-lit faces</li>
+                      <li>• Avoid blurry or low-resolution images</li>
+                      <li>• Simple backgrounds work best</li>
+                      <li>
+                        • High contrast photos translate better to Oreo art
+                      </li>
+                      <li>
+                        • We'll contact you if your photo needs adjustment
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
 
           {/* Right: Order Configuration */}
@@ -318,72 +363,90 @@ export default function CustomPortraitPucks() {
                 <CardTitle>Configure Your Order</CardTitle>
                 <CardDescription>Minimum 6 pucks required</CardDescription>
               </CardHeader>
-              
+
               <CardContent className="p-6 space-y-6">
                 {/* Puck Type Selector */}
                 <div>
-                  <Label className="text-base font-semibold mb-3 block">Puck Type</Label>
+                  <Label className="text-base font-semibold mb-3 block">
+                    Puck Type
+                  </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setIsCustomPortrait(false)}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        !isCustomPortrait 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-muted hover:border-primary/50'
+                        !isCustomPortrait
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-primary/50"
                       }`}
                     >
                       <div className="font-semibold">Standard Designs</div>
-                      <div className="text-sm text-muted-foreground">Pre-made themed designs</div>
-                      <div className="text-lg font-bold text-primary mt-2">$4/puck</div>
+                      <div className="text-sm text-muted-foreground">
+                        Pre-made themed designs
+                      </div>
+                      <div className="text-lg font-bold text-primary mt-2">
+                        $4/puck
+                      </div>
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsCustomPortrait(true)}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        isCustomPortrait 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-muted hover:border-primary/50'
+                        isCustomPortrait
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-primary/50"
                       }`}
                     >
                       <div className="font-semibold">Custom Portrait</div>
-                      <div className="text-sm text-muted-foreground">Your photo on pucks</div>
-                      <div className="text-lg font-bold text-primary mt-2">$8/puck</div>
+                      <div className="text-sm text-muted-foreground">
+                        Your photo on pucks
+                      </div>
+                      <div className="text-lg font-bold text-primary mt-2">
+                        $8/puck
+                      </div>
                     </button>
                   </div>
                 </div>
 
                 {/* Quantity Selector */}
                 <div>
-                  <Label className="text-base font-semibold mb-3 block">Number of Pucks</Label>
+                  <Label className="text-base font-semibold mb-3 block">
+                    Number of Pucks
+                  </Label>
                   <div className="flex items-center gap-4">
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setQuantity(Math.max(minQuantity, quantity - 1))}
+                      onClick={() =>
+                        setQuantity(Math.max(minQuantity, quantity - 1))
+                      }
                       disabled={quantity <= minQuantity}
                     >
                       <Minus className="w-4 h-4" />
                     </Button>
-                    
+
                     <div className="flex-1">
                       <Input
                         type="number"
                         value={quantity}
-                        onChange={(e) => {
+                        onChange={e => {
                           const val = parseInt(e.target.value) || minQuantity;
-                          setQuantity(Math.min(maxQuantity, Math.max(minQuantity, val)));
+                          setQuantity(
+                            Math.min(maxQuantity, Math.max(minQuantity, val))
+                          );
                         }}
                         min={minQuantity}
                         max={maxQuantity}
                         className="text-center text-xl font-bold"
                       />
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                      onClick={() =>
+                        setQuantity(Math.min(maxQuantity, quantity + 1))
+                      }
                       disabled={quantity >= maxQuantity}
                     >
                       <Plus className="w-4 h-4" />
@@ -396,14 +459,17 @@ export default function CustomPortraitPucks() {
 
                 {/* Special Instructions */}
                 <div>
-                  <Label htmlFor="instructions" className="text-base font-semibold mb-3 block">
+                  <Label
+                    htmlFor="instructions"
+                    className="text-base font-semibold mb-3 block"
+                  >
                     Special Instructions (Optional)
                   </Label>
                   <Textarea
                     id="instructions"
                     placeholder="Any specific requests for your portrait pucks..."
                     value={specialInstructions}
-                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                    onChange={e => setSpecialInstructions(e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -414,9 +480,11 @@ export default function CustomPortraitPucks() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal ({quantity} pucks)</span>
-                    <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                    <span className="font-semibold">
+                      ${subtotal.toFixed(2)}
+                    </span>
                   </div>
-                  
+
                   <div className="flex justify-between text-primary">
                     <span className="flex items-center gap-2">
                       <Info className="w-4 h-4" />
@@ -424,7 +492,7 @@ export default function CustomPortraitPucks() {
                     </span>
                     <span className="font-bold">${deposit.toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="flex justify-between text-muted-foreground text-sm">
                     <span>Remaining (charged 24hrs before delivery)</span>
                     <span>${deposit.toFixed(2)}</span>
@@ -437,20 +505,28 @@ export default function CustomPortraitPucks() {
                 <div className="bg-muted/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-4 h-4 text-purple-500" />
-                    <span className="font-semibold">Scheduled Delivery Only</span>
+                    <span className="font-semibold">
+                      Scheduled Delivery Only
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Custom portrait orders require scheduled delivery on February 13 or 14, 2026.
-                    You'll select your delivery date and time at checkout.
+                    Custom portrait orders require scheduled delivery on
+                    February 13 or 14, 2026. You'll select your delivery date
+                    and time at checkout.
                   </p>
                 </div>
 
                 {/* Add to Cart */}
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={handleAddToCart}
-                  disabled={!isAvailable || isPastCutoff || !uploadedFile || addToCart.isPending}
+                  disabled={
+                    !isAvailable ||
+                    isPastCutoff ||
+                    !uploadedFile ||
+                    addToCart.isPending
+                  }
                 >
                   {addToCart.isPending ? (
                     "Adding..."
@@ -465,7 +541,10 @@ export default function CustomPortraitPucks() {
                 {/* Availability */}
                 {isAvailable && !isPastCutoff && (
                   <div className="text-center">
-                    <Badge variant="outline" className="text-orange-600 border-orange-200">
+                    <Badge
+                      variant="outline"
+                      className="text-orange-600 border-orange-200"
+                    >
                       Only {remaining} order slots remaining
                     </Badge>
                   </div>
@@ -481,8 +560,12 @@ export default function CustomPortraitPucks() {
                   Important Information
                 </h4>
                 <ul className="text-sm text-orange-700 space-y-2">
-                  <li>• <strong>Order cutoff:</strong> February 10, 2026</li>
-                  <li>• <strong>50% deposit</strong> required at booking</li>
+                  <li>
+                    • <strong>Order cutoff:</strong> February 10, 2026
+                  </li>
+                  <li>
+                    • <strong>50% deposit</strong> required at booking
+                  </li>
                   <li>• Remaining 50% charged 24 hours before delivery</li>
                   <li>• Photo must be submitted within 24 hours of order</li>
                   <li>• We'll contact you if photo quality is insufficient</li>

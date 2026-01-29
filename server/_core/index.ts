@@ -1,4 +1,6 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -7,6 +9,15 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { ENV } from "./env";
+
+const envPath = process.env.NODE_ENV === "production" ? ".env" : ".env.local";
+const resolvedEnvPath = path.resolve(process.cwd(), envPath);
+if (fs.existsSync(resolvedEnvPath)) {
+  dotenv.config({ path: resolvedEnvPath });
+} else {
+  dotenv.config();
+}
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -30,18 +41,33 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  
+
   // Stripe webhook MUST come before express.json() for signature verification
-  app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-    const { handleStripeWebhook } = await import("../webhook");
-    return handleStripeWebhook(req, res);
-  });
-  
+  app.post(
+    "/api/stripe/webhook",
+    express.raw({ type: "application/json" }),
+    async (req, res) => {
+      const { handleStripeWebhook } = await import("../webhook");
+      return handleStripeWebhook(req, res);
+    }
+  );
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  app.get("/health", (_req, res) => {
+    if (ENV.isProduction) {
+      res.json({ ok: true });
+      return;
+    }
+    res.json({
+      ok: true,
+      env: ENV.isProduction ? "production" : "development",
+      oauthEnabled: ENV.oauthEnabled,
+    });
+  });
   // tRPC API
   app.use(
     "/api/trpc",

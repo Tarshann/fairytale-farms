@@ -4,6 +4,8 @@ import type { TrpcContext } from "./_core/context";
 import { TRPCError } from "@trpc/server";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const describeDb = hasDatabase ? describe : describe.skip;
 
 function createAdminContext(): { ctx: TrpcContext } {
   const adminUser: AuthenticatedUser = {
@@ -55,7 +57,7 @@ function createUserContext(): { ctx: TrpcContext } {
   return { ctx };
 }
 
-describe("Admin Access Control", () => {
+describeDb("Admin Access Control", () => {
   it("should allow admin to access stats", async () => {
     const { ctx } = createAdminContext();
     const caller = appRouter.createCaller(ctx);
@@ -101,7 +103,9 @@ describe("Admin Access Control", () => {
     // Get a product first
     const products = await caller.products.list();
     if (products.length > 0) {
-      const result = await caller.admin.toggleProductStock({ id: products[0].id });
+      const result = await caller.admin.toggleProductStock({
+        id: products[0].id,
+      });
       expect(result.success).toBe(true);
     }
   });
@@ -113,13 +117,15 @@ describe("Admin Access Control", () => {
     // Get a product first
     const products = await caller.products.list();
     if (products.length > 0) {
-      const result = await caller.admin.toggleProductFeatured({ id: products[0].id });
+      const result = await caller.admin.toggleProductFeatured({
+        id: products[0].id,
+      });
       expect(result.success).toBe(true);
     }
   });
 });
 
-describe("Contact Form", () => {
+describeDb("Contact Form", () => {
   it("should submit contact form", async () => {
     const { ctx } = createUserContext();
     const caller = appRouter.createCaller(ctx);
@@ -154,7 +160,9 @@ describe("Contact Form", () => {
     }
 
     // Mark as read
-    const markResult = await caller.admin.markContactRead({ id: submitResult.id });
+    const markResult = await caller.admin.markContactRead({
+      id: submitResult.id,
+    });
     expect(markResult.success).toBe(true);
   });
 });

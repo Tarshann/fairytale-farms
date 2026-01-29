@@ -12,11 +12,12 @@ import { getLoginUrl } from "@/const";
 
 export default function Wishlist() {
   const { isAuthenticated, loading } = useAuth();
-  const { data: wishlistItems, isLoading, refetch } = trpc.wishlist.list.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
-  );
-  
+  const {
+    data: wishlistItems,
+    isLoading,
+    refetch,
+  } = trpc.wishlist.list.useQuery(undefined, { enabled: isAuthenticated });
+
   const removeFromWishlist = trpc.wishlist.remove.useMutation({
     onSuccess: () => {
       refetch();
@@ -24,22 +25,22 @@ export default function Wishlist() {
     },
     onError: () => {
       toast.error("Failed to remove from wishlist");
-    }
+    },
   });
-  
+
   const addToCart = trpc.cart.add.useMutation({
     onSuccess: () => {
       toast.success("Added to cart!");
     },
     onError: () => {
       toast.error("Failed to add to cart");
-    }
+    },
   });
-  
+
   const handleRemove = (productId: number) => {
     removeFromWishlist.mutate({ productId });
   };
-  
+
   const handleAddToCart = (productId: number) => {
     addToCart.mutate({ productId, quantity: 1 });
   };
@@ -63,12 +64,17 @@ export default function Wishlist() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-4">
             <div className="text-6xl mb-4">💝</div>
-            <h1 className="text-2xl font-display font-bold mb-2">Your Wishlist</h1>
+            <h1 className="text-2xl font-display font-bold mb-2">
+              Your Wishlist
+            </h1>
             <p className="text-muted-foreground mb-6">
               Sign in to save your favorite treats and access them anytime!
             </p>
             <a href={getLoginUrl()}>
-              <Button size="lg" className="bg-gradient-to-r from-pastel-pink to-pastel-lavender hover:opacity-90">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-pastel-pink to-pastel-lavender hover:opacity-90"
+              >
                 Sign In to View Wishlist
               </Button>
             </a>
@@ -82,7 +88,7 @@ export default function Wishlist() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white via-pastel-pink/5 to-white">
       <Navigation />
-      
+
       <main className="flex-1">
         {/* Header */}
         <section className="py-8 bg-gradient-to-r from-pastel-pink/20 via-pastel-lavender/20 to-pastel-mint/20">
@@ -100,7 +106,8 @@ export default function Wishlist() {
               <h1 className="text-3xl font-display font-bold">My Wishlist</h1>
             </div>
             <p className="text-muted-foreground mt-2">
-              {wishlistItems?.length || 0} saved {wishlistItems?.length === 1 ? 'item' : 'items'}
+              {wishlistItems?.length || 0} saved{" "}
+              {wishlistItems?.length === 1 ? "item" : "items"}
             </p>
           </div>
         </section>
@@ -110,7 +117,7 @@ export default function Wishlist() {
           <div className="container">
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map((i) => (
+                {[1, 2, 3, 4].map(i => (
                   <Card key={i} className="overflow-hidden">
                     <div className="aspect-square bg-muted animate-pulse" />
                     <CardContent className="p-4 space-y-2">
@@ -122,8 +129,11 @@ export default function Wishlist() {
               </div>
             ) : wishlistItems && wishlistItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {wishlistItems.map((item) => (
-                  <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                {wishlistItems.map(item => (
+                  <Card
+                    key={item.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow group"
+                  >
                     <Link href={`/products/${item.product.slug}`}>
                       <div className="aspect-square overflow-hidden bg-muted relative">
                         {getProductImageUrl(item.product) ? (
@@ -139,7 +149,9 @@ export default function Wishlist() {
                         )}
                         {!item.product.inStock && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <span className="text-white font-semibold">Out of Stock</span>
+                            <span className="text-white font-semibold">
+                              Out of Stock
+                            </span>
                           </div>
                         )}
                       </div>
@@ -171,7 +183,9 @@ export default function Wishlist() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => handleAddToCart(item.productId)}
-                            disabled={!item.product.inStock || addToCart.isPending}
+                            disabled={
+                              !item.product.inStock || addToCart.isPending
+                            }
                           >
                             <ShoppingCart className="h-4 w-4" />
                           </Button>
@@ -184,12 +198,18 @@ export default function Wishlist() {
             ) : (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">💝</div>
-                <h2 className="text-xl font-display font-semibold mb-2">Your wishlist is empty</h2>
+                <h2 className="text-xl font-display font-semibold mb-2">
+                  Your wishlist is empty
+                </h2>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Start adding your favorite treats by clicking the heart icon on any product!
+                  Start adding your favorite treats by clicking the heart icon
+                  on any product!
                 </p>
                 <Link href="/products">
-                  <Button size="lg" className="bg-gradient-to-r from-pastel-pink to-pastel-lavender hover:opacity-90">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-pastel-pink to-pastel-lavender hover:opacity-90"
+                  >
                     Browse Treats
                   </Button>
                 </Link>
@@ -198,7 +218,7 @@ export default function Wishlist() {
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );
