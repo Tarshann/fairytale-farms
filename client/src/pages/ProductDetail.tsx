@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
@@ -30,15 +36,16 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
-  
+
   const { data: product, isLoading } = trpc.products.getBySlug.useQuery(
     { slug: params?.slug || "" },
     { enabled: !!params?.slug }
   );
-  
+
   // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
-  const isValentinesTier = product?.productType === "tier" && product?.name?.includes("Box");
-  
+  const isValentinesTier =
+    product?.productType === "tier" && product?.name?.includes("Box");
+
   const utils = trpc.useUtils();
   const addToCartMutation = trpc.cart.add.useMutation({
     onSuccess: () => {
@@ -47,44 +54,44 @@ export default function ProductDetail() {
       setQuantity(1);
       setCustomizationNotes("");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to add to cart");
     },
   });
-  
+
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       toast.error("Please sign in to add items to cart");
       window.location.href = getLoginUrl();
       return;
     }
-    
+
     if (!product) return;
-    
+
     if (product.isCustomizable && !customizationNotes.trim()) {
       toast.error("Please add customization details for this product");
       return;
     }
-    
+
     // Require cake flavor selection for Valentine's tier products
     if (isValentinesTier && !selectedCakeFlavor) {
       toast.error("Please select a cake flavor");
       return;
     }
-    
+
     // Build customization notes with cake flavor if applicable
     let notes = customizationNotes.trim();
     if (isValentinesTier && selectedCakeFlavor) {
-      notes = `Cake Flavor: ${selectedCakeFlavor}${notes ? `\n${notes}` : ''}`;
+      notes = `Cake Flavor: ${selectedCakeFlavor}${notes ? `\n${notes}` : ""}`;
     }
-    
+
     addToCartMutation.mutate({
       productId: product.id,
       quantity,
       customizationNotes: notes || undefined,
     });
   };
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -105,7 +112,7 @@ export default function ProductDetail() {
       </div>
     );
   }
-  
+
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -122,7 +129,7 @@ export default function ProductDetail() {
       </div>
     );
   }
-  
+
   // Redirect custom cakes to inquiry/chatbot instead of showing product detail
   const isCustomCake = product.categoryId === 1; // Customized Cakes category
   if (isCustomCake) {
@@ -137,24 +144,30 @@ export default function ProductDetail() {
                 Back to Products
               </Button>
             </Link>
-            
+
             <Card className="p-8">
               <div className="text-center space-y-6">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-pastel-pink to-pastel-lavender rounded-full flex items-center justify-center">
                   <span className="text-4xl">🎂</span>
                 </div>
-                
+
                 <div>
-                  <h1 className="text-3xl font-bold mb-3 font-display">{product.name}</h1>
+                  <h1 className="text-3xl font-bold mb-3 font-display">
+                    {product.name}
+                  </h1>
                   <p className="text-muted-foreground text-lg">
                     {product.description}
                   </p>
                 </div>
-                
+
                 <div className="bg-pastel-lavender/10 p-6 rounded-lg">
-                  <h2 className="font-semibold text-lg mb-2">Custom Cake Ordering</h2>
+                  <h2 className="font-semibold text-lg mb-2">
+                    Custom Cake Ordering
+                  </h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Every custom cake is unique and made to order. To get started, please use our AI chat assistant to discuss your vision, preferences, and requirements.
+                    Every custom cake is unique and made to order. To get
+                    started, please use our AI chat assistant to discuss your
+                    vision, preferences, and requirements.
                   </p>
                   <div className="text-left space-y-2 text-sm">
                     <p className="flex items-start gap-2">
@@ -171,24 +184,28 @@ export default function ProductDetail() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="w-full"
                     onClick={() => {
                       // Open chatbot
-                      const chatButton = document.querySelector('[data-chatbot-trigger]') as HTMLElement;
+                      const chatButton = document.querySelector(
+                        "[data-chatbot-trigger]"
+                      ) as HTMLElement;
                       if (chatButton) {
                         chatButton.click();
                       } else {
-                        toast.info("Please use the chat button in the bottom right to start your custom cake inquiry");
+                        toast.info(
+                          "Please use the chat button in the bottom right to start your custom cake inquiry"
+                        );
                       }
                     }}
                   >
                     Start Custom Cake Inquiry
                   </Button>
-                  
+
                   <p className="text-xs text-muted-foreground">
                     Or click the chat icon in the bottom right corner
                   </p>
@@ -201,11 +218,11 @@ export default function ProductDetail() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      
+
       <main className="flex-1 py-12">
         <div className="container">
           <Link href="/products">
@@ -214,7 +231,7 @@ export default function ProductDetail() {
               Back to Products
             </Button>
           </Link>
-          
+
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium">
               {getProductImageUrl(product) && (
@@ -225,7 +242,7 @@ export default function ProductDetail() {
                 />
               )}
             </div>
-            
+
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
@@ -242,20 +259,20 @@ export default function ProductDetail() {
                   )}
                 </div>
               </div>
-              
+
               <div className="prose prose-sm max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
               </div>
-              
+
               {!product.inStock && (
                 <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg">
                   <p className="font-medium">Out of Stock</p>
                   <p className="text-sm">This item is currently unavailable.</p>
                 </div>
               )}
-              
+
               {product.inStock && (
                 <Card>
                   <CardContent className="p-6 space-y-6">
@@ -282,20 +299,24 @@ export default function ProductDetail() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Cake Flavor Selection for Valentine's Boxes */}
                     {isValentinesTier && (
                       <div className="space-y-2">
                         <Label htmlFor="cakeFlavor">Cake Flavor *</Label>
                         <p className="text-sm text-muted-foreground">
-                          Select your preferred cake flavor for the mini cake included in your box
+                          Select your preferred cake flavor for the mini cake
+                          included in your box
                         </p>
-                        <Select value={selectedCakeFlavor} onValueChange={setSelectedCakeFlavor}>
+                        <Select
+                          value={selectedCakeFlavor}
+                          onValueChange={setSelectedCakeFlavor}
+                        >
                           <SelectTrigger id="cakeFlavor">
                             <SelectValue placeholder="Choose a cake flavor..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {CAKE_FLAVORS.map((flavor) => (
+                            {CAKE_FLAVORS.map(flavor => (
                               <SelectItem key={flavor} value={flavor}>
                                 {flavor}
                               </SelectItem>
@@ -304,7 +325,7 @@ export default function ProductDetail() {
                         </Select>
                       </div>
                     )}
-                    
+
                     {product.isCustomizable && (
                       <div className="space-y-2">
                         <Label htmlFor="customization">
@@ -319,13 +340,13 @@ export default function ProductDetail() {
                           id="customization"
                           placeholder="Describe your customization requirements..."
                           value={customizationNotes}
-                          onChange={(e) => setCustomizationNotes(e.target.value)}
+                          onChange={e => setCustomizationNotes(e.target.value)}
                           rows={4}
                           className="resize-none"
                         />
                       </div>
                     )}
-                    
+
                     <Button
                       size="lg"
                       className="w-full"
@@ -333,11 +354,14 @@ export default function ProductDetail() {
                       disabled={addToCartMutation.isPending}
                     >
                       <ShoppingCart className="mr-2 h-5 w-4" />
-                      {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
+                      {addToCartMutation.isPending
+                        ? "Adding..."
+                        : "Add to Cart"}
                     </Button>
-                    
+
                     <div className="text-center text-sm text-muted-foreground">
-                      Total: ${(parseFloat(product.basePrice) * quantity).toFixed(2)}
+                      Total: $
+                      {(parseFloat(product.basePrice) * quantity).toFixed(2)}
                     </div>
                   </CardContent>
                 </Card>
@@ -346,7 +370,7 @@ export default function ProductDetail() {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

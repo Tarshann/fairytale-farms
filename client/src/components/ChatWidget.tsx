@@ -1,5 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Sparkles, Image, Loader2, Cake, Cookie, Gift } from "lucide-react";
+import {
+  MessageCircle,
+  X,
+  Send,
+  Sparkles,
+  Image,
+  Loader2,
+  Cake,
+  Cookie,
+  Gift,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 
@@ -17,9 +27,21 @@ interface QuickReply {
 }
 
 const quickReplies: QuickReply[] = [
-  { label: "Custom Cake", value: "I'd like to order a custom cake", icon: <Cake className="h-3 w-3" /> },
-  { label: "Sugar Cookies", value: "I'm interested in decorated sugar cookies", icon: <Cookie className="h-3 w-3" /> },
-  { label: "Gift Box", value: "I want to create a custom gift box", icon: <Gift className="h-3 w-3" /> },
+  {
+    label: "Custom Cake",
+    value: "I'd like to order a custom cake",
+    icon: <Cake className="h-3 w-3" />,
+  },
+  {
+    label: "Sugar Cookies",
+    value: "I'm interested in decorated sugar cookies",
+    icon: <Cookie className="h-3 w-3" />,
+  },
+  {
+    label: "Gift Box",
+    value: "I want to create a custom gift box",
+    icon: <Gift className="h-3 w-3" />,
+  },
 ];
 
 export default function ChatWidget() {
@@ -27,7 +49,8 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi there! 🧁 Welcome to Fairytale Farms Bakery! I'm here to help you with custom orders. Whether you're looking for a beautiful birthday cake, decorated sugar cookies, or any of our delicious treats, I'd love to help!\n\nWhat can I help you create today?",
+      content:
+        "Hi there! 🧁 Welcome to Fairytale Farms Bakery! I'm here to help you with custom orders. Whether you're looking for a beautiful birthday cake, decorated sugar cookies, or any of our delicious treats, I'd love to help!\n\nWhat can I help you create today?",
       timestamp: new Date(),
     },
   ]);
@@ -35,24 +58,27 @@ export default function ChatWidget() {
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
-  const [sessionId] = useState(() => `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [sessionId] = useState(
+    () => `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sendMessageMutation = trpc.chatbot.sendMessage.useMutation({
-    onSuccess: (data) => {
-      setMessages((prev) => [
+    onSuccess: data => {
+      setMessages(prev => [
         ...prev,
         { role: "assistant", content: data.message, timestamp: new Date() },
       ]);
     },
-    onError: (error) => {
+    onError: error => {
       console.error("Chat error:", error);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           role: "assistant",
-          content: "I'm sorry, I'm having trouble responding right now. Please try again or contact us at fairytalefarms.net@gmail.com",
+          content:
+            "I'm sorry, I'm having trouble responding right now. Please try again or contact us at fairytalefarms.net@gmail.com",
           timestamp: new Date(),
         },
       ]);
@@ -60,11 +86,11 @@ export default function ChatWidget() {
   });
 
   const uploadImageMutation = trpc.chatbot.uploadImage.useMutation({
-    onSuccess: (data) => {
-      setPendingImages((prev) => [...prev, data.url]);
+    onSuccess: data => {
+      setPendingImages(prev => [...prev, data.url]);
       setIsUploading(false);
     },
-    onError: (error) => {
+    onError: error => {
       console.error("Upload error:", error);
       setIsUploading(false);
       alert("Failed to upload image. Please try again.");
@@ -81,7 +107,10 @@ export default function ChatWidget() {
 
   const formatTime = (date?: Date) => {
     if (!date) return "";
-    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,30 +146,39 @@ export default function ChatWidget() {
   };
 
   const removeImage = (index: number) => {
-    setPendingImages((prev) => prev.filter((_, i) => i !== index));
+    setPendingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const sendMessage = (messageText: string, images: string[] = []) => {
-    if ((!messageText.trim() && images.length === 0) || sendMessageMutation.isPending) return;
+    if (
+      (!messageText.trim() && images.length === 0) ||
+      sendMessageMutation.isPending
+    )
+      return;
 
     setShowQuickReplies(false);
     setInputValue("");
     setPendingImages([]);
-    
-    const messageContent = images.length > 0 
-      ? `${messageText}${messageText ? '\n\n' : ''}[Attached ${images.length} image${images.length > 1 ? 's' : ''} for reference]`
-      : messageText;
-    
-    setMessages((prev) => [...prev, { role: "user", content: messageContent, images, timestamp: new Date() }]);
 
-    const conversationHistory = messages.slice(1).map((m) => ({
+    const messageContent =
+      images.length > 0
+        ? `${messageText}${messageText ? "\n\n" : ""}[Attached ${images.length} image${images.length > 1 ? "s" : ""} for reference]`
+        : messageText;
+
+    setMessages(prev => [
+      ...prev,
+      { role: "user", content: messageContent, images, timestamp: new Date() },
+    ]);
+
+    const conversationHistory = messages.slice(1).map(m => ({
       role: m.role,
       content: m.content,
     }));
 
     sendMessageMutation.mutate({
       sessionId,
-      message: messageText || "I've attached some inspiration images for my order.",
+      message:
+        messageText || "I've attached some inspiration images for my order.",
       conversationHistory,
       imageUrls: images,
     });
@@ -186,7 +224,9 @@ export default function ChatWidget() {
               </div>
               <div>
                 <h3 className="font-semibold">Custom Order Assistant</h3>
-                <p className="text-xs text-pink-100">Online • Usually replies instantly</p>
+                <p className="text-xs text-pink-100">
+                  Online • Usually replies instantly
+                </p>
               </div>
             </div>
             <button
@@ -224,48 +264,65 @@ export default function ChatWidget() {
                       ))}
                     </div>
                   )}
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
                 </div>
-                <span className={`text-[10px] mt-1 px-1 ${message.role === "user" ? "text-gray-400" : "text-gray-400"}`}>
+                <span
+                  className={`text-[10px] mt-1 px-1 ${message.role === "user" ? "text-gray-400" : "text-gray-400"}`}
+                >
                   {formatTime(message.timestamp)}
                 </span>
               </div>
             ))}
-            
+
             {/* Typing indicator */}
             {sendMessageMutation.isPending && (
               <div className="flex flex-col items-start animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
                 <div className="bg-white text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-100">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div
+                      className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
                 </div>
-                <span className="text-[10px] mt-1 px-1 text-gray-400">Typing...</span>
+                <span className="text-[10px] mt-1 px-1 text-gray-400">
+                  Typing...
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
           {/* Quick replies */}
-          {showQuickReplies && messages.length === 1 && !sendMessageMutation.isPending && (
-            <div className="border-t border-gray-100 bg-white px-3 py-2">
-              <p className="text-xs text-gray-500 mb-2">Quick options:</p>
-              <div className="flex flex-wrap gap-2">
-                {quickReplies.map((reply, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickReply(reply)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 rounded-full border border-pink-200 hover:bg-pink-100 hover:border-pink-300 transition-colors"
-                  >
-                    {reply.icon}
-                    {reply.label}
-                  </button>
-                ))}
+          {showQuickReplies &&
+            messages.length === 1 &&
+            !sendMessageMutation.isPending && (
+              <div className="border-t border-gray-100 bg-white px-3 py-2">
+                <p className="text-xs text-gray-500 mb-2">Quick options:</p>
+                <div className="flex flex-wrap gap-2">
+                  {quickReplies.map((reply, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuickReply(reply)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 rounded-full border border-pink-200 hover:bg-pink-100 hover:border-pink-300 transition-colors"
+                    >
+                      {reply.icon}
+                      {reply.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Pending images preview */}
           {pendingImages.length > 0 && (
@@ -301,7 +358,7 @@ export default function ChatWidget() {
                 onChange={handleImageSelect}
                 className="hidden"
               />
-              
+
               <Button
                 type="button"
                 variant="ghost"
@@ -321,7 +378,7 @@ export default function ChatWidget() {
               <input
                 type="text"
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={e => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
                 className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-100 bg-gray-50"
@@ -329,7 +386,10 @@ export default function ChatWidget() {
               />
               <Button
                 onClick={handleSend}
-                disabled={(!inputValue.trim() && pendingImages.length === 0) || sendMessageMutation.isPending}
+                disabled={
+                  (!inputValue.trim() && pendingImages.length === 0) ||
+                  sendMessageMutation.isPending
+                }
                 size="icon"
                 className="h-9 w-9 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-sm"
               >

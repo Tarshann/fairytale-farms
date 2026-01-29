@@ -3,7 +3,13 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
@@ -11,10 +17,26 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { 
-  Sparkles, ArrowLeft, Calendar, Mail, Phone, DollarSign, Cake, ImageIcon, 
-  MessageSquare, X, ChevronDown, ChevronUp, BarChart3, AlertTriangle, 
-  TrendingUp, Clock, CheckCircle2, Copy, Send
+import {
+  Sparkles,
+  ArrowLeft,
+  Calendar,
+  Mail,
+  Phone,
+  DollarSign,
+  Cake,
+  ImageIcon,
+  MessageSquare,
+  X,
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
+  AlertTriangle,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  Copy,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -93,13 +115,13 @@ interface ConversationMessage {
   createdAt: Date;
 }
 
-function ConversationModal({ 
-  inquiryId, 
-  inquiryNumber, 
-  onClose 
-}: { 
-  inquiryId: number; 
-  inquiryNumber: string; 
+function ConversationModal({
+  inquiryId,
+  inquiryNumber,
+  onClose,
+}: {
+  inquiryId: number;
+  inquiryNumber: string;
   onClose: () => void;
 }) {
   const { data: messages, isLoading } = trpc.inquiries.getConversation.useQuery(
@@ -118,7 +140,10 @@ function ConversationModal({
               <p className="text-xs text-pink-100">{inquiryNumber}</p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -127,25 +152,39 @@ function ConversationModal({
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-pink-500 border-t-transparent rounded-full mx-auto" />
-              <p className="mt-4 text-muted-foreground">Loading conversation...</p>
+              <p className="mt-4 text-muted-foreground">
+                Loading conversation...
+              </p>
             </div>
           ) : !messages || messages.length === 0 ? (
             <div className="text-center py-8">
               <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No conversation history found</p>
+              <p className="text-muted-foreground">
+                No conversation history found
+              </p>
             </div>
           ) : (
             messages.map((message: ConversationMessage) => (
-              <div key={message.id} className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                  message.role === "user"
-                    ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-br-md"
-                    : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md"
-                }`}>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+              <div
+                key={message.id}
+                className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+                    message.role === "user"
+                      ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-br-md"
+                      : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md"
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
                 </div>
                 <span className="text-[10px] mt-1 px-1 text-gray-400">
-                  {new Date(message.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                  {new Date(message.createdAt).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
                 </span>
               </div>
             ))
@@ -153,27 +192,31 @@ function ConversationModal({
         </div>
 
         <div className="border-t border-gray-200 bg-white px-6 py-3">
-          <Button onClick={onClose} variant="outline" className="w-full">Close</Button>
+          <Button onClick={onClose} variant="outline" className="w-full">
+            Close
+          </Button>
         </div>
       </div>
     </div>
   );
 }
 
-function TemplateModal({ 
+function TemplateModal({
   customerEmail,
   customerName,
-  onClose 
-}: { 
+  onClose,
+}: {
   customerEmail: string;
   customerName: string;
   onClose: () => void;
 }) {
   const [selectedTemplate, setSelectedTemplate] = useState(0);
-  
+
   const template = responseTemplates[selectedTemplate];
-  const filledBody = template.body
-    .replace(/\[Customer Name\]/g, customerName || "there");
+  const filledBody = template.body.replace(
+    /\[Customer Name\]/g,
+    customerName || "there"
+  );
 
   const handleCopy = () => {
     navigator.clipboard.writeText(filledBody);
@@ -183,7 +226,10 @@ function TemplateModal({
   const handleEmail = () => {
     const subject = encodeURIComponent(template.subject);
     const body = encodeURIComponent(filledBody);
-    window.open(`mailto:${customerEmail}?subject=${subject}&body=${body}`, '_blank');
+    window.open(
+      `mailto:${customerEmail}?subject=${subject}&body=${body}`,
+      "_blank"
+    );
     toast.success("Opening email client...");
   };
 
@@ -195,10 +241,15 @@ function TemplateModal({
             <Send className="h-5 w-5" />
             <div>
               <h3 className="font-semibold">Quick Response Templates</h3>
-              <p className="text-xs text-purple-100">Send to: {customerEmail}</p>
+              <p className="text-xs text-purple-100">
+                Send to: {customerEmail}
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -220,8 +271,12 @@ function TemplateModal({
 
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
           <div className="bg-white rounded-lg border p-4">
-            <p className="text-sm font-medium text-gray-500 mb-2">Subject: {template.subject}</p>
-            <pre className="text-sm whitespace-pre-wrap font-sans text-gray-700">{filledBody}</pre>
+            <p className="text-sm font-medium text-gray-500 mb-2">
+              Subject: {template.subject}
+            </p>
+            <pre className="text-sm whitespace-pre-wrap font-sans text-gray-700">
+              {filledBody}
+            </pre>
           </div>
         </div>
 
@@ -229,7 +284,10 @@ function TemplateModal({
           <Button onClick={handleCopy} variant="outline" className="flex-1">
             <Copy className="h-4 w-4 mr-2" /> Copy
           </Button>
-          <Button onClick={handleEmail} className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500">
+          <Button
+            onClick={handleEmail}
+            className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500"
+          >
             <Mail className="h-4 w-4 mr-2" /> Send Email
           </Button>
         </div>
@@ -286,7 +344,9 @@ function AnalyticsDashboard() {
                 <TrendingUp className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{analytics.conversionRate}%</p>
+                <p className="text-2xl font-bold">
+                  {analytics.conversionRate}%
+                </p>
                 <p className="text-xs text-muted-foreground">Conversion Rate</p>
               </div>
             </div>
@@ -300,18 +360,30 @@ function AnalyticsDashboard() {
                 <CheckCircle2 className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{analytics.byStatus?.confirmed || 0}</p>
-                <p className="text-xs text-muted-foreground">Confirmed Orders</p>
+                <p className="text-2xl font-bold">
+                  {analytics.byStatus?.confirmed || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Confirmed Orders
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className={analytics.overdueCount > 0 ? "border-red-300 bg-red-50" : ""}>
+        <Card
+          className={
+            analytics.overdueCount > 0 ? "border-red-300 bg-red-50" : ""
+          }
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${analytics.overdueCount > 0 ? "bg-red-100" : "bg-orange-100"}`}>
-                <AlertTriangle className={`h-5 w-5 ${analytics.overdueCount > 0 ? "text-red-600" : "text-orange-600"}`} />
+              <div
+                className={`p-2 rounded-lg ${analytics.overdueCount > 0 ? "bg-red-100" : "bg-orange-100"}`}
+              >
+                <AlertTriangle
+                  className={`h-5 w-5 ${analytics.overdueCount > 0 ? "text-red-600" : "text-orange-600"}`}
+                />
               </div>
               <div>
                 <p className="text-2xl font-bold">{analytics.overdueCount}</p>
@@ -332,7 +404,9 @@ function AnalyticsDashboard() {
             {Object.entries(statusLabels).map(([key, label]) => (
               <div key={key} className="text-center p-3 rounded-lg bg-gray-50">
                 <Badge className={`${statusColors[key]} mb-2`}>{label}</Badge>
-                <p className="text-xl font-bold">{analytics.byStatus?.[key] || 0}</p>
+                <p className="text-xl font-bold">
+                  {analytics.byStatus?.[key] || 0}
+                </p>
               </div>
             ))}
           </div>
@@ -347,8 +421,12 @@ function AnalyticsDashboard() {
         <CardContent>
           <div className="flex items-end gap-1 h-32">
             {analytics.byDay?.map((day, idx) => {
-              const maxCount = Math.max(...(analytics.byDay?.map(d => d.count) || [1]), 1);
-              const height = day.count > 0 ? Math.max((day.count / maxCount) * 100, 10) : 4;
+              const maxCount = Math.max(
+                ...(analytics.byDay?.map(d => d.count) || [1]),
+                1
+              );
+              const height =
+                day.count > 0 ? Math.max((day.count / maxCount) * 100, 10) : 4;
               return (
                 <div
                   key={idx}
@@ -373,14 +451,14 @@ function AnalyticsDashboard() {
   );
 }
 
-function InquiryCard({ 
-  inquiry, 
+function InquiryCard({
+  inquiry,
   isSelected,
   onSelect,
   onStatusChange,
   onViewConversation,
   onOpenTemplates,
-}: { 
+}: {
   inquiry: any;
   isSelected: boolean;
   onSelect: (id: number, selected: boolean) => void;
@@ -389,19 +467,22 @@ function InquiryCard({
   onOpenTemplates: (email: string, name: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Check if overdue (new status and older than 24 hours)
-  const isOverdue = inquiry.status === 'new' && 
+  const isOverdue =
+    inquiry.status === "new" &&
     new Date(inquiry.createdAt) < new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   return (
-    <Card className={`overflow-hidden ${isOverdue ? "border-red-300 bg-red-50/50" : ""}`}>
+    <Card
+      className={`overflow-hidden ${isOverdue ? "border-red-300 bg-red-50/50" : ""}`}
+    >
       <CardHeader className="bg-gradient-to-r from-pink-50 to-rose-50 pb-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
             <Checkbox
               checked={isSelected}
-              onCheckedChange={(checked) => onSelect(inquiry.id, !!checked)}
+              onCheckedChange={checked => onSelect(inquiry.id, !!checked)}
             />
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -432,7 +513,7 @@ function InquiryCard({
             </Badge>
             <Select
               value={inquiry.status}
-              onValueChange={(value) => onStatusChange(inquiry.id, value)}
+              onValueChange={value => onStatusChange(inquiry.id, value)}
             >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
@@ -456,11 +537,16 @@ function InquiryCard({
               Customer Information
             </h4>
             <div className="space-y-2">
-              <p className="font-medium">{inquiry.customerName || "Not provided"}</p>
+              <p className="font-medium">
+                {inquiry.customerName || "Not provided"}
+              </p>
               {inquiry.customerEmail && (
                 <p className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <a href={`mailto:${inquiry.customerEmail}`} className="text-primary hover:underline">
+                  <a
+                    href={`mailto:${inquiry.customerEmail}`}
+                    className="text-primary hover:underline"
+                  >
                     {inquiry.customerEmail}
                   </a>
                 </p>
@@ -468,7 +554,10 @@ function InquiryCard({
               {inquiry.customerPhone && (
                 <p className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a href={`tel:${inquiry.customerPhone}`} className="text-primary hover:underline">
+                  <a
+                    href={`tel:${inquiry.customerPhone}`}
+                    className="text-primary hover:underline"
+                  >
                     {inquiry.customerPhone}
                   </a>
                 </p>
@@ -488,16 +577,28 @@ function InquiryCard({
                 </p>
               )}
               {inquiry.eventType && (
-                <p><span className="text-muted-foreground">Type:</span> {inquiry.eventType}</p>
+                <p>
+                  <span className="text-muted-foreground">Type:</span>{" "}
+                  {inquiry.eventType}
+                </p>
               )}
               {inquiry.quantity && (
-                <p><span className="text-muted-foreground">Quantity:</span> {inquiry.quantity}</p>
+                <p>
+                  <span className="text-muted-foreground">Quantity:</span>{" "}
+                  {inquiry.quantity}
+                </p>
               )}
               {inquiry.flavorPreferences && (
-                <p><span className="text-muted-foreground">Flavors:</span> {inquiry.flavorPreferences}</p>
+                <p>
+                  <span className="text-muted-foreground">Flavors:</span>{" "}
+                  {inquiry.flavorPreferences}
+                </p>
               )}
               {inquiry.designTheme && (
-                <p><span className="text-muted-foreground">Design:</span> {inquiry.designTheme}</p>
+                <p>
+                  <span className="text-muted-foreground">Design:</span>{" "}
+                  {inquiry.designTheme}
+                </p>
               )}
             </div>
           </div>
@@ -514,7 +615,9 @@ function InquiryCard({
                 {inquiry.estimatedPrice ? `$${inquiry.estimatedPrice}` : "TBD"}
               </span>
               {inquiry.estimateDetails && (
-                <span className="text-sm text-muted-foreground">- {inquiry.estimateDetails}</span>
+                <span className="text-sm text-muted-foreground">
+                  - {inquiry.estimateDetails}
+                </span>
               )}
             </div>
           </div>
@@ -525,39 +628,52 @@ function InquiryCard({
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
             {isExpanded ? "Hide details" : "Show more details"}
           </button>
 
           {isExpanded && (
             <div className="mt-4 space-y-4 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-              {inquiry.imageAttachments && (() => {
-                try {
-                  const images = JSON.parse(inquiry.imageAttachments as string);
-                  if (Array.isArray(images) && images.length > 0) {
-                    return (
-                      <div>
-                        <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <ImageIcon className="h-4 w-4" />
-                          Inspiration Images ({images.length})
-                        </h4>
-                        <div className="flex flex-wrap gap-3">
-                          {images.map((img: string, idx: number) => (
-                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="block">
-                              <img
-                                src={img}
-                                alt={`Inspiration ${idx + 1}`}
-                                className="w-24 h-24 object-cover rounded-lg border border-gray-200 hover:border-pink-400 transition-colors"
-                              />
-                            </a>
-                          ))}
-                        </div>
-                      </div>
+              {inquiry.imageAttachments &&
+                (() => {
+                  try {
+                    const images = JSON.parse(
+                      inquiry.imageAttachments as string
                     );
-                  }
-                } catch (e) {}
-                return null;
-              })()}
+                    if (Array.isArray(images) && images.length > 0) {
+                      return (
+                        <div>
+                          <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Inspiration Images ({images.length})
+                          </h4>
+                          <div className="flex flex-wrap gap-3">
+                            {images.map((img: string, idx: number) => (
+                              <a
+                                key={idx}
+                                href={img}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img
+                                  src={img}
+                                  alt={`Inspiration ${idx + 1}`}
+                                  className="w-24 h-24 object-cover rounded-lg border border-gray-200 hover:border-pink-400 transition-colors"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                  } catch (e) {}
+                  return null;
+                })()}
 
               {inquiry.additionalNotes && (
                 <div>
@@ -572,7 +688,9 @@ function InquiryCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onViewConversation(inquiry.id, inquiry.inquiryNumber)}
+                  onClick={() =>
+                    onViewConversation(inquiry.id, inquiry.inquiryNumber)
+                  }
                   className="flex items-center gap-2"
                 >
                   <MessageSquare className="h-4 w-4" />
@@ -582,7 +700,12 @@ function InquiryCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onOpenTemplates(inquiry.customerEmail, inquiry.customerName)}
+                    onClick={() =>
+                      onOpenTemplates(
+                        inquiry.customerEmail,
+                        inquiry.customerName
+                      )
+                    }
                     className="flex items-center gap-2"
                   >
                     <Send className="h-4 w-4" />
@@ -600,12 +723,22 @@ function InquiryCard({
 
 export default function AdminInquiries() {
   const { user, isAuthenticated } = useAuth();
-  const [selectedInquiry, setSelectedInquiry] = useState<{ id: number; inquiryNumber: string } | null>(null);
-  const [templateModal, setTemplateModal] = useState<{ email: string; name: string } | null>(null);
+  const [selectedInquiry, setSelectedInquiry] = useState<{
+    id: number;
+    inquiryNumber: string;
+  } | null>(null);
+  const [templateModal, setTemplateModal] = useState<{
+    email: string;
+    name: string;
+  } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [activeTab, setActiveTab] = useState("inquiries");
-  
-  const { data: inquiries, isLoading, refetch } = trpc.inquiries.list.useQuery(undefined, {
+
+  const {
+    data: inquiries,
+    isLoading,
+    refetch,
+  } = trpc.inquiries.list.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "admin",
   });
 
@@ -614,18 +747,18 @@ export default function AdminInquiries() {
       toast.success("Status updated successfully");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to update status: " + error.message);
     },
   });
 
   const bulkUpdateMutation = trpc.inquiries.bulkUpdateStatus.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Updated ${data.updated} inquiries`);
       setSelectedIds(new Set());
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Failed to update: " + error.message);
     },
   });
@@ -637,8 +770,12 @@ export default function AdminInquiries() {
         <main className="flex-1 py-12">
           <div className="container text-center space-y-6">
             <h1 className="text-2xl font-bold">Admin Access Required</h1>
-            <p className="text-muted-foreground">Please sign in with an admin account</p>
-            <a href={getLoginUrl()}><Button size="lg">Sign In</Button></a>
+            <p className="text-muted-foreground">
+              Please sign in with an admin account
+            </p>
+            <a href={getLoginUrl()}>
+              <Button size="lg">Sign In</Button>
+            </a>
           </div>
         </main>
         <Footer />
@@ -653,8 +790,12 @@ export default function AdminInquiries() {
         <main className="flex-1 py-12">
           <div className="container text-center space-y-6">
             <h1 className="text-2xl font-bold">Access Denied</h1>
-            <p className="text-muted-foreground">You don't have permission to access this page</p>
-            <Link href="/"><Button>Go Home</Button></Link>
+            <p className="text-muted-foreground">
+              You don't have permission to access this page
+            </p>
+            <Link href="/">
+              <Button>Go Home</Button>
+            </Link>
           </div>
         </main>
         <Footer />
@@ -665,7 +806,13 @@ export default function AdminInquiries() {
   const handleStatusChange = (id: number, status: string) => {
     updateStatusMutation.mutate({
       id,
-      status: status as "new" | "contacted" | "quoted" | "confirmed" | "completed" | "cancelled",
+      status: status as
+        | "new"
+        | "contacted"
+        | "quoted"
+        | "confirmed"
+        | "completed"
+        | "cancelled",
     });
   };
 
@@ -676,7 +823,13 @@ export default function AdminInquiries() {
     }
     bulkUpdateMutation.mutate({
       ids: Array.from(selectedIds),
-      status: status as "new" | "contacted" | "quoted" | "confirmed" | "completed" | "cancelled",
+      status: status as
+        | "new"
+        | "contacted"
+        | "quoted"
+        | "confirmed"
+        | "completed"
+        | "cancelled",
     });
   };
 
@@ -711,7 +864,8 @@ export default function AdminInquiries() {
             </Link>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">
-                Custom Order <span className="text-gradient-gold">Inquiries</span>
+                Custom Order{" "}
+                <span className="text-gradient-gold">Inquiries</span>
               </h1>
               <p className="text-muted-foreground mt-1">
                 Manage custom order requests from the AI chatbot
@@ -719,13 +873,23 @@ export default function AdminInquiries() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-6"
+          >
             <TabsList>
-              <TabsTrigger value="inquiries" className="flex items-center gap-2">
+              <TabsTrigger
+                value="inquiries"
+                className="flex items-center gap-2"
+              >
                 <Cake className="h-4 w-4" />
                 Inquiries
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TabsTrigger
+                value="analytics"
+                className="flex items-center gap-2"
+              >
                 <BarChart3 className="h-4 w-4" />
                 Analytics
               </TabsTrigger>
@@ -742,10 +906,13 @@ export default function AdminInquiries() {
                   <CardContent className="py-3">
                     <div className="flex items-center justify-between flex-wrap gap-3">
                       <p className="text-sm font-medium">
-                        {selectedIds.size} inquiry{selectedIds.size > 1 ? "ies" : ""} selected
+                        {selectedIds.size} inquiry
+                        {selectedIds.size > 1 ? "ies" : ""} selected
                       </p>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Bulk update to:</span>
+                        <span className="text-sm text-muted-foreground">
+                          Bulk update to:
+                        </span>
                         <Select onValueChange={handleBulkStatusChange}>
                           <SelectTrigger className="w-[140px]">
                             <SelectValue placeholder="Select status" />
@@ -758,7 +925,11 @@ export default function AdminInquiries() {
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedIds(new Set())}
+                        >
                           Clear
                         </Button>
                       </div>
@@ -770,13 +941,17 @@ export default function AdminInquiries() {
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                  <p className="mt-4 text-muted-foreground">Loading inquiries...</p>
+                  <p className="mt-4 text-muted-foreground">
+                    Loading inquiries...
+                  </p>
                 </div>
               ) : !inquiries || inquiries.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Sparkles className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Inquiries Yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No Inquiries Yet
+                    </h3>
                     <p className="text-muted-foreground">
                       Custom order inquiries from the chatbot will appear here.
                     </p>
@@ -787,7 +962,10 @@ export default function AdminInquiries() {
                   {/* Select All */}
                   <div className="flex items-center gap-2 px-2">
                     <Checkbox
-                      checked={selectedIds.size === inquiries.length && inquiries.length > 0}
+                      checked={
+                        selectedIds.size === inquiries.length &&
+                        inquiries.length > 0
+                      }
                       onCheckedChange={handleSelectAll}
                     />
                     <span className="text-sm text-muted-foreground">
@@ -795,15 +973,19 @@ export default function AdminInquiries() {
                     </span>
                   </div>
 
-                  {inquiries.map((inquiry) => (
+                  {inquiries.map(inquiry => (
                     <InquiryCard
                       key={inquiry.id}
                       inquiry={inquiry}
                       isSelected={selectedIds.has(inquiry.id)}
                       onSelect={handleSelect}
                       onStatusChange={handleStatusChange}
-                      onViewConversation={(id, num) => setSelectedInquiry({ id, inquiryNumber: num })}
-                      onOpenTemplates={(email, name) => setTemplateModal({ email, name })}
+                      onViewConversation={(id, num) =>
+                        setSelectedInquiry({ id, inquiryNumber: num })
+                      }
+                      onOpenTemplates={(email, name) =>
+                        setTemplateModal({ email, name })
+                      }
                     />
                   ))}
                 </div>

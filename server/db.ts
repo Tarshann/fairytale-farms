@@ -1,16 +1,33 @@
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, gt, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { 
-  InsertUser, users, 
-  categories, Category, InsertCategory,
-  products, Product, InsertProduct,
-  cartItems, CartItem, InsertCartItem,
-  orders, Order, InsertOrder,
-  orderItems, OrderItem, InsertOrderItem,
-  contactSubmissions, ContactSubmission, InsertContactSubmission,
-  wishlistItems, WishlistItem, InsertWishlistItem
+import {
+  InsertUser,
+  users,
+  loginCodes,
+  InsertLoginCode,
+  categories,
+  Category,
+  InsertCategory,
+  products,
+  Product,
+  InsertProduct,
+  cartItems,
+  CartItem,
+  InsertCartItem,
+  orders,
+  Order,
+  InsertOrder,
+  orderItems,
+  OrderItem,
+  InsertOrderItem,
+  contactSubmissions,
+  ContactSubmission,
+  InsertContactSubmission,
+  wishlistItems,
+  WishlistItem,
+  InsertWishlistItem,
 } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 // Normalize all admin emails: trim and lowercase to ensure consistency
@@ -114,9 +131,68 @@ export async function getUserByOpenId(openId: string) {
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.openId, openId))
+    .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user by email: database not available");
+    return undefined;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============= LOGIN CODE OPERATIONS =============
+
+export async function createLoginCode(code: InsertLoginCode) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = (await db.insert(loginCodes).values(code)) as any;
+  return Number(result.insertId);
+}
+
+export async function getLatestActiveLoginCode(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await db
+    .select()
+    .from(loginCodes)
+    .where(
+      and(
+        eq(loginCodes.email, normalizedEmail),
+        isNull(loginCodes.usedAt),
+        gt(loginCodes.expiresAt, new Date())
+      )
+    )
+    .orderBy(desc(loginCodes.createdAt))
+    .limit(1);
+
+  return result[0];
+}
+
+export async function markLoginCodeUsed(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(loginCodes)
+    .set({ usedAt: new Date() })
+    .where(eq(loginCodes.id, id));
 }
 
 // ============= CATEGORY OPERATIONS =============
@@ -124,20 +200,27 @@ export async function getUserByOpenId(openId: string) {
 export async function getAllCategories() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(categories).orderBy(categories.displayOrder, categories.name);
+  return db
+    .select()
+    .from(categories)
+    .orderBy(categories.displayOrder, categories.name);
 }
 
 export async function getCategoryBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(categories).where(eq(categories.slug, slug)).limit(1);
+  const result = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.slug, slug))
+    .limit(1);
   return result[0];
 }
 
 export async function createCategory(category: InsertCategory) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(categories).values(category) as any;
+  const result = (await db.insert(categories).values(category)) as any;
   return Number(result.insertId);
 }
 
@@ -146,7 +229,9 @@ export async function createCategory(category: InsertCategory) {
 export async function getAllProducts() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(products)
+  return db
+    .select()
+    .from(products)
     .where(eq(products.inStock, true))
     .orderBy(products.displayOrder, products.name);
 }
@@ -155,13 +240,18 @@ export async function getAllProducts() {
 export async function getAllProductsAdmin() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(products).orderBy(products.displayOrder, products.name);
+  return db
+    .select()
+    .from(products)
+    .orderBy(products.displayOrder, products.name);
 }
 
 export async function getProductsByCategory(categoryId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(products)
+  return db
+    .select()
+    .from(products)
     .where(and(eq(products.categoryId, categoryId), eq(products.inStock, true)))
     .orderBy(products.displayOrder, products.name);
 }
@@ -169,21 +259,31 @@ export async function getProductsByCategory(categoryId: number) {
 export async function getProductById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+  const result = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
   return result[0];
 }
 
 export async function getProductBySlug(slug: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
+  const result = await db
+    .select()
+    .from(products)
+    .where(eq(products.slug, slug))
+    .limit(1);
   return result[0];
 }
 
 export async function getFeaturedProducts() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(products)
+  return db
+    .select()
+    .from(products)
     .where(eq(products.featured, true))
     .orderBy(products.displayOrder)
     .limit(6);
@@ -192,11 +292,14 @@ export async function getFeaturedProducts() {
 export async function createProduct(product: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(products).values(product) as any;
+  const result = (await db.insert(products).values(product)) as any;
   return Number(result.insertId);
 }
 
-export async function updateProduct(id: number, updates: Partial<InsertProduct>) {
+export async function updateProduct(
+  id: number,
+  updates: Partial<InsertProduct>
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(products).set(updates).where(eq(products.id, id));
@@ -213,7 +316,7 @@ export async function deleteProduct(id: number) {
 export async function getCartItems(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const items = await db
     .select({
       id: cartItems.id,
@@ -228,14 +331,14 @@ export async function getCartItems(userId: number) {
     .from(cartItems)
     .leftJoin(products, eq(cartItems.productId, products.id))
     .where(eq(cartItems.userId, userId));
-  
+
   return items;
 }
 
 export async function addToCart(item: InsertCartItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const existing = await db
     .select()
     .from(cartItems)
@@ -246,16 +349,19 @@ export async function addToCart(item: InsertCartItem) {
       )
     )
     .limit(1);
-  
+
   if (existing.length > 0) {
     const newQuantity = existing[0].quantity + (item.quantity || 1);
     await db
       .update(cartItems)
-      .set({ quantity: newQuantity, customizationNotes: item.customizationNotes })
+      .set({
+        quantity: newQuantity,
+        customizationNotes: item.customizationNotes,
+      })
       .where(eq(cartItems.id, existing[0].id));
     return existing[0].id;
   } else {
-    const result = await db.insert(cartItems).values(item) as any;
+    const result = (await db.insert(cartItems).values(item)) as any;
     return Number(result.insertId);
   }
 }
@@ -278,33 +384,65 @@ export async function clearCart(userId: number) {
   await db.delete(cartItems).where(eq(cartItems.userId, userId));
 }
 
+export async function transferCartItems(fromUserId: number, toUserId: number) {
+  if (fromUserId === toUserId) return;
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const items = await db
+    .select()
+    .from(cartItems)
+    .where(eq(cartItems.userId, fromUserId));
+
+  if (!items.length) return;
+
+  await db.delete(cartItems).where(eq(cartItems.userId, fromUserId));
+
+  for (const item of items) {
+    await db.insert(cartItems).values({
+      userId: toUserId,
+      productId: item.productId,
+      quantity: item.quantity,
+      customizationNotes: item.customizationNotes ?? undefined,
+    });
+  }
+}
+
 // ============= ORDER OPERATIONS =============
 
 export async function createOrder(order: InsertOrder) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(orders).values(order) as any;
+  const result = (await db.insert(orders).values(order)) as any;
   return Number(result.insertId);
 }
 
 export async function createOrderItem(item: InsertOrderItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(orderItems).values(item) as any;
+  const result = (await db.insert(orderItems).values(item)) as any;
   return Number(result.insertId);
 }
 
 export async function getOrderById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  const result = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, id))
+    .limit(1);
   return result[0];
 }
 
 export async function getOrderByNumber(orderNumber: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(orders).where(eq(orders.orderNumber, orderNumber)).limit(1);
+  const result = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.orderNumber, orderNumber))
+    .limit(1);
   return result[0];
 }
 
@@ -322,18 +460,48 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
 export async function getOrdersByUser(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  const ordersList = await db.select().from(orders)
+  const ordersList = await db
+    .select()
+    .from(orders)
     .where(eq(orders.userId, userId))
     .orderBy(desc(orders.createdAt));
-  
+
   // Add item counts to each order
   const ordersWithItems = await Promise.all(
-    ordersList.map(async (order) => {
+    ordersList.map(async order => {
       const items = await getOrderItems(order.id);
       return { ...order, items };
     })
   );
-  
+
+  return ordersWithItems;
+}
+
+export async function getOrdersForAccount(
+  userId: number,
+  email?: string | null
+) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const normalizedEmail = email?.trim().toLowerCase();
+  const whereClause = normalizedEmail
+    ? or(eq(orders.userId, userId), eq(orders.customerEmail, normalizedEmail))
+    : eq(orders.userId, userId);
+
+  const ordersList = await db
+    .select()
+    .from(orders)
+    .where(whereClause)
+    .orderBy(desc(orders.createdAt));
+
+  const ordersWithItems = await Promise.all(
+    ordersList.map(async order => {
+      const items = await getOrderItems(order.id);
+      return { ...order, items };
+    })
+  );
+
   return ordersWithItems;
 }
 
@@ -346,91 +514,136 @@ export async function getOrderItems(orderId: number) {
 export async function getAllOrders() {
   const db = await getDb();
   if (!db) return [];
-  const ordersList = await db.select().from(orders).orderBy(desc(orders.createdAt));
-  
+  const ordersList = await db
+    .select()
+    .from(orders)
+    .orderBy(desc(orders.createdAt));
+
   // Add user info and item counts to each order
   const ordersWithDetails = await Promise.all(
-    ordersList.map(async (order) => {
+    ordersList.map(async order => {
       const items = await getOrderItems(order.id);
-      const [user] = await db.select().from(users).where(eq(users.id, order.userId)).limit(1);
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, order.userId))
+        .limit(1);
       return { ...order, items, user };
     })
   );
-  
+
   return ordersWithDetails;
 }
 
-export async function updateOrderStatus(id: number, status: "pending" | "processing" | "completed" | "cancelled") {
+export async function updateOrderStatus(
+  id: number,
+  status: "pending" | "processing" | "completed" | "cancelled"
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(orders).set({ status }).where(eq(orders.id, id));
 }
 
-export async function updateOrderPayment(id: number, paymentIntentId: string, paymentStatus: string) {
+export async function updateOrderPayment(
+  id: number,
+  paymentIntentId: string,
+  paymentStatus: string
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(orders).set({ 
-    stripePaymentIntentId: paymentIntentId,
-    stripePaymentStatus: paymentStatus 
-  }).where(eq(orders.id, id));
+  await db
+    .update(orders)
+    .set({
+      stripePaymentIntentId: paymentIntentId,
+      stripePaymentStatus: paymentStatus,
+    })
+    .where(eq(orders.id, id));
 }
 
 // ============= CONTACT OPERATIONS =============
 
-export async function createContactSubmission(submission: InsertContactSubmission) {
+export async function createContactSubmission(
+  submission: InsertContactSubmission
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(contactSubmissions).values(submission) as any;
+  const result = (await db
+    .insert(contactSubmissions)
+    .values(submission)) as any;
   return Number(result.insertId);
 }
 
 export async function getAllContactSubmissions() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(contactSubmissions).orderBy(desc(contactSubmissions.createdAt));
+  return db
+    .select()
+    .from(contactSubmissions)
+    .orderBy(desc(contactSubmissions.createdAt));
 }
 
-export async function updateContactSubmissionStatus(id: number, status: "new" | "read" | "replied") {
+export async function updateContactSubmissionStatus(
+  id: number,
+  status: "new" | "read" | "replied"
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(contactSubmissions).set({ status }).where(eq(contactSubmissions.id, id));
+  await db
+    .update(contactSubmissions)
+    .set({ status })
+    .where(eq(contactSubmissions.id, id));
 }
 
 // ============= PHOTO UPLOAD OPERATIONS =============
 
-import { photoUploads, PhotoUpload, InsertPhotoUpload } from "../drizzle/schema";
+import {
+  photoUploads,
+  PhotoUpload,
+  InsertPhotoUpload,
+} from "../drizzle/schema";
 
-export async function createPhotoUpload(upload: InsertPhotoUpload): Promise<number> {
+export async function createPhotoUpload(
+  upload: InsertPhotoUpload
+): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const [result] = await db.insert(photoUploads).values(upload);
   return Number(result.insertId);
 }
 
-export async function getPhotoUploadsByOrder(orderId: number): Promise<PhotoUpload[]> {
+export async function getPhotoUploadsByOrder(
+  orderId: number
+): Promise<PhotoUpload[]> {
   const db = await getDb();
   if (!db) return [];
-  
-  return db.select().from(photoUploads).where(eq(photoUploads.orderId, orderId));
+
+  return db
+    .select()
+    .from(photoUploads)
+    .where(eq(photoUploads.orderId, orderId));
 }
 
 export async function getPendingPhotoUploads(): Promise<PhotoUpload[]> {
   const db = await getDb();
   if (!db) return [];
-  
-  return db.select().from(photoUploads).where(eq(photoUploads.status, "pending_review"));
+
+  return db
+    .select()
+    .from(photoUploads)
+    .where(eq(photoUploads.status, "pending_review"));
 }
 
 export async function updatePhotoUploadStatus(
-  id: number, 
+  id: number,
   status: "pending_review" | "approved" | "rejected",
   reviewNotes?: string
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
-  await db.update(photoUploads)
+
+  await db
+    .update(photoUploads)
     .set({ status, reviewNotes, updatedAt: new Date() })
     .where(eq(photoUploads.id, id));
 }
@@ -439,15 +652,18 @@ export async function updatePhotoUploadStatus(
 
 import { promoCodes, PromoCode } from "../drizzle/schema";
 
-export async function getPromoCodeByCode(code: string): Promise<PromoCode | undefined> {
+export async function getPromoCodeByCode(
+  code: string
+): Promise<PromoCode | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  
-  const [result] = await db.select()
+
+  const [result] = await db
+    .select()
     .from(promoCodes)
     .where(eq(promoCodes.code, code))
     .limit(1);
-  
+
   return result;
 }
 
@@ -457,36 +673,37 @@ export async function validatePromoCode(code: string): Promise<{
   reason?: string;
 }> {
   const promoCode = await getPromoCodeByCode(code);
-  
+
   if (!promoCode) {
     return { valid: false, reason: "Promo code not found" };
   }
-  
+
   if (!promoCode.isActive) {
     return { valid: false, reason: "Promo code is no longer active" };
   }
-  
+
   const now = new Date();
   if (promoCode.validFrom && now < promoCode.validFrom) {
     return { valid: false, reason: "Promo code is not yet valid" };
   }
-  
+
   if (promoCode.validUntil && now > promoCode.validUntil) {
     return { valid: false, reason: "Promo code has expired" };
   }
-  
+
   if (promoCode.maxUses && promoCode.usedCount >= promoCode.maxUses) {
     return { valid: false, reason: "Promo code has reached maximum uses" };
   }
-  
+
   return { valid: true, promoCode };
 }
 
 export async function incrementPromoCodeUsage(id: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
-  await db.update(promoCodes)
+
+  await db
+    .update(promoCodes)
     .set({ usedCount: sql`${promoCodes.usedCount} + 1` })
     .where(eq(promoCodes.id, id));
 }
@@ -499,17 +716,19 @@ export async function calculateDiscount(
   // Check if promo code applies to these product types
   if (promoCode.applicableProductTypes) {
     const applicableTypes = JSON.parse(promoCode.applicableProductTypes);
-    const hasApplicableProduct = productTypes.some(type => applicableTypes.includes(type));
+    const hasApplicableProduct = productTypes.some(type =>
+      applicableTypes.includes(type)
+    );
     if (!hasApplicableProduct) {
       return 0;
     }
   }
-  
+
   // Check minimum order amount
   if (promoCode.minOrderAmount && subtotal < Number(promoCode.minOrderAmount)) {
     return 0;
   }
-  
+
   // Calculate discount
   if (promoCode.discountType === "percentage") {
     return (subtotal * Number(promoCode.discountValue)) / 100;
@@ -531,33 +750,43 @@ export async function validateDeliveryZone(zipCode: string): Promise<{
   if (!db) {
     return { valid: false, reason: "Database not available" };
   }
-  
-  const [zone] = await db.select()
+
+  const [zone] = await db
+    .select()
     .from(deliveryZones)
     .where(eq(deliveryZones.zipCode, zipCode))
     .limit(1);
-  
+
   if (!zone) {
     return { valid: false, reason: "Delivery not available in this ZIP code" };
   }
-  
+
   if (!zone.isActive) {
-    return { valid: false, reason: "Delivery temporarily unavailable in this area" };
+    return {
+      valid: false,
+      reason: "Delivery temporarily unavailable in this area",
+    };
   }
-  
+
   return { valid: true, zone };
 }
 
 export async function getAllDeliveryZones(): Promise<DeliveryZone[]> {
   const db = await getDb();
   if (!db) return [];
-  
-  return db.select().from(deliveryZones).where(eq(deliveryZones.isActive, true));
+
+  return db
+    .select()
+    .from(deliveryZones)
+    .where(eq(deliveryZones.isActive, true));
 }
 
 // ============= PRODUCT INVENTORY OPERATIONS =============
 
-export async function checkProductAvailability(productId: number, quantity: number): Promise<{
+export async function checkProductAvailability(
+  productId: number,
+  quantity: number
+): Promise<{
   available: boolean;
   reason?: string;
 }> {
@@ -565,30 +794,31 @@ export async function checkProductAvailability(productId: number, quantity: numb
   if (!db) {
     return { available: false, reason: "Database not available" };
   }
-  
-  const [product] = await db.select()
+
+  const [product] = await db
+    .select()
     .from(products)
     .where(eq(products.id, productId))
     .limit(1);
-  
+
   if (!product) {
     return { available: false, reason: "Product not found" };
   }
-  
+
   if (!product.inStock) {
     return { available: false, reason: "Product is out of stock" };
   }
-  
+
   // Check availability dates
   const now = new Date();
   if (product.availableFrom && now < product.availableFrom) {
     return { available: false, reason: "Product is not yet available" };
   }
-  
+
   if (product.availableUntil && now > product.availableUntil) {
     return { available: false, reason: "Product is no longer available" };
   }
-  
+
   // Check inventory cap
   if (product.inventoryCap) {
     const remaining = product.inventoryCap - (product.inventorySold || 0);
@@ -596,15 +826,19 @@ export async function checkProductAvailability(productId: number, quantity: numb
       return { available: false, reason: `Only ${remaining} remaining` };
     }
   }
-  
+
   return { available: true };
 }
 
-export async function incrementProductSold(productId: number, quantity: number): Promise<void> {
+export async function incrementProductSold(
+  productId: number,
+  quantity: number
+): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
-  await db.update(products)
+
+  await db
+    .update(products)
     .set({ inventorySold: sql`${products.inventorySold} + ${quantity}` })
     .where(eq(products.id, productId));
 }
@@ -612,37 +846,41 @@ export async function incrementProductSold(productId: number, quantity: number):
 export async function getValentinesProducts(): Promise<Product[]> {
   const db = await getDb();
   if (!db) return [];
-  
-  const valentinesCategory = await db.select()
+
+  const valentinesCategory = await db
+    .select()
     .from(categories)
     .where(eq(categories.slug, "valentines-day-2026"))
     .limit(1);
-  
+
   if (!valentinesCategory.length) return [];
-  
-  return db.select()
+
+  return db
+    .select()
     .from(products)
     .where(eq(products.categoryId, valentinesCategory[0].id))
     .orderBy(products.displayOrder);
 }
 
-export async function getProductsByType(productType: "standard" | "tier" | "build_your_own_item" | "custom_portrait"): Promise<Product[]> {
+export async function getProductsByType(
+  productType: "standard" | "tier" | "build_your_own_item" | "custom_portrait"
+): Promise<Product[]> {
   const db = await getDb();
   if (!db) return [];
-  
-  return db.select()
+
+  return db
+    .select()
     .from(products)
     .where(eq(products.productType, productType))
     .orderBy(products.displayOrder);
 }
-
 
 // ============ WISHLIST FUNCTIONS ============
 
 export async function getWishlistItems(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const items = await db
     .select({
       id: wishlistItems.id,
@@ -658,31 +896,36 @@ export async function getWishlistItems(userId: number) {
         imageUrl: products.imageUrl,
         inStock: products.inStock,
         categoryId: products.categoryId,
-      }
+      },
     })
     .from(wishlistItems)
     .innerJoin(products, eq(wishlistItems.productId, products.id))
     .where(eq(wishlistItems.userId, userId))
     .orderBy(desc(wishlistItems.createdAt));
-  
+
   return items;
 }
 
 export async function addToWishlist(userId: number, productId: number) {
   const db = await getDb();
   if (!db) return null;
-  
+
   // Check if already in wishlist
   const existing = await db
     .select()
     .from(wishlistItems)
-    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
+    .where(
+      and(
+        eq(wishlistItems.userId, userId),
+        eq(wishlistItems.productId, productId)
+      )
+    )
     .limit(1);
-  
+
   if (existing.length > 0) {
     return existing[0];
   }
-  
+
   const result = await db.insert(wishlistItems).values({ userId, productId });
   return { id: Number((result as any)[0].insertId), userId, productId };
 }
@@ -690,47 +933,57 @@ export async function addToWishlist(userId: number, productId: number) {
 export async function removeFromWishlist(userId: number, productId: number) {
   const db = await getDb();
   if (!db) return false;
-  
+
   await db
     .delete(wishlistItems)
-    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)));
-  
+    .where(
+      and(
+        eq(wishlistItems.userId, userId),
+        eq(wishlistItems.productId, productId)
+      )
+    );
+
   return true;
 }
 
 export async function isInWishlist(userId: number, productId: number) {
   const db = await getDb();
   if (!db) return false;
-  
+
   const existing = await db
     .select()
     .from(wishlistItems)
-    .where(and(eq(wishlistItems.userId, userId), eq(wishlistItems.productId, productId)))
+    .where(
+      and(
+        eq(wishlistItems.userId, userId),
+        eq(wishlistItems.productId, productId)
+      )
+    )
     .limit(1);
-  
+
   return existing.length > 0;
 }
 
 export async function getWishlistProductIds(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const items = await db
     .select({ productId: wishlistItems.productId })
     .from(wishlistItems)
     .where(eq(wishlistItems.userId, userId));
-  
+
   return items.map(item => item.productId);
 }
 
 export async function getWishlistCount(userId: number) {
   const db = await getDb();
   if (!db) return 0;
-  
+
   const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(wishlistItems)
     .where(eq(wishlistItems.userId, userId));
-  
+
   return result[0]?.count || 0;
 }

@@ -1,25 +1,44 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
-import { MapPin, Check, X, ArrowLeft, Truck, Clock, Heart, Search } from "lucide-react";
+import {
+  MapPin,
+  Check,
+  X,
+  ArrowLeft,
+  Truck,
+  Clock,
+  Heart,
+  Search,
+} from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 export default function DeliveryZones() {
   const [zipCode, setZipCode] = useState("");
   const [checked, setChecked] = useState(false);
-  
-  const { data: validation, isLoading, refetch } = trpc.valentines.validateDeliveryZone.useQuery(
+
+  const {
+    data: validation,
+    isLoading,
+    refetch,
+  } = trpc.valentines.validateDeliveryZone.useQuery(
     { zipCode },
     { enabled: false }
   );
-  
+
   const { data: zones } = trpc.valentines.deliveryZones.useQuery();
 
   const handleCheck = async () => {
@@ -29,7 +48,7 @@ export default function DeliveryZones() {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleCheck();
     }
   };
@@ -37,22 +56,29 @@ export default function DeliveryZones() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navigation />
-      
+
       {/* Header */}
       <section className="bg-gradient-rainbow-soft py-12">
         <div className="container">
-          <Link href="/valentines" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4">
+          <Link
+            href="/valentines"
+            className="inline-flex items-center text-muted-foreground hover:text-foreground mb-4"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Valentine's Collection
           </Link>
-          
+
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 rounded-2xl bg-white shadow-pastel flex items-center justify-center">
               <MapPin className="w-8 h-8 text-pink-500" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold">Delivery Zone Checker</h1>
-              <p className="text-muted-foreground">Check if we deliver to your area</p>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                Delivery Zone Checker
+              </h1>
+              <p className="text-muted-foreground">
+                Check if we deliver to your area
+              </p>
             </div>
           </div>
         </div>
@@ -68,7 +94,7 @@ export default function DeliveryZones() {
                 We deliver within a 30-mile radius of Goodlettsville, TN
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               <div className="flex gap-3">
                 <div className="flex-1">
@@ -76,8 +102,8 @@ export default function DeliveryZones() {
                     type="text"
                     placeholder="Enter 5-digit ZIP code"
                     value={zipCode}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '').slice(0, 5);
+                    onChange={e => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 5);
                       setZipCode(val);
                       setChecked(false);
                     }}
@@ -86,8 +112,8 @@ export default function DeliveryZones() {
                     maxLength={5}
                   />
                 </div>
-                <Button 
-                  onClick={handleCheck} 
+                <Button
+                  onClick={handleCheck}
                   disabled={zipCode.length !== 5 || isLoading}
                   size="lg"
                   className="h-14 px-8"
@@ -109,15 +135,23 @@ export default function DeliveryZones() {
                   {validation.valid ? (
                     <Alert className="border-green-200 bg-green-50">
                       <Check className="h-5 w-5 text-green-600" />
-                      <AlertTitle className="text-green-700 text-lg">Great news!</AlertTitle>
+                      <AlertTitle className="text-green-700 text-lg">
+                        Great news!
+                      </AlertTitle>
                       <AlertDescription className="text-green-600">
                         <p className="mb-3">
                           We deliver to ZIP code <strong>{zipCode}</strong>!
                         </p>
                         {validation.zone && (
                           <div className="space-y-2 text-sm">
-                            <p><strong>City:</strong> {validation.zone.city || 'Your area'}</p>
-                            <p><strong>Delivery Fee:</strong> ${validation.zone.deliveryFee || '0.00'}</p>
+                            <p>
+                              <strong>City:</strong>{" "}
+                              {validation.zone.city || "Your area"}
+                            </p>
+                            <p>
+                              <strong>Delivery Fee:</strong> $
+                              {validation.zone.deliveryFee || "0.00"}
+                            </p>
                           </div>
                         )}
                         <div className="mt-4">
@@ -133,16 +167,24 @@ export default function DeliveryZones() {
                   ) : (
                     <Alert variant="destructive">
                       <X className="h-5 w-5" />
-                      <AlertTitle className="text-lg">Outside Delivery Area</AlertTitle>
+                      <AlertTitle className="text-lg">
+                        Outside Delivery Area
+                      </AlertTitle>
                       <AlertDescription>
                         <p className="mb-3">
-                          Unfortunately, ZIP code <strong>{zipCode}</strong> is outside our current delivery zone.
+                          Unfortunately, ZIP code <strong>{zipCode}</strong> is
+                          outside our current delivery zone.
                         </p>
                         <p className="text-sm">
-                          {validation.reason || "We currently deliver within a 30-mile radius of Goodlettsville, TN."}
+                          {validation.reason ||
+                            "We currently deliver within a 30-mile radius of Goodlettsville, TN."}
                         </p>
                         <p className="mt-3 text-sm">
-                          Have questions? <Link href="/contact" className="underline">Contact us</Link> to discuss options.
+                          Have questions?{" "}
+                          <Link href="/contact" className="underline">
+                            Contact us
+                          </Link>{" "}
+                          to discuss options.
                         </p>
                       </AlertDescription>
                     </Alert>
@@ -161,7 +203,7 @@ export default function DeliveryZones() {
                 Within 10 miles of Goodlettsville
               </p>
             </Card>
-            
+
             <Card className="text-center p-6">
               <Clock className="w-10 h-10 text-purple-500 mx-auto mb-3" />
               <h3 className="font-semibold mb-1">Feb 13-14 Delivery</h3>
@@ -169,7 +211,7 @@ export default function DeliveryZones() {
                 Choose your preferred date
               </p>
             </Card>
-            
+
             <Card className="text-center p-6">
               <MapPin className="w-10 h-10 text-green-500 mx-auto mb-3" />
               <h3 className="font-semibold mb-1">30-Mile Radius</h3>
@@ -190,19 +232,29 @@ export default function DeliveryZones() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {zones.map((zone) => (
-                    <div 
+                  {zones.map(zone => (
+                    <div
                       key={zone.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                     >
                       <div>
-                        <h4 className="font-medium">{zone.city || zone.zipCode}</h4>
+                        <h4 className="font-medium">
+                          {zone.city || zone.zipCode}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
                           ZIP: {zone.zipCode}
                         </p>
                       </div>
-                      <Badge variant={parseFloat(zone.deliveryFee || '0') === 0 ? "default" : "secondary"}>
-                        {parseFloat(zone.deliveryFee || '0') === 0 ? "FREE" : `$${zone.deliveryFee}`}
+                      <Badge
+                        variant={
+                          parseFloat(zone.deliveryFee || "0") === 0
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {parseFloat(zone.deliveryFee || "0") === 0
+                          ? "FREE"
+                          : `$${zone.deliveryFee}`}
                       </Badge>
                     </div>
                   ))}
@@ -219,12 +271,27 @@ export default function DeliveryZones() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                 {[
-                  "Nashville", "Franklin", "Murfreesboro", "Brentwood", 
-                  "Hendersonville", "Gallatin", "Mt. Juliet", "Lebanon",
-                  "Smyrna", "La Vergne", "Spring Hill", "Nolensville",
-                  "Goodlettsville", "Madison", "Hermitage", "Antioch",
-                  "Bellevue", "Green Hills", "Berry Hill", "Oak Hill"
-                ].map((city) => (
+                  "Nashville",
+                  "Franklin",
+                  "Murfreesboro",
+                  "Brentwood",
+                  "Hendersonville",
+                  "Gallatin",
+                  "Mt. Juliet",
+                  "Lebanon",
+                  "Smyrna",
+                  "La Vergne",
+                  "Spring Hill",
+                  "Nolensville",
+                  "Goodlettsville",
+                  "Madison",
+                  "Hermitage",
+                  "Antioch",
+                  "Bellevue",
+                  "Green Hills",
+                  "Berry Hill",
+                  "Oak Hill",
+                ].map(city => (
                   <div key={city} className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-500" />
                     <span>{city}</span>
@@ -232,7 +299,8 @@ export default function DeliveryZones() {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Not sure if we deliver to your area? Enter your ZIP code above or contact us!
+                Not sure if we deliver to your area? Enter your ZIP code above
+                or contact us!
               </p>
             </CardContent>
           </Card>

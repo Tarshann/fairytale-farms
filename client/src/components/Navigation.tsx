@@ -2,22 +2,33 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, User, Menu, X, Heart, Sparkles, FlaskConical, Candy, Images } from "lucide-react";
+import {
+  ShoppingCart,
+  User,
+  Menu,
+  X,
+  Heart,
+  Sparkles,
+  FlaskConical,
+  Candy,
+  Images,
+} from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 
 export default function Navigation() {
   const [location] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, hasSession } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   const { data: cartItems } = trpc.cart.get.useQuery(undefined, {
-    enabled: isAuthenticated,
+    enabled: hasSession,
   });
-  
-  const cartCount = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-  
+
+  const cartCount =
+    cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/valentines", label: "Valentine's 2026", special: true },
@@ -28,12 +39,12 @@ export default function Navigation() {
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
   ];
-  
+
   const isActive = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
   };
-  
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container">
@@ -41,17 +52,17 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/">
             <a className="flex items-center space-x-2">
-              <img 
-                src="/images/fairytale-farms-logo.png" 
-                alt="Fairytale Farms" 
+              <img
+                src="/images/fairytale-farms-logo.png"
+                alt="Fairytale Farms"
                 className="h-12 w-auto object-contain"
               />
             </a>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
+            {navLinks.map(link => (
               <Link key={link.href} href={link.href}>
                 <a
                   className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 ${
@@ -60,8 +71,12 @@ export default function Navigation() {
                       : "text-muted-foreground"
                   }`}
                 >
-                  {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
-                  {link.lab && <FlaskConical className="w-4 h-4 text-purple-500" />}
+                  {link.special && (
+                    <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
+                  )}
+                  {link.lab && (
+                    <FlaskConical className="w-4 h-4 text-purple-500" />
+                  )}
                   {link.candy && <Candy className="w-4 h-4 text-yellow-500" />}
                   {link.gallery && <Images className="w-4 h-4 text-pink-500" />}
                   {link.label}
@@ -84,12 +99,12 @@ export default function Navigation() {
               </Link>
             ))}
           </div>
-          
+
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <Link href="/my-orders">
+                <Link href="/account/orders">
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     My Orders
@@ -107,19 +122,27 @@ export default function Navigation() {
               <a href={getLoginUrl()}>
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4 mr-2" />
-                  Sign In
+                  Sign In / View Orders
                 </Button>
               </a>
             )}
-            
+
             <Link href="/wishlist">
-              <Button variant="ghost" size="sm" className="text-pink-500 hover:text-pink-600 hover:bg-pink-50">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-pink-500 hover:text-pink-600 hover:bg-pink-50"
+              >
                 <Heart className="h-4 w-4" />
               </Button>
             </Link>
-            
+
             <Link href="/cart">
-              <Button variant="outline" size="sm" className="relative border-primary/30 hover:border-primary">
+              <Button
+                variant="outline"
+                size="sm"
+                className="relative border-primary/30 hover:border-primary"
+              >
                 <ShoppingCart className="h-4 w-4" />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
@@ -129,7 +152,7 @@ export default function Navigation() {
               </Button>
             </Link>
           </div>
-          
+
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-2">
             <Link href="/wishlist">
@@ -159,11 +182,11 @@ export default function Navigation() {
             </button>
           </div>
         </div>
-        
+
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t border-border">
-            {navLinks.map((link) => (
+            {navLinks.map(link => (
               <Link key={link.href} href={link.href}>
                 <a
                   className={`flex items-center gap-2 py-3 px-2 rounded-lg text-sm font-medium ${
@@ -173,8 +196,12 @@ export default function Navigation() {
                   } ${link.special ? "bg-pastel-pink/30" : ""} ${link.lab ? "bg-pastel-lavender/30" : ""} ${link.candy ? "bg-yellow-50" : ""}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.special && <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />}
-                  {link.lab && <FlaskConical className="w-4 h-4 text-purple-500" />}
+                  {link.special && (
+                    <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
+                  )}
+                  {link.lab && (
+                    <FlaskConical className="w-4 h-4 text-purple-500" />
+                  )}
                   {link.candy && <Candy className="w-4 h-4 text-yellow-500" />}
                   {link.gallery && <Images className="w-4 h-4 text-pink-500" />}
                   {link.label}
@@ -196,25 +223,37 @@ export default function Navigation() {
                 </a>
               </Link>
             ))}
-            
+
             <div className="pt-4 space-y-2 border-t border-border">
               <Link href="/wishlist">
-                <Button variant="ghost" className="w-full justify-start text-pink-500" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-pink-500"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <Heart className="h-4 w-4 mr-2" />
                   My Wishlist
                 </Button>
               </Link>
               {isAuthenticated ? (
                 <>
-                  <Link href="/my-orders">
-                    <Button variant="ghost" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/account/orders">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       <User className="h-4 w-4 mr-2" />
                       My Orders
                     </Button>
                   </Link>
                   {user?.role === "admin" && (
                     <Link href="/admin">
-                      <Button variant="ghost" className="w-full justify-start" onClick={() => setMobileMenuOpen(false)}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
                         Admin
                       </Button>
                     </Link>
@@ -224,7 +263,7 @@ export default function Navigation() {
                 <a href={getLoginUrl()}>
                   <Button variant="ghost" className="w-full justify-start">
                     <User className="h-4 w-4 mr-2" />
-                    Sign In
+                    Sign In / View Orders
                   </Button>
                 </a>
               )}

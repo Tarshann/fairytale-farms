@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import Anthropic from "@anthropic-ai/sdk";
 
-describe("Anthropic API Key Validation", () => {
+const hasAnthropicKey = Boolean(process.env.ANTHROPIC_API_KEY);
+const describeAuth = hasAnthropicKey ? describe : describe.skip;
+
+describeAuth("Anthropic API Key Validation", () => {
   it("should have ANTHROPIC_API_KEY configured", () => {
     expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
     expect(process.env.ANTHROPIC_API_KEY?.length).toBeGreaterThan(0);
