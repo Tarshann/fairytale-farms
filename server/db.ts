@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, isNull, gt, or } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -193,6 +193,79 @@ export async function markLoginCodeUsed(id: number) {
     .update(loginCodes)
     .set({ usedAt: new Date() })
     .where(eq(loginCodes.id, id));
+}
+
+// --- Passwordless login + guest order attach ---
+
+export async function createPasswordlessLoginCode(input: {
+  email: string;
+  codeHash: string;
+  expiresAt: Date;
+  ip: string;
+  userAgent: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create login code: database not available");
+    return;
+  }
+
+  await db.insert(loginCodes).values({
+    email: input.email.trim().toLowerCase(),
+    codeHash: input.codeHash,
+    expiresAt: input.expiresAt,
+  });
+}
+
+export async function consumePasswordlessLoginCode(input: {
+  email: string;
+}): Promise<null | { codeHash: string; expiresAt: Date }> {
+  const record = await getLatestActiveLoginCode(input.email);
+  if (!record) {
+    return null;
+  }
+
+  await markLoginCodeUsed(record.id);
+  return { codeHash: record.codeHash, expiresAt: record.expiresAt };
+}
+
+export async function attachGuestOrdersByEmail(input: {
+  email: string;
+  openId: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot attach guest orders: database not available");
+    return;
+  }
+
+  const accountUser = await getUserByOpenId(input.openId);
+  if (!accountUser) {
+    console.warn("[Database] Cannot attach guest orders: user not found");
+    return;
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const guestUsers = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.loginMethod, "guest"));
+
+  const guestUserIds = guestUsers
+    .map(user => user.id)
+    .filter(id => id !== accountUser.id);
+
+  if (guestUserIds.length === 0) return;
+
+  await db
+    .update(orders)
+    .set({ userId: accountUser.id })
+    .where(
+      and(
+        eq(orders.customerEmail, normalizedEmail),
+        inArray(orders.userId, guestUserIds)
+      )
+    );
 }
 
 // ============= CATEGORY OPERATIONS =============
