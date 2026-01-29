@@ -13,6 +13,7 @@
     "lint": "pnpm format:check",
     "lint:fix": "pnpm format:write",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev:smoke": "node -e \"const http=require('http'); const url=process.env.SMOKE_URL||'http://localhost:3000/health'; http.get(url,res=>{console.log('SMOKE',res.statusCode); process.exit(res.statusCode===200?0:1)}).on('error',e=>{console.error('SMOKE_ERR',e.message); process.exit(1)})\"",
     "check": "pnpm lint && pnpm typecheck",
     "test": "vitest run",
     "test:watch": "vitest",

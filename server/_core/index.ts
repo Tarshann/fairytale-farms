@@ -58,6 +58,10 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   app.get("/health", (_req, res) => {
+    if (ENV.isProduction) {
+      res.json({ ok: true });
+      return;
+    }
     res.json({
       ok: true,
       env: ENV.isProduction ? "production" : "development",
