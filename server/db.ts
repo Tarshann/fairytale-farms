@@ -237,38 +237,33 @@ export async function consumePasswordlessLoginCode(input: {
   }
 
   const normalizedEmail = input.email.trim().toLowerCase();
+  const now = new Date();
 
   return db.transaction(async tx => {
-    const [record] = await tx
-      .select()
+    const result = await tx
+      .select({
+        id: loginCodes.id,
+        codeHash: loginCodes.codeHash,
+        expiresAt: loginCodes.expiresAt,
+      })
       .from(loginCodes)
       .where(
         and(
           eq(loginCodes.email, normalizedEmail),
           isNull(loginCodes.usedAt),
-          gt(loginCodes.expiresAt, new Date())
+          gt(loginCodes.expiresAt, now)
         )
       )
       .orderBy(desc(loginCodes.createdAt))
       .limit(1);
 
-    if (!record) {
-      return null;
-    }
+    const record = result[0];
+    if (!record) return null;
 
-    const updateResult: any = await tx
+    await tx
       .update(loginCodes)
-      .set({ usedAt: new Date() })
-      .where(and(eq(loginCodes.id, record.id), isNull(loginCodes.usedAt)));
-
-    const affected =
-      typeof updateResult?.rowsAffected === "number"
-        ? updateResult.rowsAffected
-        : updateResult?.affectedRows;
-
-    if (!affected) {
-      return null;
-    }
+      .set({ usedAt: now })
+      .where(eq(loginCodes.id, record.id));
 
     return { codeHash: record.codeHash, expiresAt: record.expiresAt };
   });
@@ -302,15 +297,18 @@ export async function attachGuestOrdersByEmail(input: {
     .map(user => user.id)
     .filter(id => id !== accountUser.id);
 
-  if (guestUserIds.length === 0) return;
-
   await db
     .update(orders)
     .set({ userId: accountUser.id })
     .where(
       and(
         eq(orders.customerEmail, normalizedEmail),
-        inArray(orders.userId, guestUserIds)
+        or(
+          isNull(orders.userId),
+          guestUserIds.length
+            ? inArray(orders.userId, guestUserIds)
+            : sql`FALSE`
+        )
       )
     );
 }
