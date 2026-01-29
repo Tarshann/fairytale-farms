@@ -47,11 +47,12 @@ const imageUpdates = [
     slug: "chocolate-chip-cookies",
     imageUrl: "/images/chocolate-chip-cookie.jpg",
   },
-  { slug: "pecan-sandies", imageUrl: "/images/meringue-cookie.jpg" },
   {
     slug: "chocolate-crinkle-cookies",
-    imageUrl: "/images/chocolate-chip-cookie.jpg",
+    imageUrl: "/images/chocolate-crinkle-cookies.svg",
   },
+  { slug: "sprinkle-sugar-cookies", imageUrl: "/images/sprinkle-sugar-cookies.svg" },
+  { slug: "pecan-sandies", imageUrl: "/images/pecan-sandies.svg" },
 
   // Mini tin cakes
   { slug: "chocolate-mini-tin-cake", imageUrl: "/images/mini-cake.jpg" },

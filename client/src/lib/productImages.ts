@@ -6,8 +6,9 @@ type ProductImageSource = {
 const PRODUCT_IMAGE_OVERRIDES: Record<string, string> = {
   "chocolate-chip-cookies": "/images/chocolate-chip-cookie.jpg",
   "chocolate-chip-cookie": "/images/chocolate-chip-cookie.jpg",
-  "chocolate-crinkle-cookies": "/images/chocolate-chip-cookie.jpg",
-  "pecan-sandies": "/images/meringue-cookie.jpg",
+  "chocolate-crinkle-cookies": "/images/chocolate-crinkle-cookies.svg",
+  "pecan-sandies": "/images/pecan-sandies.svg",
+  "sprinkle-sugar-cookies": "/images/sprinkle-sugar-cookies.svg",
   "vanilla-birthday-mini-tin-cake": "/images/mini-cake.jpg",
   "strawberry-crunch-mini-tin-cake": "/images/mini-cake.jpg",
   "chocolate-mini-tin-cake": "/images/mini-cake.jpg",
