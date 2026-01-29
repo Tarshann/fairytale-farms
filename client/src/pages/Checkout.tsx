@@ -63,6 +63,12 @@ export default function Checkout() {
   }, 0);
 
   const handleCheckout = () => {
+    if (user?.email && typeof window !== "undefined") {
+      localStorage.setItem(
+        "lastCheckoutEmail",
+        user.email.trim().toLowerCase()
+      );
+    }
     createCheckoutMutation.mutate();
   };
 

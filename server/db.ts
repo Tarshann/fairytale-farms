@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, isNull, gt, or } from "drizzle-orm";
+import { eq, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -193,6 +193,126 @@ export async function markLoginCodeUsed(id: number) {
     .update(loginCodes)
     .set({ usedAt: new Date() })
     .where(eq(loginCodes.id, id));
+}
+
+// --- Passwordless login + guest order attach ---
+
+export async function createPasswordlessLoginCode(input: {
+  email: string;
+  codeHash: string;
+  expiresAt: Date;
+  ip: string;
+  userAgent: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create login code: database not available");
+    return;
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  await db
+    .update(loginCodes)
+    .set({ usedAt: new Date() })
+    .where(
+      and(eq(loginCodes.email, normalizedEmail), isNull(loginCodes.usedAt))
+    );
+
+  await db.insert(loginCodes).values({
+    email: normalizedEmail,
+    codeHash: input.codeHash,
+    expiresAt: input.expiresAt,
+  });
+}
+
+export async function consumePasswordlessLoginCode(input: {
+  email: string;
+  codeHash: string;
+}): Promise<null | { codeHash: string; expiresAt: Date }> {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot consume login code: database not available"
+    );
+    return null;
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const now = new Date();
+
+  return db.transaction(async tx => {
+    const result = await tx
+      .select({
+        id: loginCodes.id,
+        codeHash: loginCodes.codeHash,
+        expiresAt: loginCodes.expiresAt,
+      })
+      .from(loginCodes)
+      .where(
+        and(
+          eq(loginCodes.email, normalizedEmail),
+          eq(loginCodes.codeHash, input.codeHash),
+          isNull(loginCodes.usedAt),
+          gt(loginCodes.expiresAt, now)
+        )
+      )
+      .orderBy(desc(loginCodes.createdAt))
+      .limit(1);
+
+    const record = result[0];
+    if (!record) return null;
+
+    await tx
+      .update(loginCodes)
+      .set({ usedAt: now })
+      .where(eq(loginCodes.id, record.id));
+
+    return { codeHash: record.codeHash, expiresAt: record.expiresAt };
+  });
+}
+
+export async function attachGuestOrdersByEmail(input: {
+  email: string;
+  openId: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn(
+      "[Database] Cannot attach guest orders: database not available"
+    );
+    return;
+  }
+
+  const accountUser = await getUserByOpenId(input.openId);
+  if (!accountUser) {
+    console.warn("[Database] Cannot attach guest orders: user not found");
+    return;
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const guestUsers = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.loginMethod, "guest"));
+
+  const guestUserIds = guestUsers
+    .map(user => user.id)
+    .filter(id => id !== accountUser.id);
+
+  await db
+    .update(orders)
+    .set({ userId: accountUser.id })
+    .where(
+      and(
+        eq(orders.customerEmail, normalizedEmail),
+        or(
+          isNull(orders.userId),
+          guestUserIds.length
+            ? inArray(orders.userId, guestUserIds)
+            : sql`FALSE`
+        )
+      )
+    );
 }
 
 // ============= CATEGORY OPERATIONS =============
