@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, name FROM categories WHERE id = 120003 OR id = 120001 OR id = 120002 OR id = 120000; SELECT * FROM categories LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT id, name FROM categories WHERE id = 120003 OR id = 120001 OR id = 120002 OR id = 120000; SELECT * FROM categories LIMIT 15;",
+  "rows": [
+    {
+      "id": "120002",
+      "name": "Mini Tin Cakes"
+    },
+    {
+      "id": "120003",
+      "name": "Classic Cookies"
+    }
+  ],
+  "messages": [
+    "id\tname\tslug\tdescription\tdisplayOrder\tcreatedAt\tupdatedAt",
+    "1\tCustomized Cakes\tcustomized-cakes\tBeautiful custom cakes for any occasion\t1\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "2\tCustomized Sugar Cookies\tcustomized-sugar-cookies\tDelicious decorated sugar cookies\t2\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "3\tCinnamon Buns\tcinnamon-buns\tWarm, gooey cinnamon buns\t3\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "4\tCake Pops\tcake-pops\tBite-sized cake treats on a stick\t4\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "5\tBrownies\tbrownies\tRich, fudgy brownies\t5\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "6\tCheesecake\tcheesecake\tCreamy, decadent cheesecake\t6\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "7\tChocolate Covered Strawberries\tchocolate-strawberries\tFresh strawberries dipped in chocolate\t7\t2026-01-09 16:22:35\t2026-01-09 16:22:35",
+    "30001\tValentine's Day 2026\tvalentines-day-2026\tSpecial Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks\t0\t2026-01-10 19:43:23\t2026-01-10 19:43:23",
+    "90001\tBickering Bros Freeze-Dried Candy\tfreeze-dried-candy\tCrunchy, airy, and bursting with flavor! Our freeze-dried candies are transformed into light, melt-in-your-mouth treats with intensified flavors.\t8\t2026-01-11 16:00:22\t2026-01-11 16:00:22",
+    "120002\tMini Tin Cakes\tmini-tin-cakes\tIndividual mini cakes in various flavors\t0\t2026-01-11 22:09:22\t2026-01-11 22:09:22",
+    "120003\tClassic Cookies\tclassic-cookies\tNon-decorated classic cookie varieties\t0\t2026-01-11 22:09:35\t2026-01-11 22:09:35"
+  ],
+  "stdout": "id\tname\n120002\tMini Tin Cakes\n120003\tClassic Cookies\nid\tname\tslug\tdescription\tdisplayOrder\tcreatedAt\tupdatedAt\n1\tCustomized Cakes\tcustomized-cakes\tBeautiful custom cakes for any occasion\t1\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n2\tCustomized Sugar Cookies\tcustomized-sugar-cookies\tDelicious decorated sugar cookies\t2\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n3\tCinnamon Buns\tcinnamon-buns\tWarm, gooey cinnamon buns\t3\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n4\tCake Pops\tcake-pops\tBite-sized cake treats on a stick\t4\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n5\tBrownies\tbrownies\tRich, fudgy brownies\t5\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n6\tCheesecake\tcheesecake\tCreamy, decadent cheesecake\t6\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n7\tChocolate Covered Strawberries\tchocolate-strawberries\tFresh strawberries dipped in chocolate\t7\t2026-01-09 16:22:35\t2026-01-09 16:22:35\n30001\tValentine's Day 2026\tvalentines-day-2026\tSpecial Valentine's Day collection featuring curated tiers, build-your-own options, and custom portrait pucks\t0\t2026-01-10 19:43:23\t2026-01-10 19:43:23\n90001\tBickering Bros Freeze-Dried Candy\tfreeze-dried-candy\tCrunchy, airy, and bursting with flavor! Our freeze-dried candies are transformed into light, melt-in-your-mouth treats with intensified flavors.\t8\t2026-01-11 16:00:22\t2026-01-11 16:00:22\n120002\tMini Tin Cakes\tmini-tin-cakes\tIndividual mini cakes in various flavors\t0\t2026-01-11 22:09:22\t2026-01-11 22:09:22\n120003\tClassic Cookies\tclassic-cookies\tNon-decorated classic cookie varieties\t0\t2026-01-11 22:09:35\t2026-01-11 22:09:35\n",
+  "stderr": "",
+  "execution_time_ms": 937
+}

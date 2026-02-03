@@ -439,3 +439,8 @@
 
 - [x] Review homepage for duplicate sections
 - [x] Remove duplicate testimonials section (kept the newer styled version)
+
+
+## Fix Products Page Navigation Issues
+- [x] Fix category dropdown - selections now filter products and close dropdown
+- [x] Fix View All buttons - now navigate to category-filtered view and display filtered products
