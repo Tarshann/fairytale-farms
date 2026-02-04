@@ -125,9 +125,9 @@ export default function ProductDetail() {
     );
   }
 
-  // Show custom cake inquiry page for custom cakes
-  // This is specifically for the "custom-cake" product that requires contacting us
-  const isCustomCake = product.slug === "custom-cake";
+  // Show custom cake inquiry page for all products in Custom Cakes category (categoryId 3)
+  // These require contacting us for pricing and availability
+  const isCustomCake = product.categoryId === 3;
   if (isCustomCake) {
     return (
       <div className="min-h-screen flex flex-col">
