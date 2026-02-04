@@ -19,12 +19,9 @@ import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react";
 
 const CAKE_FLAVORS = [
-  "Vanilla",
   "Chocolate",
+  "Vanilla Confetti",
   "Strawberry",
-  "Red Velvet",
-  "Lemon",
-  "Funfetti",
 ];
 
 export default function ProductDetail() {
@@ -129,7 +126,10 @@ export default function ProductDetail() {
   }
 
   // Redirect custom cakes to inquiry/chatbot instead of showing product detail
-  const isCustomCake = product.categoryId === 1; // Customized Cakes category
+  // But NOT for Valentine's tier boxes or BYO items - those should show normal product detail
+  const isCustomCake = product.categoryId === 1 &&
+    product.productType !== "tier" &&
+    product.productType !== "build_your_own_item";
   if (isCustomCake) {
     return (
       <div className="min-h-screen flex flex-col">
