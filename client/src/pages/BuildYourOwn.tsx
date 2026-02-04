@@ -11,6 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -23,10 +30,16 @@ import {
   ArrowLeft,
   Check,
   Info,
+  Calendar,
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { getProductImageUrl } from "@/lib/productImages";
+
+const PICKUP_DATES = [
+  { value: "feb-13", label: "Friday, February 13th" },
+  { value: "feb-14", label: "Saturday, February 14th (Valentine's Day)" },
+];
 
 interface SelectedItem {
   productId: number;
@@ -37,6 +50,7 @@ interface SelectedItem {
 
 export default function BuildYourOwn() {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [selectedPickupDate, setSelectedPickupDate] = useState<string>("");
 
   const { data: byoItems, isLoading } =
     trpc.valentines.buildYourOwnItems.useQuery();
@@ -95,13 +109,20 @@ export default function BuildYourOwn() {
       return;
     }
 
+    if (!selectedPickupDate) {
+      toast.error("Please select a pickup date");
+      return;
+    }
+
+    const pickupLabel = PICKUP_DATES.find(d => d.value === selectedPickupDate)?.label || selectedPickupDate;
+
     try {
       // Add selected items to cart
       for (const item of selectedItems) {
         await addToCart.mutateAsync({
           productId: item.productId,
           quantity: item.quantity,
-          customizationNotes: "Build-Your-Own Valentine's Box item",
+          customizationNotes: `Build-Your-Own Valentine's Box\nPickup Date: ${pickupLabel}`,
         });
       }
 
@@ -110,6 +131,7 @@ export default function BuildYourOwn() {
 
       // Reset selections
       setSelectedItems([]);
+      setSelectedPickupDate("");
     } catch (error) {
       toast.error("Failed to add to cart. Please try again.");
     }
@@ -181,9 +203,8 @@ export default function BuildYourOwn() {
 
           <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-4 space-y-2">
             <p className="text-sm text-pink-800">
-              <span className="font-semibold">✨ Advance Order Required:</span>{" "}
-              All Create Your Own boxes must be ordered in advance. This option
-              is not available for same-day or last-minute orders.
+              <span className="font-semibold">🗓️ Limited Time — Order by Feb 12th!</span>{" "}
+              Pickup available February 13th or 14th in Castalian Springs, TN.
             </p>
             <p className="text-sm text-pink-800">
               <span className="font-semibold">📦 Base Box Included:</span> Your
@@ -390,6 +411,29 @@ export default function BuildYourOwn() {
                           ${totals.total.toFixed(2)}
                         </span>
                       </div>
+
+                      {/* Pickup Date Selection */}
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor="pickupDate" className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          Pickup Date *
+                        </Label>
+                        <Select
+                          value={selectedPickupDate}
+                          onValueChange={setSelectedPickupDate}
+                        >
+                          <SelectTrigger id="pickupDate">
+                            <SelectValue placeholder="Select pickup date..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PICKUP_DATES.map(date => (
+                              <SelectItem key={date.value} value={date.value}>
+                                {date.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </>
                   )}
 
@@ -415,8 +459,7 @@ export default function BuildYourOwn() {
                     <div className="flex gap-2 text-xs text-muted-foreground">
                       <Info className="w-4 h-4 flex-shrink-0" />
                       <p>
-                        Limited to 10 Build-Your-Own orders. Order by Feb 12 for
-                        Valentine's delivery.
+                        Order by Feb 12th. Pickup Feb 13th or 14th in Castalian Springs, TN.
                       </p>
                     </div>
                   </div>

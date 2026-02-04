@@ -78,9 +78,18 @@ export default function ValentinesCollection() {
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Handcrafted with love and a sprinkle of magic. Our enchanting
               Valentine's treats are perfect for sweethearts, friends, and
-              anyone who deserves a little extra love. Limited quantities
-              available for February 13-14 delivery.
+              anyone who deserves a little extra love.
             </p>
+
+            {/* Limited Time Alert */}
+            <div className="bg-pink-50 border-2 border-pink-200 rounded-xl p-4 mb-8 max-w-xl mx-auto">
+              <p className="text-pink-700 font-semibold">
+                🗓️ Limited Time Only — Order by Feb 12th!
+              </p>
+              <p className="text-pink-600 text-sm mt-1">
+                Pickup available February 13th or 14th in Castalian Springs, TN
+              </p>
+            </div>
 
             <div className="flex flex-wrap justify-center gap-4">
               <Button
@@ -102,12 +111,12 @@ export default function ValentinesCollection() {
             <div className="flex flex-wrap justify-center gap-4 mt-10">
               <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
                 <Clock className="w-4 h-4 text-pink-500" />
-                <span className="text-sm font-medium">Order by Feb 12</span>
+                <span className="text-sm font-medium">Order by Feb 12th</span>
               </div>
               <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
                 <MapPin className="w-4 h-4 text-purple-500" />
                 <span className="text-sm font-medium">
-                  Sumner County Delivery
+                  Pickup Feb 13th or 14th
                 </span>
               </div>
               <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">

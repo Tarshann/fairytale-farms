@@ -24,12 +24,18 @@ const CAKE_FLAVORS = [
   "Strawberry",
 ];
 
+const PICKUP_DATES = [
+  { value: "feb-13", label: "Friday, February 13th" },
+  { value: "feb-14", label: "Saturday, February 14th (Valentine's Day)" },
+];
+
 export default function ProductDetail() {
   const [, params] = useRoute("/products/:slug");
   const [, setLocation] = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
+  const [selectedPickupDate, setSelectedPickupDate] = useState<string>("");
 
   const { data: product, isLoading } = trpc.products.getBySlug.useQuery(
     { slug: params?.slug || "" },
@@ -68,16 +74,21 @@ export default function ProductDetail() {
       return;
     }
 
-    // Require cake flavor selection for Valentine's tier products
+    // Require cake flavor and pickup date for Valentine's tier products
     if (isValentinesTier && !selectedCakeFlavor) {
       toast.error("Please select a cake flavor");
       return;
     }
+    if (isValentinesTier && !selectedPickupDate) {
+      toast.error("Please select a pickup date");
+      return;
+    }
 
-    // Build customization notes with cake flavor if applicable
+    // Build customization notes with cake flavor and pickup date if applicable
     let notes = customizationNotes.trim();
-    if (isValentinesTier && selectedCakeFlavor) {
-      notes = `Cake Flavor: ${selectedCakeFlavor}${notes ? `\n${notes}` : ""}`;
+    if (isValentinesTier) {
+      const pickupLabel = PICKUP_DATES.find(d => d.value === selectedPickupDate)?.label || selectedPickupDate;
+      notes = `Pickup Date: ${pickupLabel}\nCake Flavor: ${selectedCakeFlavor}${notes ? `\n${notes}` : ""}`;
     }
 
     addToCartMutation.mutate({
@@ -288,30 +299,56 @@ export default function ProductDetail() {
                       </div>
                     </div>
 
-                    {/* Cake Flavor Selection for Valentine's Boxes */}
+                    {/* Valentine's Box Options */}
                     {isValentinesTier && (
-                      <div className="space-y-2">
-                        <Label htmlFor="cakeFlavor">Cake Flavor *</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Select your preferred cake flavor for the mini cake
-                          included in your box
-                        </p>
-                        <Select
-                          value={selectedCakeFlavor}
-                          onValueChange={setSelectedCakeFlavor}
-                        >
-                          <SelectTrigger id="cakeFlavor">
-                            <SelectValue placeholder="Choose a cake flavor..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CAKE_FLAVORS.map(flavor => (
-                              <SelectItem key={flavor} value={flavor}>
-                                {flavor}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <>
+                        {/* Pickup Date Selection */}
+                        <div className="space-y-2">
+                          <Label htmlFor="pickupDate">Pickup Date *</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Valentine's orders available for pickup Feb 13th or 14th only
+                          </p>
+                          <Select
+                            value={selectedPickupDate}
+                            onValueChange={setSelectedPickupDate}
+                          >
+                            <SelectTrigger id="pickupDate">
+                              <SelectValue placeholder="Choose pickup date..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PICKUP_DATES.map(date => (
+                                <SelectItem key={date.value} value={date.value}>
+                                  {date.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Cake Flavor Selection */}
+                        <div className="space-y-2">
+                          <Label htmlFor="cakeFlavor">Cake Flavor *</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Select your preferred cake flavor for the mini cake
+                            included in your box
+                          </p>
+                          <Select
+                            value={selectedCakeFlavor}
+                            onValueChange={setSelectedCakeFlavor}
+                          >
+                            <SelectTrigger id="cakeFlavor">
+                              <SelectValue placeholder="Choose a cake flavor..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CAKE_FLAVORS.map(flavor => (
+                                <SelectItem key={flavor} value={flavor}>
+                                  {flavor}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
                     )}
 
                     {product.isCustomizable && (
