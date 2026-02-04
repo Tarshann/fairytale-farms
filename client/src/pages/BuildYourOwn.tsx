@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { getProductImageUrl } from "@/lib/productImages";
 
 interface SelectedItem {
   productId: number;
@@ -255,9 +256,19 @@ export default function BuildYourOwn() {
                                   className={`transition-all ${quantity > 0 ? "border-primary shadow-pastel" : "hover:border-primary/50"}`}
                                 >
                                   <CardContent className="p-4">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1">
-                                        <h4 className="font-medium">
+                                    <div className="flex items-center justify-between gap-3">
+                                      {/* Product Image */}
+                                      <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                                        {getProductImageUrl(item) && (
+                                          <img
+                                            src={getProductImageUrl(item)}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="font-medium truncate">
                                           {item.name}
                                         </h4>
                                         <div className="flex items-center gap-2">
