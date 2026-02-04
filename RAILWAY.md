@@ -12,6 +12,7 @@ The service often crashes when required env vars are missing or wrong. Set these
 |----------|--------|--------|
 | `NODE_ENV` | `production` | Required. |
 | `DATABASE_URL` | `mysql://user:pass@host:port/db?ssl=true` | Your TiDB/MySQL URL. **Must be set** or DB calls fail. |
+| `APP_ORIGIN` | `https://fairytalefarms.net` | Live site URL; used for Stripe checkout redirects. |
 | `OAUTH_SERVER_URL` | `https://fairytalefarms.net` | **Not** `http://localhost:...`. Use your real public URL so login works. |
 | `DEV_LOGIN_ENABLED` | `false` | Use `false` in production so real OAuth is used. |
 | `JWT_SECRET` | (long random string) | e.g. `openssl rand -hex 32`. Required for sessions. |

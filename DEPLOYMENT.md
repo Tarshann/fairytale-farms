@@ -11,8 +11,9 @@ With Manus out of tokens, you can run the app on **Vercel** (serverless), **Rend
 1. **Pick a platform** (e.g. Vercel, Render, or Railway — see options below).
 2. **Connect this repo** and deploy (build: `pnpm build`, start: `node dist/index.js` for Node hosts).
 3. **Add custom domain** in the platform dashboard: `fairytalefarms.net` (and `www.fairytalefarms.net` if desired). Point your domain’s DNS to the host’s instructions (usually a CNAME or A record).
-4. **Set environment variables** (see table below). Use:
-   - `OAUTH_SERVER_URL` = `https://fairytalefarms.net`
+4. **Set environment variables** (see table below). For the live site at fairytalefarms.net set:
+   - `APP_ORIGIN` = `https://fairytalefarms.net` (used for Stripe success/cancel redirects when request origin is missing)
+   - `OAUTH_SERVER_URL` = `https://fairytalefarms.net` (if using login)
    - Stripe webhook URL = `https://fairytalefarms.net/api/stripe/webhook`
 5. **Update production database** (once, so BYO and tier pricing match the Valentine’s flyer):
    ```bash
@@ -30,9 +31,10 @@ Set these in your platform’s dashboard (Secrets / Environment):
 |----------|----------|--------|
 | `NODE_ENV` | Yes | Set to `production` |
 | `DATABASE_URL` | Yes | MySQL connection string (e.g. TiDB Cloud) |
+| `APP_ORIGIN` | Recommended | Public app URL (e.g. `https://fairytalefarms.net`) for checkout redirects |
 | `STRIPE_SECRET_KEY` | Yes (payments) | Stripe live secret key |
 | `STRIPE_WEBHOOK_SECRET` | Yes (payments) | Webhook signing secret (`whsec_...`) |
-| `OAUTH_SERVER_URL` | For login | Your app’s public URL (e.g. `https://yourdomain.com`) so OAuth/login works |
+| `OAUTH_SERVER_URL` | For login | Your app’s public URL (e.g. `https://fairytalefarms.net`) so OAuth/login works |
 | `JWT_SECRET` | For login | Secret for session cookies |
 | `VITE_APP_ID` | For login | App ID from your OAuth provider (if used) |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | Client | Stripe publishable key (for checkout) |

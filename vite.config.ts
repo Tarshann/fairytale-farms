@@ -32,6 +32,8 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [
+      "fairytalefarms.net",
+      "www.fairytalefarms.net",
       ".manuspre.computer",
       ".manus.computer",
       ".manus-asia.computer",

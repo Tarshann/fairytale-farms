@@ -12,6 +12,7 @@ import type { Request } from "express";
 import { z } from "zod";
 import * as db from "./db";
 import * as chatbot from "./chatbot";
+import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
 import crypto from "crypto";
 
@@ -447,8 +448,11 @@ export const appRouter = router({
         };
       });
 
-      // Get origin from request headers
-      const origin = ctx.req.headers.origin || "http://localhost:3000";
+      // Use request origin, or APP_ORIGIN / OAUTH_SERVER_URL (e.g. https://fairytalefarms.net), or localhost for dev
+      const origin =
+        ctx.req.headers.origin ||
+        ENV.appOrigin ||
+        "http://localhost:3000";
 
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
@@ -996,7 +1000,11 @@ export const appRouter = router({
           });
         }
 
-        const origin = ctx.req.headers.origin || "http://localhost:3000";
+        // Use request origin, or APP_ORIGIN / OAUTH_SERVER_URL (e.g. https://fairytalefarms.net), or localhost for dev
+        const origin =
+          ctx.req.headers.origin ||
+          ENV.appOrigin ||
+          "http://localhost:3000";
 
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],

@@ -17,11 +17,16 @@ const rawCookieSecret = process.env.JWT_SECRET ?? "";
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const isProduction = nodeEnv === "production";
 const oAuthServerUrl = (process.env.OAUTH_SERVER_URL ?? "").trim();
+// Public app URL for redirects (e.g. Stripe). Prefer APP_ORIGIN; fall back to OAUTH_SERVER_URL.
+const appOrigin = (process.env.APP_ORIGIN ?? process.env.OAUTH_SERVER_URL ?? "")
+  .trim();
 
 export const ENV = {
   appId: rawAppId || (allowDevLogin ? "dev-app" : ""),
   cookieSecret: rawCookieSecret || (allowDevLogin ? "dev-secret" : ""),
   databaseUrl: (process.env.DATABASE_URL ?? "").trim(),
+  /** Canonical app URL for production (e.g. https://fairytalefarms.net). Used for checkout redirects when request origin is missing. */
+  appOrigin: appOrigin || null,
   oAuthServerUrl,
   oauthEnabled: Boolean(oAuthServerUrl),
   ownerOpenId: (process.env.OWNER_OPEN_ID ?? "").trim(),
