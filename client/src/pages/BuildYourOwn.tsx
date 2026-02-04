@@ -186,11 +186,16 @@ export default function BuildYourOwn() {
             </div>
           </div>
 
-          <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-4">
+          <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-4 space-y-2">
             <p className="text-sm text-pink-800">
               <span className="font-semibold">✨ Advance Order Required:</span>{" "}
               All Create Your Own boxes must be ordered in advance. This option
               is not available for same-day or last-minute orders.
+            </p>
+            <p className="text-sm text-pink-800">
+              <span className="font-semibold">📦 Base Box Included:</span> Your
+              beautiful Valentine's box is included in the price. Simply select
+              the treats you'd like inside!
             </p>
           </div>
         </div>

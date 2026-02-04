@@ -450,3 +450,9 @@
 - [x] Fix Classic Cookies images - updated to chocolate chip and meringue cookies
 - [x] Fix Mini Tin Cakes images - updated to mini cake images
 - [x] Pecan Sandies and Sprinkle Sugar Cookies using chocolate chip image (placeholder until better images available)
+
+
+## Clarify Base Box Pricing
+- [x] Update Build Your Own page to clarify that base box is included in Valentine's box price
+- [x] Added "Base Box Included" note to Build Your Own header
+- [x] Pricing clearly shows customers only pay for items they select
