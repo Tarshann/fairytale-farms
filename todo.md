@@ -444,3 +444,9 @@
 ## Fix Products Page Navigation Issues
 - [x] Fix category dropdown - selections now filter products and close dropdown
 - [x] Fix View All buttons - now navigate to category-filtered view and display filtered products
+
+
+## Fix Mismatched Product Images
+- [x] Fix Classic Cookies images - updated to chocolate chip and meringue cookies
+- [x] Fix Mini Tin Cakes images - updated to mini cake images
+- [x] Pecan Sandies and Sprinkle Sugar Cookies using chocolate chip image (placeholder until better images available)

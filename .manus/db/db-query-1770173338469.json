@@ -1,0 +1,30 @@
+{
+  "query": "SELECT p.id, p.name, p.imageUrl FROM products p JOIN categories c ON p.categoryId = c.id WHERE c.slug = 'classic-cookies' ORDER BY p.id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute SELECT p.id, p.name, p.imageUrl FROM products p JOIN categories c ON p.categoryId = c.id WHERE c.slug = 'classic-cookies' ORDER BY p.id;",
+  "rows": [
+    {
+      "id": "150007",
+      "name": "Chocolate Chip Cookies",
+      "imageUrl": "NULL"
+    },
+    {
+      "id": "150008",
+      "name": "Chocolate Crinkle Cookies",
+      "imageUrl": "/images/gallery/sugar-cookies-christmas-santa-baby.jpeg"
+    },
+    {
+      "id": "150009",
+      "name": "Sprinkle Sugar Cookies",
+      "imageUrl": "/images/gallery/sugar-cookies-mickey-rainbow.jpeg"
+    },
+    {
+      "id": "150010",
+      "name": "Pecan Sandies",
+      "imageUrl": "/images/gallery/sugar-cookies-70th-birthday.jpeg"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timageUrl\n150007\tChocolate Chip Cookies\tNULL\n150008\tChocolate Crinkle Cookies\t/images/gallery/sugar-cookies-christmas-santa-baby.jpeg\n150009\tSprinkle Sugar Cookies\t/images/gallery/sugar-cookies-mickey-rainbow.jpeg\n150010\tPecan Sandies\t/images/gallery/sugar-cookies-70th-birthday.jpeg\n",
+  "stderr": "",
+  "execution_time_ms": 361
+}
