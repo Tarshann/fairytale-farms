@@ -112,7 +112,7 @@ export default function ValentinesCollection() {
               </div>
               <div className="flex items-center gap-2 bg-white/80 rounded-full px-4 py-2 shadow-sm">
                 <Sparkles className="w-4 h-4 text-mint-500" />
-                <span className="text-sm font-medium">100 Boxes Only</span>
+                <span className="text-sm font-medium">Limited Quantities</span>
               </div>
             </div>
           </div>
