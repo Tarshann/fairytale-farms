@@ -4,7 +4,31 @@
       "Bash(test:*)",
       "Bash(pnpm type-check:*)",
       "Bash(pnpm check:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(gh repo view:*)",
+      "WebFetch(domain:fairytalefarms.net)",
+      "mcp__d55a1304-3ee5-45a5-a66c-134249dc415b__deploy_to_vercel",
+      "Bash(where:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel --version:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh auth setup-git:*)",
+      "Bash(git config:*)",
+      "Bash(GIT_TERMINAL_PROMPT=0 git fetch:*)",
+      "Bash(gh auth:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(echo $env:GITHUB_TOKEN)",
+      "Bash(set:*)",
+      "Bash(GITHUB_TOKEN= git fetch:*)",
+      "Bash(GITHUB_TOKEN= git pull:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Vercel config and merge BYO image overrides\n\n- Add vercel.json and api/index.ts for Vercel deployment option\n- Merge and consolidate product image overrides\n- Add missing Valentine BYO item mappings \\(valentine-oreo-pucks-2, valentine-brownie variants\\)\n- Use correct mini-tin-*.jpg images for mini cakes\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(GITHUB_TOKEN= git push:*)"
     ]
   }
 }
