@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { getProductImageUrl } from "@/lib/productImages";
 import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -67,9 +68,9 @@ function QuickViewModal({
         <div className="grid md:grid-cols-2 gap-6">
           {/* Product Image */}
           <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-            {product.imageUrl ? (
+            {getProductImageUrl(product) ? (
               <img
-                src={product.imageUrl}
+                src={getProductImageUrl(product)}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -156,9 +157,9 @@ function ProductCard({
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group h-full relative">
       <Link href={`/products/${product.slug}`}>
         <div className="aspect-square overflow-hidden bg-muted relative">
-          {product.imageUrl ? (
+          {getProductImageUrl(product) ? (
             <img
-              src={product.imageUrl}
+              src={getProductImageUrl(product)}
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
