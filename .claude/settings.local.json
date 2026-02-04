@@ -36,7 +36,9 @@
       "Bash(git push:*)",
       "Bash(ping:*)",
       "Bash(nslookup:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Dockerfile to include patches folder\n\nThe pnpm install was failing because the wouter patch file wasn''t being copied before running install.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Dockerfile to include patches folder\n\nThe pnpm install was failing because the wouter patch file wasn''t being copied before running install.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(openssl s_client:*)",
+      "Bash(openssl x509:*)"
     ]
   }
 }
