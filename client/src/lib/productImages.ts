@@ -4,11 +4,17 @@ type ProductImageSource = {
   imageUrl?: string | null;
 };
 
-/** Name-based fallback for mini tin products when slug override is missing */
-const MINI_TIN_NAME_OVERRIDES: Record<string, string> = {
+/** Name-based fallback when slug override is missing */
+const NAME_BASED_OVERRIDES: Record<string, string> = {
+  // Mini tin cakes
   "chocolate mini tin cake": "/images/mini-tin-chocolate.jpg",
   "vanilla birthday mini tin cake": "/images/mini-tin-vanilla.jpg",
   "strawberry crunch mini tin cake": "/images/mini-tin-strawberry.jpg",
+  // Classic cookies
+  "chocolate chip cookies": "/images/chocolate-chip-cookie.jpg",
+  "chocolate crinkle cookies": "/images/chocolate-crinkle-cookies.jpg",
+  "pecan sandies": "/images/pecan-sandies.jpg",
+  "sprinkle sugar cookies": "/images/sprinkle-sugar-cookies.jpg",
 };
 
 const PRODUCT_IMAGE_OVERRIDES: Record<string, string> = {
@@ -42,6 +48,8 @@ const PRODUCT_IMAGE_OVERRIDES: Record<string, string> = {
   "chocolate-covered-strawberries": "/images/chocolate-covered-strawberry.jpg",
   "valentine-chocolate-strawberry": "/images/chocolate-covered-strawberry.jpg",
   "valentine-cookie": "/images/chocolate-chip-cookie.jpg",
+  "build-your-own-base-box": "/images/base-box.jpg",
+  "byo-base-box": "/images/base-box.jpg",
 
   // Brownies
   "mini-brownie-with-ganache": "/images/brownies.jpg",
@@ -64,8 +72,8 @@ export const getProductImageUrl = (product?: ProductImageSource | null) => {
     return PRODUCT_IMAGE_OVERRIDES[slug];
   }
   const name = (product.name ?? "").trim().toLowerCase();
-  if (name && MINI_TIN_NAME_OVERRIDES[name]) {
-    return MINI_TIN_NAME_OVERRIDES[name];
+  if (name && NAME_BASED_OVERRIDES[name]) {
+    return NAME_BASED_OVERRIDES[name];
   }
   return product.imageUrl ?? undefined;
 };

@@ -1,11 +1,11 @@
-import { drizzle } from "drizzle-orm/mysql2";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import {
   products,
   categories,
   promoCodes,
   deliveryZones,
 } from "./drizzle/schema.ts";
-import mysql from "mysql2/promise";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -14,8 +14,8 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const connection = await mysql.createConnection(DATABASE_URL);
-const db = drizzle(connection);
+const pool = new pg.Pool({ connectionString: DATABASE_URL });
+const db = drizzle(pool);
 
 console.log("🌹 Seeding Valentine's Day 2026 products...");
 
@@ -359,4 +359,4 @@ console.log(`- Created custom portrait pucks product`);
 console.log(`- Created 3 promo codes`);
 console.log(`- Created ${zipCodes.length} delivery zones`);
 
-await connection.end();
+await pool.end();

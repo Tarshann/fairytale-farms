@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/mysql2";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { products, categories } from "./drizzle/schema.ts";
 import { eq, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -11,18 +11,10 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-// mysql2 expects ssl to be an object when using TLS; URL with ?ssl=true breaks otherwise
-const url = new URL(DATABASE_URL);
-const connectionConfig = {
-  host: url.hostname,
-  port: Number(url.port) || 3306,
-  user: url.username,
-  password: url.password,
-  database: url.pathname.slice(1).replace(/\?.*$/, "") || undefined,
-  ssl: url.searchParams.get("ssl") === "true" ? { rejectUnauthorized: true } : undefined,
-};
-const connection = await mysql.createConnection(connectionConfig);
-const db = drizzle(connection);
+const pool = new pg.Pool({
+  connectionString: DATABASE_URL,
+});
+const db = drizzle(pool);
 
 console.log("Updating Valentine's Day 2026 products to match flyer pricing...\n");
 
@@ -40,6 +32,7 @@ const [valentinesCategory] = await db
 
 if (!valentinesCategory) {
   console.error("Valentine's Day 2026 category not found!");
+  await pool.end();
   process.exit(1);
 }
 
@@ -54,30 +47,31 @@ console.log("Updating tier boxes...\n");
 
 // Fairytale Crush Box - $50 (was Sweet Beginnings $28)
 try {
-  await db.execute(sql`
-    UPDATE ${products}
-    SET
-      name = 'Fairytale Crush Box',
-      slug = 'fairytale-crush-box',
-      description = 'Perfect for showing someone you care! A sweet collection of our signature treats.
+  await db
+    .update(products)
+    .set({
+      name: "Fairytale Crush Box",
+      slug: "fairytale-crush-box",
+      description: `Perfect for showing someone you care! A sweet collection of our signature treats.
 
 **Includes:**
 - One Mini Cake (choice of chocolate, vanilla confetti, or strawberry)
 - One 5-oz Brownie with chocolate ganache
 - Three Chocolate-Covered Strawberries
-- Two Valentine''s Oreo Pucks
+- Two Valentine's Oreo Pucks
 - Two Chocolate Chip Cookies
 - One Mini Bag of Freeze-Dried Candy (Skittles, Nerd Gummies, or Airheads)
 
-**Order by February 12 for Valentine''s delivery**',
-      basePrice = '50.00',
-      imageUrl = '/images/valentine-treats-box.jpg',
-      isCustomizable = true,
-      customizationInstructions = 'Select your mini cake flavor: Chocolate, Vanilla Confetti, or Strawberry. Select your freeze-dried candy: Skittles, Nerd Gummies, or Airheads.',
-      inventoryCap = 40,
-      displayOrder = 1
-    WHERE slug = 'sweet-beginnings-tier'
-  `);
+**Order by February 12 for Valentine's delivery**`,
+      basePrice: "50.00",
+      imageUrl: "/images/valentine-treats-box.jpg",
+      isCustomizable: true,
+      customizationInstructions:
+        "Select your mini cake flavor: Chocolate, Vanilla Confetti, or Strawberry. Select your freeze-dried candy: Skittles, Nerd Gummies, or Airheads.",
+      inventoryCap: 40,
+      displayOrder: 1,
+    })
+    .where(eq(products.slug, "sweet-beginnings-tier"));
   console.log("Updated: Sweet Beginnings -> Fairytale Crush Box ($50)");
 } catch (e) {
   console.log("Fairytale Crush Box update failed or already exists:", e.message);
@@ -85,30 +79,31 @@ try {
 
 // Fairytale Sweetheart Box - $75 (was Love Story $52)
 try {
-  await db.execute(sql`
-    UPDATE ${products}
-    SET
-      name = 'Fairytale Sweetheart Box',
-      slug = 'fairytale-sweetheart-box',
-      description = 'Our most popular box! The perfect balance of variety and value.
+  await db
+    .update(products)
+    .set({
+      name: "Fairytale Sweetheart Box",
+      slug: "fairytale-sweetheart-box",
+      description: `Our most popular box! The perfect balance of variety and value.
 
 **Includes:**
 - Two Mini Cakes (choice of chocolate, vanilla confetti, or strawberry)
 - Two 5-oz Brownies with chocolate ganache
 - Six Chocolate-Covered Strawberries
-- Two Valentine''s Oreo Pucks
+- Two Valentine's Oreo Pucks
 - Four Chocolate Chip Cookies
 - One Small Bag of Freeze-Dried Candy
 
-**Order by February 12 for Valentine''s delivery**',
-      basePrice = '75.00',
-      imageUrl = '/images/valentine-dessert-box.jpg',
-      isCustomizable = true,
-      customizationInstructions = 'Select your mini cake flavors: Chocolate, Vanilla Confetti, or Strawberry',
-      inventoryCap = 35,
-      displayOrder = 2
-    WHERE slug = 'love-story-tier'
-  `);
+**Order by February 12 for Valentine's delivery**`,
+      basePrice: "75.00",
+      imageUrl: "/images/valentine-dessert-box.jpg",
+      isCustomizable: true,
+      customizationInstructions:
+        "Select your mini cake flavors: Chocolate, Vanilla Confetti, or Strawberry",
+      inventoryCap: 35,
+      displayOrder: 2,
+    })
+    .where(eq(products.slug, "love-story-tier"));
   console.log("Updated: Love Story -> Fairytale Sweetheart Box ($75)");
 } catch (e) {
   console.log("Fairytale Sweetheart Box update failed or already exists:", e.message);
@@ -116,30 +111,31 @@ try {
 
 // Fairytale Romance Box - $100 (was Fairytale Romance $85)
 try {
-  await db.execute(sql`
-    UPDATE ${products}
-    SET
-      name = 'Fairytale Romance Box',
-      slug = 'fairytale-romance-box',
-      description = 'Our ultimate Valentine''s experience! Everything you need to make their day unforgettable.
+  await db
+    .update(products)
+    .set({
+      name: "Fairytale Romance Box",
+      slug: "fairytale-romance-box",
+      description: `Our ultimate Valentine's experience! Everything you need to make their day unforgettable.
 
 **Includes:**
 - Three Mini Cakes (choice of chocolate, vanilla confetti, or strawberry)
 - Two 5-oz Brownies with chocolate ganache
 - One Dozen Chocolate-Covered Strawberries
-- Four Valentine''s Oreo Pucks
+- Four Valentine's Oreo Pucks
 - Six Chocolate Chip Cookies
 - One Large Bag of Freeze-Dried Candy (Skittles, Nerd Gummies, or Airheads)
 
-**Order by February 12 for Valentine''s delivery**',
-      basePrice = '100.00',
-      imageUrl = '/images/valentine-cookie-box.jpg',
-      isCustomizable = true,
-      customizationInstructions = 'Select your mini cake flavors: Chocolate, Vanilla Confetti, or Strawberry. Select your freeze-dried candy: Skittles, Nerd Gummies, or Airheads.',
-      inventoryCap = 15,
-      displayOrder = 3
-    WHERE slug = 'fairytale-romance-tier'
-  `);
+**Order by February 12 for Valentine's delivery**`,
+      basePrice: "100.00",
+      imageUrl: "/images/valentine-cookie-box.jpg",
+      isCustomizable: true,
+      customizationInstructions:
+        "Select your mini cake flavors: Chocolate, Vanilla Confetti, or Strawberry. Select your freeze-dried candy: Skittles, Nerd Gummies, or Airheads.",
+      inventoryCap: 15,
+      displayOrder: 3,
+    })
+    .where(eq(products.slug, "fairytale-romance-tier"));
   console.log("Updated: Fairytale Romance -> Fairytale Romance Box ($100)");
 } catch (e) {
   console.log("Fairytale Romance Box update failed or already exists:", e.message);
@@ -157,88 +153,88 @@ const byoItems = [
     name: "Mini Cake (Chocolate)",
     slug: "mini-cake-chocolate",
     price: "12.00",
-    description: "Rich chocolate cake with chocolate frosting in a mini tin"
+    description: "Rich chocolate cake with chocolate frosting in a mini tin",
   },
   {
     name: "Mini Cake (Vanilla Confetti)",
     slug: "mini-cake-vanilla-confetti",
     price: "12.00",
-    description: "Classic vanilla cake with sprinkles and vanilla frosting in a mini tin"
+    description: "Classic vanilla cake with sprinkles and vanilla frosting in a mini tin",
   },
   {
     name: "Mini Cake (Strawberry)",
     slug: "mini-cake-strawberry",
     price: "12.00",
-    description: "Strawberry cake with strawberry crunch topping in a mini tin"
+    description: "Strawberry cake with strawberry crunch topping in a mini tin",
   },
   {
     name: "5-oz Brownie with Ganache",
     slug: "brownie-with-ganache",
     price: "6.00",
-    description: "Rich, fudgy brownie topped with chocolate ganache"
+    description: "Rich, fudgy brownie topped with chocolate ganache",
   },
   {
     name: "Chocolate-Covered Strawberries (Half Dozen)",
     slug: "chocolate-strawberries-half-dozen",
     price: "20.00",
-    description: "Six hand-dipped strawberries in milk or white chocolate with Valentine's decorations"
+    description: "Six hand-dipped strawberries in milk or white chocolate with Valentine's decorations",
   },
   {
     name: "Chocolate-Covered Strawberries (Dozen)",
     slug: "chocolate-strawberries-dozen",
     price: "35.00",
-    description: "Twelve hand-dipped strawberries in milk or white chocolate with Valentine's decorations"
+    description: "Twelve hand-dipped strawberries in milk or white chocolate with Valentine's decorations",
   },
   {
     name: "Valentine's Oreo Pucks (2-pack)",
     slug: "valentine-oreo-pucks-2",
     price: "5.50",
-    description: "Two chocolate-covered Oreos with Valentine's decorations"
+    description: "Two chocolate-covered Oreos with Valentine's decorations",
   },
   {
     name: "Valentine's Oreo Pucks (4-pack)",
     slug: "valentine-oreo-pucks-4",
     price: "10.00",
-    description: "Four chocolate-covered Oreos with Valentine's decorations"
+    description: "Four chocolate-covered Oreos with Valentine's decorations",
   },
   {
     name: "Chocolate Chip Cookies (2-pack)",
     slug: "chocolate-chip-cookies-2",
     price: "4.00",
-    description: "Two classic chocolate chip cookies"
+    description: "Two classic chocolate chip cookies",
   },
   {
     name: "Chocolate Chip Cookies (6-pack)",
     slug: "chocolate-chip-cookies-6",
     price: "10.00",
-    description: "Six classic chocolate chip cookies"
+    description: "Six classic chocolate chip cookies",
   },
   {
     name: "Freeze-Dried Candy (Mini Bag)",
     slug: "freeze-dried-candy-mini",
     price: "5.00",
-    description: "Mini bag - choice of Skittles, Nerd Gummies, or Airheads"
+    description: "Mini bag - choice of Skittles, Nerd Gummies, or Airheads",
   },
   {
     name: "Freeze-Dried Candy (Small Bag)",
     slug: "freeze-dried-candy-small",
     price: "8.00",
-    description: "Small bag - choice of Skittles, Nerd Gummies, or Airheads"
+    description: "Small bag - choice of Skittles, Nerd Gummies, or Airheads",
   },
   {
     name: "Freeze-Dried Candy (Large Bag)",
     slug: "freeze-dried-candy-large",
     price: "12.00",
-    description: "Large bag - choice of Skittles, Nerd Gummies, or Airheads"
+    description: "Large bag - choice of Skittles, Nerd Gummies, or Airheads",
   },
 ];
 
 // First, delete old BYO items that don't match
-await db.execute(sql`
-  DELETE FROM ${products}
-  WHERE productType = 'build_your_own_item'
-  AND categoryId = ${categoryId}
-`);
+await db
+  .delete(products)
+  .where(
+    sql`${products.productType} = 'build_your_own_item' AND ${products.categoryId} = ${categoryId}`
+  );
 console.log("Cleared old Build-Your-Own items");
 
 // Insert new BYO items
@@ -281,7 +277,7 @@ console.log("  - Fairytale Crush Box: $50");
 console.log("  - Fairytale Sweetheart Box: $75");
 console.log("  - Fairytale Romance Box: $100");
 console.log("\nBUILD-YOUR-OWN ITEMS:");
-byoItems.forEach(item => {
+byoItems.forEach((item) => {
   console.log(`  - ${item.name}: $${item.price}`);
 });
 
@@ -291,4 +287,4 @@ console.log("  - Dozen (12): $35");
 
 console.log("\nIMPORTANT: Order by February 12 for Valentine's delivery!");
 
-await connection.end();
+await pool.end();

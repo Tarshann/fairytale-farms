@@ -1,8 +1,8 @@
-import mysql from "mysql2/promise";
+import pg from "pg";
 import dotenv from "dotenv";
 dotenv.config();
 
-const connection = await mysql.createConnection(process.env.DATABASE_URL);
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 // Update Build Your Own items with new stock images
 const imageUpdates = [
@@ -67,19 +67,19 @@ console.log("Updating product images...\n");
 
 for (const update of imageUpdates) {
   try {
-    const [result] = await connection.execute(
-      "UPDATE products SET imageUrl = ? WHERE slug = ?",
+    const result = await pool.query(
+      'UPDATE products SET "imageUrl" = $1 WHERE slug = $2',
       [update.imageUrl, update.slug]
     );
-    if (result.affectedRows > 0) {
-      console.log(`✅ Updated ${update.slug} -> ${update.imageUrl}`);
+    if (result.rowCount > 0) {
+      console.log(`Updated ${update.slug} -> ${update.imageUrl}`);
     } else {
-      console.log(`⚠️  No product found with slug: ${update.slug}`);
+      console.log(`No product found with slug: ${update.slug}`);
     }
   } catch (error) {
-    console.error(`❌ Error updating ${update.slug}:`, error.message);
+    console.error(`Error updating ${update.slug}:`, error.message);
   }
 }
 
 console.log("\nDone!");
-await connection.end();
+await pool.end();

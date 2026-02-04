@@ -1,8 +1,12 @@
-import { drizzle } from "drizzle-orm/mysql2";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { products } from "./drizzle/schema.ts";
 import { eq } from "drizzle-orm";
 
-const db = drizzle(process.env.DATABASE_URL);
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const db = drizzle(pool);
 
 // Canonical main-menu pricing (aligns with pricing-reference-final.md / Fairytale_Farms_Menu_Pricing_FINAL.pdf).
 // Run this script to sync product basePrice in the DB. Valentine's products use update-valentines-pricing.mjs.
@@ -42,11 +46,11 @@ const priceUpdates = [
 ];
 
 async function updatePrices() {
-  console.log("Updating product prices...\n");
+  console.log("Updating product prices (PostgreSQL/Neon)...\n");
 
   for (const update of priceUpdates) {
     try {
-      const result = await db
+      await db
         .update(products)
         .set({ basePrice: update.price })
         .where(eq(products.slug, update.slug));
@@ -58,10 +62,12 @@ async function updatePrices() {
   }
 
   console.log("\n✅ Price updates complete!");
+  await pool.end();
   process.exit(0);
 }
 
-updatePrices().catch(error => {
+updatePrices().catch(async (error) => {
   console.error("Error updating prices:", error);
+  await pool.end();
   process.exit(1);
 });

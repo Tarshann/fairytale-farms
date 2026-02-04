@@ -1,7 +1,11 @@
-import { drizzle } from "drizzle-orm/mysql2";
+import pg from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { categories, products } from "./drizzle/schema.ts";
 
-const db = drizzle(process.env.DATABASE_URL);
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const db = drizzle(pool);
 
 const categoriesData = [
   {
@@ -263,7 +267,7 @@ const productsData = [
 ];
 
 async function seed() {
-  console.log("Seeding database...");
+  console.log("Seeding database (PostgreSQL/Neon)...");
 
   // Insert categories
   console.log("Inserting categories...");
@@ -280,10 +284,12 @@ async function seed() {
   }
 
   console.log("\n✅ Database seeded successfully!");
+  await pool.end();
   process.exit(0);
 }
 
-seed().catch(error => {
+seed().catch(async (error) => {
   console.error("Error seeding database:", error);
+  await pool.end();
   process.exit(1);
 });

@@ -370,8 +370,15 @@ export default function Products() {
   }, [allProducts, selectedCategory, searchQuery, sortBy, priceRange]);
 
   // Group products by category (for all categories view)
+  // For Valentine's category, only show tier products (not individual BYO items)
   const productsByCategory = categories?.reduce((acc, category) => {
-    acc[category.id] = allProducts?.filter(p => p.categoryId === category.id) || [];
+    const categoryProducts = allProducts?.filter(p => p.categoryId === category.id) || [];
+    // Filter Valentine's category to only show tier products
+    if (category.name.toLowerCase().includes("valentine")) {
+      acc[category.id] = categoryProducts.filter(p => p.productType === "tier");
+    } else {
+      acc[category.id] = categoryProducts;
+    }
     return acc;
   }, {} as Record<number, any[]>) || {};
 
