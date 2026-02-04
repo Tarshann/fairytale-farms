@@ -39,7 +39,20 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Dockerfile to include patches folder\n\nThe pnpm install was failing because the wouter patch file wasn''t being copied before running install.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(openssl s_client:*)",
       "Bash(openssl x509:*)",
-      "Bash(PGPASSWORD=npg_stcEFUg3rW8n psql:*)"
+      "Bash(PGPASSWORD=npg_stcEFUg3rW8n psql:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_stcEFUg3rW8n@ep-divine-violet-aice4q7t-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx drizzle-kit push:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_stcEFUg3rW8n@ep-divine-violet-aice4q7t-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx drizzle-kit generate:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_stcEFUg3rW8n@ep-divine-violet-aice4q7t-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" node:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_stcEFUg3rW8n@ep-divine-violet-aice4q7t-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx tsx:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nChange ''100 Boxes Only'' to ''Limited Quantities''\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix tier box product detail page to show Add to Cart\n\n- Tier products and BYO items now show regular product page with Add to Cart button\n- Previously they were incorrectly showing custom cake inquiry form\n- Updated cake flavors to match Valentine''s options: Chocolate, Vanilla Confetti, Strawberry\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git status:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd product images to Build Your Own page\n\nDisplay product images in the BYO item cards so customers can see what they''re selecting.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote get-url:*)",
+      "Bash(echo:*)",
+      "Bash(GIT_ASKPASS=echo git push:*)",
+      "Bash(git -c credential.helper='!f\\(\\) { echo \"\"password=$\\(cat\\)\"\"; }; f' push origin main)",
+      "Bash(unset:*)"
     ]
   }
 }
