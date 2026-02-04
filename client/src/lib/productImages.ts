@@ -1,6 +1,14 @@
 type ProductImageSource = {
   slug?: string | null;
+  name?: string | null;
   imageUrl?: string | null;
+};
+
+/** Name-based fallback for mini tin products when slug override is missing */
+const MINI_TIN_NAME_OVERRIDES: Record<string, string> = {
+  "chocolate mini tin cake": "/images/mini-tin-chocolate.jpg",
+  "vanilla birthday mini tin cake": "/images/mini-tin-vanilla.jpg",
+  "strawberry crunch mini tin cake": "/images/mini-tin-strawberry.jpg",
 };
 
 const PRODUCT_IMAGE_OVERRIDES: Record<string, string> = {
@@ -51,9 +59,13 @@ const PRODUCT_IMAGE_OVERRIDES: Record<string, string> = {
 
 export const getProductImageUrl = (product?: ProductImageSource | null) => {
   if (!product) return undefined;
-  const slug = (product.slug ?? "").toLowerCase();
+  const slug = (product.slug ?? "").trim().toLowerCase();
   if (slug && PRODUCT_IMAGE_OVERRIDES[slug]) {
     return PRODUCT_IMAGE_OVERRIDES[slug];
+  }
+  const name = (product.name ?? "").trim().toLowerCase();
+  if (name && MINI_TIN_NAME_OVERRIDES[name]) {
+    return MINI_TIN_NAME_OVERRIDES[name];
   }
   return product.imageUrl ?? undefined;
 };

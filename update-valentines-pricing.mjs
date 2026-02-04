@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { drizzle } from "drizzle-orm/mysql2";
 import { products, categories } from "./drizzle/schema.ts";
 import { eq, sql } from "drizzle-orm";
@@ -10,7 +11,17 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const connection = await mysql.createConnection(DATABASE_URL);
+// mysql2 expects ssl to be an object when using TLS; URL with ?ssl=true breaks otherwise
+const url = new URL(DATABASE_URL);
+const connectionConfig = {
+  host: url.hostname,
+  port: Number(url.port) || 3306,
+  user: url.username,
+  password: url.password,
+  database: url.pathname.slice(1).replace(/\?.*$/, "") || undefined,
+  ssl: url.searchParams.get("ssl") === "true" ? { rejectUnauthorized: true } : undefined,
+};
+const connection = await mysql.createConnection(connectionConfig);
 const db = drizzle(connection);
 
 console.log("Updating Valentine's Day 2026 products to match flyer pricing...\n");

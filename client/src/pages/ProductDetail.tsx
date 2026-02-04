@@ -1,5 +1,5 @@
 import { useRoute, Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,8 +15,6 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react";
 
@@ -32,7 +30,6 @@ const CAKE_FLAVORS = [
 export default function ProductDetail() {
   const [, params] = useRoute("/products/:slug");
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
@@ -41,6 +38,13 @@ export default function ProductDetail() {
     { slug: params?.slug || "" },
     { enabled: !!params?.slug }
   );
+
+  // Build-Your-Own Base Box is deprecated; send users to the Build Your Own page
+  useEffect(() => {
+    if (product?.slug === "build-your-own-base") {
+      setLocation("/build-your-own");
+    }
+  }, [product?.slug, setLocation]);
 
   // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
   const isValentinesTier =
@@ -60,12 +64,6 @@ export default function ProductDetail() {
   });
 
   const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      toast.error("Please sign in to add items to cart");
-      window.location.href = getLoginUrl();
-      return;
-    }
-
     if (!product) return;
 
     if (product.isCustomizable && !customizationNotes.trim()) {

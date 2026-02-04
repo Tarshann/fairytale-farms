@@ -1,0 +1,29 @@
+# Dependencies and build output (installed/built in image)
+node_modules
+dist
+.pnpm-store
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Git and IDE
+.git
+.gitignore
+.vscode
+.idea
+.cursor
+
+# Tests and tooling (not needed in production image)
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+.manus
+
+# Docs and misc (optional to keep image small)
+*.md
+!README.md
+.claude
+.plan.md

@@ -38,7 +38,6 @@ function QuickViewModal({
   onClose: () => void;
   categoryName?: string;
 }) {
-  const { isAuthenticated } = useAuth();
   const addToCart = trpc.cart.add.useMutation({
     onSuccess: () => {
       toast.success(`${product.name} added to cart!`);
@@ -52,10 +51,6 @@ function QuickViewModal({
   const placeholder = categoryPlaceholders[categoryName?.toLowerCase() || ""] || { emoji: "🧁", gradient: "from-pastel-pink/30 to-pastel-lavender/30" };
 
   const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      toast.error("Please sign in to add items to cart");
-      return;
-    }
     addToCart.mutate({ productId: product.id, quantity: 1 });
   };
 
@@ -86,7 +81,7 @@ function QuickViewModal({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl font-bold text-primary">
-                  ${(parseInt(product.basePrice) / 100).toFixed(2)}
+                  ${parseFloat(product.basePrice).toFixed(2)}
                 </span>
                 {product.isFeatured && (
                   <Badge variant="secondary" className="bg-pastel-pink/20 text-pink-700">
@@ -337,20 +332,20 @@ export default function Products() {
       );
     }
     
-    // Price range filter
+    // Price range filter (basePrice is stored in dollars)
     if (priceRange !== "all") {
       switch (priceRange) {
         case "under25":
-          filtered = filtered.filter(p => parseInt(p.basePrice) < 2500);
+          filtered = filtered.filter(p => parseFloat(p.basePrice) < 25);
           break;
         case "25to50":
-          filtered = filtered.filter(p => parseInt(p.basePrice) >= 2500 && parseInt(p.basePrice) <= 5000);
+          filtered = filtered.filter(p => parseFloat(p.basePrice) >= 25 && parseFloat(p.basePrice) <= 50);
           break;
         case "50to100":
-          filtered = filtered.filter(p => parseInt(p.basePrice) >= 5000 && parseInt(p.basePrice) <= 10000);
+          filtered = filtered.filter(p => parseFloat(p.basePrice) >= 50 && parseFloat(p.basePrice) <= 100);
           break;
         case "over100":
-          filtered = filtered.filter(p => parseInt(p.basePrice) > 10000);
+          filtered = filtered.filter(p => parseFloat(p.basePrice) > 100);
           break;
       }
     }
@@ -361,10 +356,10 @@ export default function Products() {
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case "price-low":
-        filtered.sort((a, b) => parseInt(a.basePrice) - parseInt(b.basePrice));
+        filtered.sort((a, b) => parseFloat(a.basePrice) - parseFloat(b.basePrice));
         break;
       case "price-high":
-        filtered.sort((a, b) => parseInt(b.basePrice) - parseInt(a.basePrice));
+        filtered.sort((a, b) => parseFloat(b.basePrice) - parseFloat(a.basePrice));
         break;
       case "newest":
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

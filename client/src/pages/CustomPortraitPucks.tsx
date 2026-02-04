@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,10 +36,8 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { getLoginUrl } from "@/const";
 
 export default function CustomPortraitPucks() {
-  const { user, isAuthenticated } = useAuth();
   const [quantity, setQuantity] = useState(6); // Minimum 6 pucks
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -113,11 +110,6 @@ export default function CustomPortraitPucks() {
   };
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
-    }
-
     if (!uploadedFile) {
       toast.error("Please upload a photo for your portrait pucks");
       return;

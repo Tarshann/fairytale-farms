@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
 import {
   ShoppingCart,
   Sparkles,
@@ -23,7 +22,6 @@ import {
 import { toast } from "sonner";
 
 export default function BickeringBros() {
-  const { isAuthenticated } = useAuth();
   const utils = trpc.useUtils();
 
   // Fetch categories to get the freeze-dried candy category ID
@@ -49,10 +47,6 @@ export default function BickeringBros() {
   });
 
   const handleAddToCart = (productId: number) => {
-    if (!isAuthenticated) {
-      toast.error("Please sign in to add items to cart");
-      return;
-    }
     addToCart.mutate({ productId, quantity: 1 });
   };
 

@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +26,6 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { getLoginUrl } from "@/const";
 
 interface SelectedItem {
   productId: number;
@@ -37,7 +35,6 @@ interface SelectedItem {
 }
 
 export default function BuildYourOwn() {
-  const { user, isAuthenticated } = useAuth();
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   const { data: byoItems, isLoading } =
@@ -92,11 +89,6 @@ export default function BuildYourOwn() {
   };
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
-    }
-
     if (selectedItems.length === 0) {
       toast.error("Please add at least one item to your box");
       return;

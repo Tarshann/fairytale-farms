@@ -158,58 +158,35 @@ try {
   console.log("Fairytale Romance already exists, skipping");
 }
 
-console.log("Creating Build-Your-Own items...");
+console.log("Creating Build-Your-Own items (Vday Flyer)...");
 
-// Build-Your-Own Base Box
-try {
-  await db.insert(products).values({
-    categoryId,
-    name: "Build-Your-Own Base Box",
-    slug: "build-your-own-base",
-    description:
-      "Start with our base box and add your favorite treats. Required for all Build-Your-Own orders.",
-    basePrice: "15.00",
-    imageUrl: "/images/base-box.jpg",
-    isCustomizable: false,
-    inStock: true,
-    featured: false,
-    displayOrder: 10,
-    inventoryCap: 10,
-    inventorySold: 0,
-    availableFrom: launchDate,
-    availableUntil: tierCutoff,
-    requiresPhotoUpload: false,
-    requiresDeposit: false,
-    productType: "build_your_own_item",
-  });
-  console.log("Created: Build-Your-Own Base Box");
-} catch (e) {
-  console.log("Build-Your-Own Base Box already exists, skipping");
-}
-
-// Build-Your-Own Individual Items
+// Build-Your-Own items per Valentine's flyer (HANDOFF.md / update-valentines-pricing.mjs)
 const byoItems = [
-  { name: "Chocolate Chip Cookie", price: "1.83" },
-  { name: "Meringue Cookie", price: "1.83" },
-  { name: "Royal Icing Sugar Cookie", price: "3.50" },
-  { name: "Valentine Oreo Puck", price: "2.75" },
-  { name: "Chocolate-Covered Strawberry", price: "3.00" },
-  { name: "Mini Brownie with Ganache", price: "3.50" },
-  { name: "Mini Cake", price: "18.00" },
-  { name: "Freeze-Dried Candy (Small)", price: "8.00" },
-  { name: "Freeze-Dried Candy (Large)", price: "12.00" },
+  { name: "Mini Cake (Chocolate)", slug: "mini-cake-chocolate", price: "12.00", description: "Rich chocolate cake with chocolate frosting in a mini tin" },
+  { name: "Mini Cake (Vanilla Confetti)", slug: "mini-cake-vanilla-confetti", price: "12.00", description: "Classic vanilla cake with sprinkles and vanilla frosting in a mini tin" },
+  { name: "Mini Cake (Strawberry)", slug: "mini-cake-strawberry", price: "12.00", description: "Strawberry cake with strawberry crunch topping in a mini tin" },
+  { name: "5-oz Brownie with Ganache", slug: "brownie-with-ganache", price: "6.00", description: "Rich, fudgy brownie topped with chocolate ganache" },
+  { name: "Chocolate-Covered Strawberries (Half Dozen)", slug: "chocolate-strawberries-half-dozen", price: "20.00", description: "Six hand-dipped strawberries in milk or white chocolate with Valentine's decorations" },
+  { name: "Chocolate-Covered Strawberries (Dozen)", slug: "chocolate-strawberries-dozen", price: "35.00", description: "Twelve hand-dipped strawberries in milk or white chocolate with Valentine's decorations" },
+  { name: "Valentine's Oreo Pucks (2-pack)", slug: "valentine-oreo-pucks-2", price: "5.50", description: "Two chocolate-covered Oreos with Valentine's decorations" },
+  { name: "Valentine's Oreo Pucks (4-pack)", slug: "valentine-oreo-pucks-4", price: "10.00", description: "Four chocolate-covered Oreos with Valentine's decorations" },
+  { name: "Chocolate Chip Cookies (2-pack)", slug: "chocolate-chip-cookies-2", price: "4.00", description: "Two classic chocolate chip cookies" },
+  { name: "Chocolate Chip Cookies (6-pack)", slug: "chocolate-chip-cookies-6", price: "10.00", description: "Six classic chocolate chip cookies" },
+  { name: "Freeze-Dried Candy (Mini Bag)", slug: "freeze-dried-candy-mini", price: "5.00", description: "Mini bag - choice of Skittles, Nerd Gummies, or Airheads" },
+  { name: "Freeze-Dried Candy (Small Bag)", slug: "freeze-dried-candy-small", price: "8.00", description: "Small bag - choice of Skittles, Nerd Gummies, or Airheads" },
+  { name: "Freeze-Dried Candy (Large Bag)", slug: "freeze-dried-candy-large", price: "12.00", description: "Large bag - choice of Skittles, Nerd Gummies, or Airheads" },
 ];
 
-let displayOrder = 11;
+let displayOrder = 10;
 for (const item of byoItems) {
   try {
     await db.insert(products).values({
       categoryId,
       name: item.name,
-      slug: item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      description: `Add ${item.name} to your Build-Your-Own box`,
+      slug: item.slug,
+      description: item.description,
       basePrice: item.price,
-      imageUrl: `/images/${item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.jpg`,
+      imageUrl: `/images/${item.slug}.jpg`,
       isCustomizable: false,
       inStock: true,
       featured: false,
@@ -220,6 +197,7 @@ for (const item of byoItems) {
       requiresDeposit: false,
       productType: "build_your_own_item",
     });
+    console.log(`Created: ${item.name} - $${item.price}`);
   } catch (error) {
     console.log(`  - ${item.name} already exists, skipping`);
   }
@@ -376,7 +354,7 @@ for (const zone of zipCodes) {
 
 console.log("✅ Valentine's Day 2026 seed completed!");
 console.log(`- Created 3 tier products`);
-console.log(`- Created ${byoItems.length + 1} build-your-own items`);
+console.log(`- Created ${byoItems.length} build-your-own items (Vday flyer)`);
 console.log(`- Created custom portrait pucks product`);
 console.log(`- Created 3 promo codes`);
 console.log(`- Created ${zipCodes.length} delivery zones`);

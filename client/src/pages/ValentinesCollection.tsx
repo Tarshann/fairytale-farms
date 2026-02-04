@@ -341,8 +341,8 @@ export default function ValentinesCollection() {
                   </h2>
                   <p className="text-lg text-muted-foreground mb-6">
                     Create a personalized Valentine's treat box with exactly
-                    what you want. Start with a base box and add your favorite
-                    items with our live pricing calculator.
+                    what you want. The box is included—pay only for the treats
+                    you select. Live pricing as you build.
                     <span className="block mt-2 text-sm font-medium text-pink-600">
                       ✨ All Create Your Own boxes must be ordered in advance.
                       Not available for same-day orders.
@@ -350,12 +350,12 @@ export default function ValentinesCollection() {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-6">
-                    <Badge variant="outline">Chocolate Chip Cookies</Badge>
-                    <Badge variant="outline">Royal Icing Cookies</Badge>
-                    <Badge variant="outline">Oreo Pucks</Badge>
-                    <Badge variant="outline">Brownies</Badge>
-                    <Badge variant="outline">Freeze-Dried Candy</Badge>
                     <Badge variant="outline">Mini Cakes</Badge>
+                    <Badge variant="outline">Brownies</Badge>
+                    <Badge variant="outline">Chocolate Strawberries</Badge>
+                    <Badge variant="outline">Oreo Pucks</Badge>
+                    <Badge variant="outline">Chocolate Chip Cookies</Badge>
+                    <Badge variant="outline">Freeze-Dried Candy</Badge>
                   </div>
 
                   <Link href="/build-your-own">

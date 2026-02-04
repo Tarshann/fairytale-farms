@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 
 const db = drizzle(process.env.DATABASE_URL);
 
-// Pricing from Fairytale_Farms_Menu_Pricing_FINAL.pdf
+// Canonical main-menu pricing (aligns with pricing-reference-final.md / Fairytale_Farms_Menu_Pricing_FINAL.pdf).
+// Run this script to sync product basePrice in the DB. Valentine's products use update-valentines-pricing.mjs.
 const priceUpdates = [
   // Custom Cakes
   { slug: "custom-birthday-cake", price: "75.00" }, // 6-inch starting at $75

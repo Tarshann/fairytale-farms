@@ -54,7 +54,7 @@ Includes vanilla or chocolate. Custom flavors, fillings, and detailed designs ma
 - All varieties: $5 each (Skittles, Jolly Ranchers, Taffy, Caramel M&Ms, Airheads, Sprees, Fruit Chews, Milk Duds)
 
 ### Custom Portrait Pucks (Oreos)
-- $4 per puck, 6-puck minimum ($24)
+- $8 per puck, 6-puck minimum ($48)
 - Turn photos into edible art on chocolate-covered Oreos
 
 ## Your Tasks

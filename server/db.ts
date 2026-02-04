@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
+import { eq, ne, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -352,7 +352,12 @@ export async function getAllProducts() {
   return db
     .select()
     .from(products)
-    .where(eq(products.inStock, true))
+    .where(
+      and(
+        eq(products.inStock, true),
+        ne(products.productType, "build_your_own_item")
+      )
+    )
     .orderBy(products.displayOrder, products.name);
 }
 

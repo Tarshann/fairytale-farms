@@ -41,5 +41,7 @@ export const ENV = {
 };
 
 if (ENV.isProduction && !ENV.oauthEnabled) {
-  throw new Error("Missing OAUTH_SERVER_URL in production environment.");
+  console.warn(
+    "[env] OAUTH_SERVER_URL is not set in production. Login/OAuth will be disabled. Set OAUTH_SERVER_URL to your app origin (e.g. https://fairytalefarms.net) to enable login."
+  );
 }

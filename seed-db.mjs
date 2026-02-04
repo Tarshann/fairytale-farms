@@ -49,14 +49,14 @@ const categoriesData = [
 ];
 
 const productsData = [
-  // Customized Cakes
+  // Customized Cakes (pricing from pricing-reference-final.md)
   {
     categoryId: 1,
     name: "Custom Birthday Cake",
     slug: "custom-birthday-cake",
     description:
       "Personalized birthday cake with your choice of flavors, colors, and decorations. Perfect for making any birthday celebration extra special.",
-    basePrice: "65.00",
+    basePrice: "75.00", // 6-inch starting at $75
     imageUrl: "/images/481921085_1253005226678831_1341694159329657887_n.jpg",
     isCustomizable: true,
     customizationInstructions:
@@ -71,7 +71,7 @@ const productsData = [
     slug: "wedding-cake",
     description:
       "Elegant multi-tier wedding cake designed to match your special day. We work with you to create the perfect centerpiece for your celebration.",
-    basePrice: "250.00",
+    basePrice: "150.00", // Two-tier 6+4 starting at $150
     imageUrl: "/images/494927964_1303921418253878_1507582454007359767_n.jpg",
     isCustomizable: true,
     customizationInstructions:
@@ -86,7 +86,7 @@ const productsData = [
     slug: "themed-celebration-cake",
     description:
       "Custom themed cake for any celebration - from baby showers to graduations. We bring your vision to life with creative designs and delicious flavors.",
-    basePrice: "75.00",
+    basePrice: "110.00", // 8-inch starting at $110
     imageUrl: "/images/497611705_1312120867433933_6231905264159125170_n.jpg",
     isCustomizable: true,
     customizationInstructions:
@@ -118,7 +118,7 @@ const productsData = [
     slug: "custom-shaped-sugar-cookies",
     description:
       "Sugar cookies in custom shapes for your event. We can create cookies in virtually any shape to match your theme.",
-    basePrice: "42.00",
+    basePrice: "55.00",
     imageUrl: "/images/499252750_1317422376903782_8618992760808385286_n.jpg",
     isCustomizable: true,
     customizationInstructions:
@@ -193,7 +193,7 @@ const productsData = [
     slug: "fudge-brownies-dozen",
     description:
       "One dozen of our signature fudge brownies. Perfect for chocolate lovers!",
-    basePrice: "28.00",
+    basePrice: "48.00",
     imageUrl: "/images/brownies.jpg",
     isCustomizable: false,
     inStock: true,
@@ -251,7 +251,7 @@ const productsData = [
     slug: "chocolate-strawberries-dozen",
     description:
       "One dozen chocolate covered strawberries. Can be decorated for special occasions.",
-    basePrice: "32.00",
+    basePrice: "30.00",
     imageUrl: "/images/chocolate_strawberries.jpg",
     isCustomizable: true,
     customizationInstructions:
