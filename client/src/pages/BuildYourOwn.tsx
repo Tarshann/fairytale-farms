@@ -136,7 +136,7 @@ export default function BuildYourOwn() {
       name: "Strawberries & Cakes",
       items: addOnItems.filter(
         i =>
-          i.name.toLowerCase().includes("strawberry") ||
+          i.name.toLowerCase().includes("strawberr") ||
           i.name.toLowerCase().includes("cake")
       ),
       color: "bg-pastel-peach",
