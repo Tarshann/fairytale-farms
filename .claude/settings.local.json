@@ -28,7 +28,12 @@
       "Bash(GITHUB_TOKEN= git fetch:*)",
       "Bash(GITHUB_TOKEN= git pull:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Vercel config and merge BYO image overrides\n\n- Add vercel.json and api/index.ts for Vercel deployment option\n- Merge and consolidate product image overrides\n- Add missing Valentine BYO item mappings \\(valentine-oreo-pucks-2, valentine-brownie variants\\)\n- Use correct mini-tin-*.jpg images for mini cakes\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(GITHUB_TOKEN= git push:*)"
+      "Bash(GITHUB_TOKEN= git push:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix broken images and convert MySQL scripts to PostgreSQL\n\n- Add name-based fallbacks for cookie images in productImages.ts\n- Add BYO base box image overrides\n- Filter Valentine''s category to only show tier products \\(not BYO items\\)\n- Convert all .mjs scripts from MySQL to PostgreSQL/Neon compatibility\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
     ]
   }
 }
