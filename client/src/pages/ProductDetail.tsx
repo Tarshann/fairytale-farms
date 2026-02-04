@@ -125,11 +125,9 @@ export default function ProductDetail() {
     );
   }
 
-  // Redirect custom cakes to inquiry/chatbot instead of showing product detail
-  // But NOT for Valentine's tier boxes or BYO items - those should show normal product detail
-  const isCustomCake = product.categoryId === 1 &&
-    product.productType !== "tier" &&
-    product.productType !== "build_your_own_item";
+  // Show custom cake inquiry page for custom cakes
+  // This is specifically for the "custom-cake" product that requires contacting us
+  const isCustomCake = product.slug === "custom-cake";
   if (isCustomCake) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -143,70 +141,62 @@ export default function ProductDetail() {
               </Button>
             </Link>
 
-            <Card className="p-8">
-              <div className="text-center space-y-6">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-pastel-pink to-pastel-lavender rounded-full flex items-center justify-center">
-                  <span className="text-4xl">🎂</span>
-                </div>
+            <Card className="overflow-hidden">
+              {/* Product Image */}
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src={getProductImageUrl(product) || "/images/mini-cake.jpg"}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-                <div>
-                  <h1 className="text-3xl font-bold mb-3 font-display">
-                    {product.name}
-                  </h1>
-                  <p className="text-muted-foreground text-lg">
-                    {product.description}
-                  </p>
-                </div>
-
-                <div className="bg-pastel-lavender/10 p-6 rounded-lg">
-                  <h2 className="font-semibold text-lg mb-2">
-                    Custom Cake Ordering
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Every custom cake is unique and made to order. To get
-                    started, please use our AI chat assistant to discuss your
-                    vision, preferences, and requirements.
-                  </p>
-                  <div className="text-left space-y-2 text-sm">
-                    <p className="flex items-start gap-2">
-                      <span className="text-primary">✓</span>
-                      <span>Share your cake design ideas and theme</span>
-                    </p>
-                    <p className="flex items-start gap-2">
-                      <span className="text-primary">✓</span>
-                      <span>Choose flavors, colors, and decorations</span>
-                    </p>
-                    <p className="flex items-start gap-2">
-                      <span className="text-primary">✓</span>
-                      <span>Get a personalized quote and timeline</span>
+              <div className="p-8">
+                <div className="text-center space-y-6">
+                  <div>
+                    <h1 className="text-3xl font-bold mb-3 font-display">
+                      {product.name}
+                    </h1>
+                    <p className="text-muted-foreground text-lg">
+                      {product.description}
                     </p>
                   </div>
-                </div>
 
-                <div className="space-y-3">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={() => {
-                      // Open chatbot
-                      const chatButton = document.querySelector(
-                        "[data-chatbot-trigger]"
-                      ) as HTMLElement;
-                      if (chatButton) {
-                        chatButton.click();
-                      } else {
-                        toast.info(
-                          "Please use the chat button in the bottom right to start your custom cake inquiry"
-                        );
-                      }
-                    }}
-                  >
-                    Start Custom Cake Inquiry
-                  </Button>
+                  <div className="bg-pastel-lavender/10 p-6 rounded-lg">
+                    <h2 className="font-semibold text-lg mb-2">
+                      Custom Cake Ordering
+                    </h2>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Every custom cake is unique and made to order. Contact us
+                      to discuss your vision, preferences, and get a quote.
+                    </p>
+                    <div className="text-left space-y-2 text-sm">
+                      <p className="flex items-start gap-2">
+                        <span className="text-primary">✓</span>
+                        <span>Birthdays, weddings, baby showers & more</span>
+                      </p>
+                      <p className="flex items-start gap-2">
+                        <span className="text-primary">✓</span>
+                        <span>Choose flavors, sizes, and decorations</span>
+                      </p>
+                      <p className="flex items-start gap-2">
+                        <span className="text-primary">✓</span>
+                        <span>Personalized quote based on your needs</span>
+                      </p>
+                    </div>
+                  </div>
 
-                  <p className="text-xs text-muted-foreground">
-                    Or click the chat icon in the bottom right corner
-                  </p>
+                  <div className="space-y-3">
+                    <Link href="/contact">
+                      <Button size="lg" className="w-full">
+                        Contact Us for Details
+                      </Button>
+                    </Link>
+
+                    <p className="text-xs text-muted-foreground">
+                      Or use the chat icon in the bottom right corner
+                    </p>
+                  </div>
                 </div>
               </div>
             </Card>

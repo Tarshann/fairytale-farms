@@ -52,7 +52,10 @@
       "Bash(echo:*)",
       "Bash(GIT_ASKPASS=echo git push:*)",
       "Bash(git -c credential.helper='!f\\(\\) { echo \"\"password=$\\(cat\\)\"\"; }; f' push origin main)",
-      "Bash(unset:*)"
+      "Bash(unset:*)",
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(node:*)"
     ]
   }
 }
