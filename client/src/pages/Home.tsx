@@ -91,7 +91,7 @@ export default function Home() {
               </p>
 
               <div className="flex flex-wrap gap-4 pt-4">
-                <Link href="/products?category=classic-cookies">
+                <Link href="/products">
                   <Button
                     size="lg"
                     className="bg-pink-500 hover:bg-pink-600 text-white shadow-lg"
@@ -189,7 +189,7 @@ export default function Home() {
                   </li>
                 </ul>
 
-                <Link href="/products?category=classic-cookies">
+                <Link href="/products">
                   <Button
                     size="lg"
                     className="bg-amber-500 hover:bg-amber-600 text-white"
@@ -555,7 +555,7 @@ export default function Home() {
             </h2>
 
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/products?category=classic-cookies">
+              <Link href="/products">
                 <Button
                   size="lg"
                   className="bg-white text-pink-600 hover:bg-gray-100"

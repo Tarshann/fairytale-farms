@@ -219,10 +219,23 @@ export const appRouter = router({
       return await db.getAllCategories();
     }),
 
+    listAdmin: adminProcedure.query(async () => {
+      return await db.getAllCategoriesAdmin();
+    }),
+
     getBySlug: publicProcedure
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
         return await db.getCategoryBySlug(input.slug);
+      }),
+
+    setVisible: adminProcedure
+      .input(
+        z.object({ id: z.number(), visible: z.boolean() })
+      )
+      .mutation(async ({ input }) => {
+        await db.setCategoryVisible(input.id, input.visible);
+        return { success: true };
       }),
 
     create: adminProcedure
@@ -253,6 +266,8 @@ export const appRouter = router({
     listByCategory: publicProcedure
       .input(z.object({ categoryId: z.number() }))
       .query(async ({ input }) => {
+        const category = await db.getCategoryById(input.categoryId);
+        if (!category?.visible) return [];
         return await db.getProductsByCategory(input.categoryId);
       }),
 

@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags } from "lucide-react";
 
 // Define the pages that can be toggled
 const SITE_PAGES = [
@@ -74,6 +74,11 @@ export default function AdminSettings() {
       enabled: isAuthenticated && user?.role === "admin",
     });
 
+  const { data: categoriesAdmin, isLoading: categoriesLoading } =
+    trpc.categories.listAdmin.useQuery(undefined, {
+      enabled: isAuthenticated && user?.role === "admin",
+    });
+
   const utils = trpc.useUtils();
 
   const updateProductMutation = trpc.products.update.useMutation({
@@ -84,6 +89,19 @@ export default function AdminSettings() {
     },
     onError: error => {
       toast.error(error.message || "Failed to update product");
+    },
+  });
+
+  const setCategoryVisibleMutation = trpc.categories.setVisible.useMutation({
+    onSuccess: (_, variables) => {
+      utils.categories.list.invalidate();
+      utils.categories.listAdmin.invalidate();
+      toast.success(
+        `Category ${variables.visible ? "shown" : "hidden"} on storefront`
+      );
+    },
+    onError: error => {
+      toast.error(error.message || "Failed to update category");
     },
   });
 
@@ -143,6 +161,63 @@ export default function AdminSettings() {
           <h1 className="text-3xl md:text-4xl font-bold mb-8">
             Site <span className="text-gradient-gold">Settings</span>
           </h1>
+
+          {/* Category Visibility Section */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tags className="h-5 w-5" />
+                Category Visibility
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Hide or show product categories on the storefront (e.g. Classic Cookies, Mini Tin Cakes)
+              </p>
+            </CardHeader>
+            <CardContent>
+              {categoriesLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : !categoriesAdmin || categoriesAdmin.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No categories found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {categoriesAdmin.map(cat => (
+                    <div
+                      key={cat.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{cat.name}</h3>
+                          {cat.visible ? (
+                            <Eye className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <code className="text-xs bg-muted px-1 rounded">
+                          {cat.slug}
+                        </code>
+                      </div>
+                      <Switch
+                        checked={cat.visible}
+                        disabled={setCategoryVisibleMutation.isPending}
+                        onCheckedChange={checked =>
+                          setCategoryVisibleMutation.mutate({
+                            id: cat.id,
+                            visible: checked,
+                          })
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Page Visibility Section */}
           <Card className="mb-8">

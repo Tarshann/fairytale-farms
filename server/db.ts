@@ -1,5 +1,6 @@
 import { eq, ne, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import {
   InsertUser,
   users,
@@ -23,6 +24,9 @@ import {
   contactSubmissions,
   ContactSubmission,
   InsertContactSubmission,
+  photoUploads,
+  PhotoUpload,
+  InsertPhotoUpload,
   wishlistItems,
   WishlistItem,
   InsertWishlistItem,
@@ -30,6 +34,7 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: Pool | null = null;
 // Normalize all admin emails: trim and lowercase to ensure consistency
 // (DEFAULT_ADMIN_EMAILS may not be normalized, while parseAdminEmails() results are)
 const ADMIN_EMAILS = ENV.adminEmails
@@ -43,14 +48,16 @@ export const isAdminEmail = (email: string | null | undefined) => {
   );
 };
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+// Lazily create the drizzle instance (Neon/Postgres) so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _pool = new Pool({ connectionString: process.env.DATABASE_URL });
+      _db = drizzle(_pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
+      _pool = null;
     }
   }
   return _db;
@@ -115,9 +122,13 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    await db
+      .insert(users)
+      .values(values)
+      .onConflictDoUpdate({
+        target: users.openId,
+        set: updateSet as Record<string, unknown>,
+      });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -162,8 +173,11 @@ export async function getUserByEmail(email: string) {
 export async function createLoginCode(code: InsertLoginCode) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db.insert(loginCodes).values(code)) as any;
-  return Number(result.insertId);
+  const result = await db
+    .insert(loginCodes)
+    .values(code)
+    .returning({ id: loginCodes.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function getLatestActiveLoginCode(email: string) {
@@ -317,13 +331,36 @@ export async function attachGuestOrdersByEmail(input: {
 
 // ============= CATEGORY OPERATIONS =============
 
+/** All categories (for storefront) – only visible ones. */
 export async function getAllCategories() {
   const db = await getDb();
   if (!db) return [];
   return db
     .select()
     .from(categories)
+    .where(eq(categories.visible, true))
     .orderBy(categories.displayOrder, categories.name);
+}
+
+/** All categories including hidden (for admin). */
+export async function getAllCategoriesAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(categories)
+    .orderBy(categories.displayOrder, categories.name);
+}
+
+export async function getCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.id, id))
+    .limit(1);
+  return result[0];
 }
 
 export async function getCategoryBySlug(slug: string) {
@@ -337,11 +374,23 @@ export async function getCategoryBySlug(slug: string) {
   return result[0];
 }
 
+export async function setCategoryVisible(id: number, visible: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(categories)
+    .set({ visible, updatedAt: new Date() })
+    .where(eq(categories.id, id));
+}
+
 export async function createCategory(category: InsertCategory) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db.insert(categories).values(category)) as any;
-  return Number(result.insertId);
+  const result = await db
+    .insert(categories)
+    .values(category)
+    .returning({ id: categories.id });
+  return result[0]?.id ?? 0;
 }
 
 // ============= PRODUCT OPERATIONS =============
@@ -349,11 +398,18 @@ export async function createCategory(category: InsertCategory) {
 export async function getAllProducts() {
   const db = await getDb();
   if (!db) return [];
+  const visibleCategoryIds = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(eq(categories.visible, true));
+  const ids = visibleCategoryIds.map((r) => r.id);
+  if (ids.length === 0) return [];
   return db
     .select()
     .from(products)
     .where(
       and(
+        inArray(products.categoryId, ids),
         eq(products.inStock, true),
         ne(products.productType, "build_your_own_item")
       )
@@ -406,10 +462,18 @@ export async function getProductBySlug(slug: string) {
 export async function getFeaturedProducts() {
   const db = await getDb();
   if (!db) return [];
+  const visibleCategoryIds = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(eq(categories.visible, true));
+  const ids = visibleCategoryIds.map((r) => r.id);
+  if (ids.length === 0) return [];
   return db
     .select()
     .from(products)
-    .where(eq(products.featured, true))
+    .where(
+      and(eq(products.featured, true), inArray(products.categoryId, ids))
+    )
     .orderBy(products.displayOrder)
     .limit(6);
 }
@@ -417,8 +481,11 @@ export async function getFeaturedProducts() {
 export async function createProduct(product: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db.insert(products).values(product)) as any;
-  return Number(result.insertId);
+  const result = await db
+    .insert(products)
+    .values(product)
+    .returning({ id: products.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function updateProduct(
@@ -486,8 +553,11 @@ export async function addToCart(item: InsertCartItem) {
       .where(eq(cartItems.id, existing[0].id));
     return existing[0].id;
   } else {
-    const result = (await db.insert(cartItems).values(item)) as any;
-    return Number(result.insertId);
+    const result = await db
+      .insert(cartItems)
+      .values(item)
+      .returning({ id: cartItems.id });
+    return result[0]?.id ?? 0;
   }
 }
 
@@ -538,15 +608,21 @@ export async function transferCartItems(fromUserId: number, toUserId: number) {
 export async function createOrder(order: InsertOrder) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db.insert(orders).values(order)) as any;
-  return Number(result.insertId);
+  const result = await db
+    .insert(orders)
+    .values(order)
+    .returning({ id: orders.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function createOrderItem(item: InsertOrderItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db.insert(orderItems).values(item)) as any;
-  return Number(result.insertId);
+  const result = await db
+    .insert(orderItems)
+    .values(item)
+    .returning({ id: orderItems.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function getOrderById(id: number) {
@@ -692,10 +768,11 @@ export async function createContactSubmission(
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = (await db
+  const result = await db
     .insert(contactSubmissions)
-    .values(submission)) as any;
-  return Number(result.insertId);
+    .values(submission)
+    .returning({ id: contactSubmissions.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function getAllContactSubmissions() {
@@ -721,20 +798,17 @@ export async function updateContactSubmissionStatus(
 
 // ============= PHOTO UPLOAD OPERATIONS =============
 
-import {
-  photoUploads,
-  PhotoUpload,
-  InsertPhotoUpload,
-} from "../drizzle/schema";
-
 export async function createPhotoUpload(
   upload: InsertPhotoUpload
 ): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const [result] = await db.insert(photoUploads).values(upload);
-  return Number(result.insertId);
+  const result = await db
+    .insert(photoUploads)
+    .values(upload)
+    .returning({ id: photoUploads.id });
+  return result[0]?.id ?? 0;
 }
 
 export async function getPhotoUploadsByOrder(
@@ -1051,8 +1125,15 @@ export async function addToWishlist(userId: number, productId: number) {
     return existing[0];
   }
 
-  const result = await db.insert(wishlistItems).values({ userId, productId });
-  return { id: Number((result as any)[0].insertId), userId, productId };
+  const result = await db
+    .insert(wishlistItems)
+    .values({ userId, productId })
+    .returning({ id: wishlistItems.id });
+  return {
+    id: result[0]?.id ?? 0,
+    userId,
+    productId,
+  };
 }
 
 export async function removeFromWishlist(userId: number, productId: number) {
