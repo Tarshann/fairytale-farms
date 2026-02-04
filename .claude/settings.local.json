@@ -33,7 +33,10 @@
       "Bash(dir:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix broken images and convert MySQL scripts to PostgreSQL\n\n- Add name-based fallbacks for cookie images in productImages.ts\n- Add BYO base box image overrides\n- Filter Valentine''s category to only show tier products \\(not BYO items\\)\n- Convert all .mjs scripts from MySQL to PostgreSQL/Neon compatibility\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Dockerfile to include patches folder\n\nThe pnpm install was failing because the wouter patch file wasn''t being copied before running install.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
