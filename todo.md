@@ -456,3 +456,10 @@
 - [x] Update Build Your Own page to clarify that base box is included in Valentine's box price
 - [x] Added "Base Box Included" note to Build Your Own header
 - [x] Pricing clearly shows customers only pay for items they select
+
+
+## Fix Cookie Product Images (Continued)
+- [x] Found Chocolate Crinkle Cookies image (shows crinkled chocolate cookies)
+- [x] Found Pecan Sandies image (shows buttery pecan shortbread)
+- [x] Found Sprinkle Sugar Cookies image (shows decorated sugar cookies with sprinkles)
+- [x] Updated database with correct images
