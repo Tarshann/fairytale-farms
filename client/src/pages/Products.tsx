@@ -370,12 +370,12 @@ export default function Products() {
   }, [allProducts, selectedCategory, searchQuery, sortBy, priceRange]);
 
   // Group products by category (for all categories view)
-  // For Valentine's category, only show tier products (not individual BYO items)
+  // For Valentine's category, show tier and standard products (not individual BYO items)
   const productsByCategory = categories?.reduce((acc, category) => {
     const categoryProducts = allProducts?.filter(p => p.categoryId === category.id) || [];
-    // Filter Valentine's category to only show tier products
+    // Filter Valentine's category to show tier and standard products
     if (category.name.toLowerCase().includes("valentine")) {
-      acc[category.id] = categoryProducts.filter(p => p.productType === "tier");
+      acc[category.id] = categoryProducts.filter(p => p.productType === "tier" || p.productType === "standard");
     } else {
       acc[category.id] = categoryProducts;
     }
