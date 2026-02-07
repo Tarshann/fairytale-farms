@@ -190,9 +190,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       isDeposit && remainingAmount !== null
         ? remainingAmount.toFixed(2)
         : undefined,
-  });
+  }).returning({ id: orders.id });
 
-  const orderId = Number(orderResult.insertId);
+  const orderId = orderResult.id;
 
   for (const item of purchasedItems) {
     const subtotal = item.unitPrice * item.quantity;

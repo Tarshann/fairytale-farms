@@ -30,6 +30,10 @@ import {
   wishlistItems,
   WishlistItem,
   InsertWishlistItem,
+  promoCodes,
+  PromoCode,
+  deliveryZones,
+  DeliveryZone,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -561,6 +565,17 @@ export async function addToCart(item: InsertCartItem) {
   }
 }
 
+export async function getCartItemById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(cartItems)
+    .where(eq(cartItems.id, id))
+    .limit(1);
+  return result[0];
+}
+
 export async function updateCartItemQuantity(id: number, quantity: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -849,8 +864,6 @@ export async function updatePhotoUploadStatus(
 
 // ============= PROMO CODE OPERATIONS =============
 
-import { promoCodes, PromoCode } from "../drizzle/schema";
-
 export async function getPromoCodeByCode(
   code: string
 ): Promise<PromoCode | undefined> {
@@ -937,8 +950,6 @@ export async function calculateDiscount(
 }
 
 // ============= DELIVERY ZONE OPERATIONS =============
-
-import { deliveryZones, DeliveryZone } from "../drizzle/schema";
 
 export async function validateDeliveryZone(zipCode: string): Promise<{
   valid: boolean;

@@ -82,7 +82,17 @@ const loginRateLimitState: Map<string, LoginRateLimitState> = new Map();
 const getLoginRateKey = (req: Request, email: string) =>
   `${getClientIp(req)}:${email.toLowerCase()}`;
 
+const cleanupLoginRateLimits = () => {
+  const now = Date.now();
+  for (const [key, state] of loginRateLimitState) {
+    if (state.resetAt <= now) {
+      loginRateLimitState.delete(key);
+    }
+  }
+};
+
 const enforceLoginRateLimit = (req: Request, email: string) => {
+  cleanupLoginRateLimits();
   const now = Date.now();
   const key = getLoginRateKey(req, email);
   const state = loginRateLimitState.get(key);
@@ -109,6 +119,17 @@ const enforceLoginRateLimit = (req: Request, email: string) => {
   state.count += 1;
 };
 
+let _stripe: import("stripe").default | null = null;
+async function getStripe() {
+  if (!_stripe) {
+    const Stripe = (await import("stripe")).default;
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2025-12-15.clover",
+    });
+  }
+  return _stripe;
+}
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -125,7 +146,7 @@ export const appRouter = router({
       .input(z.object({ email: z.string().email() }))
       .mutation(async ({ input, ctx }) => {
         enforceLoginRateLimit(ctx.req, input.email);
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const code = crypto.randomInt(100000, 1000000).toString();
         const normalizedEmail = input.email.trim().toLowerCase();
         const hash = crypto
           .createHash("sha256")
@@ -138,7 +159,9 @@ export const appRouter = router({
           expiresAt,
         });
 
-        console.log(`[Auth] Login code for ${normalizedEmail}: ${code}`);
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[Auth] Login code for ${normalizedEmail}: ${code}`);
+        }
 
         return {
           success: true,
@@ -404,14 +427,22 @@ export const appRouter = router({
           quantity: z.number().min(1),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const item = await db.getCartItemById(input.id);
+        if (!item || item.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Cart item not found" });
+        }
         await db.updateCartItemQuantity(input.id, input.quantity);
         return { success: true };
       }),
 
     remove: sessionProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const item = await db.getCartItemById(input.id);
+        if (!item || item.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Cart item not found" });
+        }
         await db.removeFromCart(input.id);
         return { success: true };
       }),
@@ -425,10 +456,7 @@ export const appRouter = router({
   // ============= ORDER ROUTES =============
   orders: router({
     createCheckout: sessionProcedure.mutation(async ({ ctx }) => {
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: "2025-12-15.clover",
-      });
+      const stripe = await getStripe();
 
       // Get user's cart items
       const cartItemsList = await db.getCartItems(ctx.user.id);
@@ -674,10 +702,6 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    all: adminProcedure.query(async () => {
-      return await db.getAllOrders();
-    }),
-
     updateStatus: adminProcedure
       .input(
         z.object({
@@ -690,7 +714,7 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    updatePayment: protectedProcedure
+    updatePayment: adminProcedure
       .input(
         z.object({
           id: z.number(),
