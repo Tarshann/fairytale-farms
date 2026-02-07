@@ -541,7 +541,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const orderNumber = `FF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        const orderNumber = `FF-${Date.now()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
 
         const orderId = await db.createOrder({
           userId: ctx.user.id,
@@ -608,7 +608,15 @@ export const appRouter = router({
             message: "Order not found",
           });
         }
-        if (order.userId !== ctx.user.id && ctx.user.role !== "admin") {
+        const sameCustomerEmail =
+          ctx.user.email && order.customerEmail
+            ? ctx.user.email.toLowerCase() === order.customerEmail.toLowerCase()
+            : false;
+        if (
+          order.userId !== ctx.user.id &&
+          !sameCustomerEmail &&
+          ctx.user.role !== "admin"
+        ) {
           throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
         }
         const items = await db.getOrderItems(order.id);
@@ -618,10 +626,7 @@ export const appRouter = router({
     getByCheckoutSession: sessionProcedure
       .input(z.object({ sessionId: z.string() }))
       .query(async ({ ctx, input }) => {
-        const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: "2025-12-15.clover",
-        });
+        const stripe = await getStripe();
 
         const session = await stripe.checkout.sessions.retrieve(
           input.sessionId
@@ -932,10 +937,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const Stripe = (await import("stripe")).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: "2025-12-15.clover",
-        });
+        const stripe = await getStripe();
 
         // Validate delivery zone
         const zoneValidation = await db.validateDeliveryZone(
