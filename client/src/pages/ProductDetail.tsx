@@ -16,6 +16,7 @@ import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { toast } from "sonner";
+import { trackProductViewed, trackAddToCart } from "@/lib/analytics";
 import { Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react";
 
 const CAKE_FLAVORS = [
@@ -49,6 +50,17 @@ export default function ProductDetail() {
     }
   }, [product?.slug, setLocation]);
 
+  // Track product view
+  useEffect(() => {
+    if (product) {
+      trackProductViewed({
+        id: product.id,
+        name: product.name,
+        price: product.basePrice,
+      });
+    }
+  }, [product?.id]);
+
   // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
   const isValentinesTier =
     product?.productType === "tier" && product?.name?.includes("Box");
@@ -58,6 +70,14 @@ export default function ProductDetail() {
     onSuccess: () => {
       utils.cart.get.invalidate();
       toast.success("Added to cart!");
+      if (product) {
+        trackAddToCart({
+          id: product.id,
+          name: product.name,
+          price: product.basePrice,
+          quantity,
+        });
+      }
       setQuantity(1);
       setCustomizationNotes("");
     },
