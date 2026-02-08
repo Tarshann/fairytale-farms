@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import crypto from "crypto";
 import Stripe from "stripe";
 import { getDb } from "./db";
 import { orders, orderItems, cartItems } from "../drizzle/schema";
@@ -136,8 +137,27 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     ? (session.amount_total / 100).toFixed(2)
     : "0.00";
 
-  // Generate order number
-  const orderNumber = `FF${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  // Idempotency: skip if we already processed this Stripe session
+  if (paymentIntentId) {
+    const existingOrder = await db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(eq(orders.stripePaymentIntentId, paymentIntentId))
+      .limit(1);
+    if (existingOrder.length > 0) {
+      console.log("[Webhook] Order already exists for session:", session.id);
+      return;
+    }
+  }
+
+  // Generate order number with crypto-safe randomness
+  const randomSuffix = crypto.randomInt(1000, 9999);
+  const orderNumber = `FF${Date.now()}${randomSuffix}`;
 
   // Create order
   const customerEmail =
@@ -164,10 +184,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const remainingAmount = session.metadata?.remaining_amount
     ? Number.parseFloat(session.metadata.remaining_amount)
     : null;
-  const paymentIntentId =
-    typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : session.payment_intent?.id;
 
   const [orderResult] = await db.insert(orders).values({
     userId,
@@ -194,19 +210,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const orderId = orderResult.id;
 
-  for (const item of purchasedItems) {
-    const subtotal = item.unitPrice * item.quantity;
-
-    await db.insert(orderItems).values({
+  // Batch insert all order items in a single query
+  await db.insert(orderItems).values(
+    purchasedItems.map(item => ({
       orderId,
       productId: item.productId,
       productName: item.productName,
       quantity: item.quantity,
       unitPrice: item.unitPrice.toFixed(2),
-      subtotal: subtotal.toFixed(2),
+      subtotal: (item.unitPrice * item.quantity).toFixed(2),
       customizationNotes: item.customizationNotes,
-    });
-  }
+    }))
+  );
 
   await db.delete(cartItems).where(eq(cartItems.userId, userId));
 
