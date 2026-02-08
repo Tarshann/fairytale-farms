@@ -6,6 +6,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trackOrderCompleted } from "@/lib/analytics";
 import { CheckCircle, Package, ArrowRight, Loader2 } from "lucide-react";
 
 function getQueryParam(search: string, key: string) {
@@ -57,6 +58,17 @@ export default function OrderConfirmation() {
   const orderNumber = params?.orderNumber ?? sessionOrder?.orderNumber ?? "";
   const showLoading = shouldFetchOrder && isLoading && !sessionOrder;
   const showPending = Boolean(sessionId && !orderNumber && !showLoading);
+
+  // Track order completed when order data is available
+  useEffect(() => {
+    if (sessionOrder?.orderNumber) {
+      trackOrderCompleted({
+        orderNumber: sessionOrder.orderNumber,
+        total: parseFloat(sessionOrder.totalAmount),
+        itemCount: sessionOrder.items?.length ?? 0,
+      });
+    }
+  }, [sessionOrder?.orderNumber]);
 
   useEffect(() => {
     if (!emailFromQuery) return;

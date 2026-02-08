@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getDb } from "./db";
 import { customOrderInquiries, chatMessages } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray, and, lt } from "drizzle-orm";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -722,12 +722,12 @@ export async function bulkUpdateInquiryStatus(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  for (const id of ids) {
-    await db
-      .update(customOrderInquiries)
-      .set({ status })
-      .where(eq(customOrderInquiries.id, id));
-  }
+  if (ids.length === 0) return { updated: 0 };
+
+  await db
+    .update(customOrderInquiries)
+    .set({ status })
+    .where(inArray(customOrderInquiries.id, ids));
 
   return { updated: ids.length };
 }
@@ -740,12 +740,14 @@ export async function getOverdueInquiries() {
   const twentyFourHoursAgo = new Date();
   twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
 
-  const inquiries = await db
+  return db
     .select()
     .from(customOrderInquiries)
+    .where(
+      and(
+        eq(customOrderInquiries.status, "new"),
+        lt(customOrderInquiries.createdAt, twentyFourHoursAgo)
+      )
+    )
     .orderBy(customOrderInquiries.createdAt);
-
-  return inquiries.filter(
-    inq => inq.status === "new" && new Date(inq.createdAt) < twentyFourHoursAgo
-  );
 }

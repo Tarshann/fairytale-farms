@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import { trackRemoveFromCart, trackCheckoutStarted } from "@/lib/analytics";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 export default function Cart() {
@@ -29,9 +30,10 @@ export default function Cart() {
   });
 
   const removeItemMutation = trpc.cart.remove.useMutation({
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       utils.cart.get.invalidate();
       toast.success("Item removed from cart");
+      trackRemoveFromCart(variables.id);
     },
     onError: error => {
       toast.error(error.message || "Failed to remove item");
@@ -61,6 +63,8 @@ export default function Cart() {
       toast.error("Your cart is empty");
       return;
     }
+    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    trackCheckoutStarted(itemCount, subtotal);
     setLocation("/checkout");
   };
 

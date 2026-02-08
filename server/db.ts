@@ -30,6 +30,10 @@ import {
   wishlistItems,
   WishlistItem,
   InsertWishlistItem,
+  promoCodes,
+  PromoCode,
+  deliveryZones,
+  DeliveryZone,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -304,15 +308,8 @@ export async function attachGuestOrdersByEmail(input: {
   }
 
   const normalizedEmail = input.email.trim().toLowerCase();
-  const guestUsers = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.loginMethod, "guest"));
 
-  const guestUserIds = guestUsers
-    .map(user => user.id)
-    .filter(id => id !== accountUser.id);
-
+  // Use a subquery to find guest user IDs instead of loading all guest users into memory
   await db
     .update(orders)
     .set({ userId: accountUser.id })
@@ -321,9 +318,7 @@ export async function attachGuestOrdersByEmail(input: {
         eq(orders.customerEmail, normalizedEmail),
         or(
           isNull(orders.userId),
-          guestUserIds.length
-            ? inArray(orders.userId, guestUserIds)
-            : sql`FALSE`
+          sql`${orders.userId} IN (SELECT id FROM users WHERE "loginMethod" = 'guest' AND id != ${accountUser.id})`
         )
       )
     );
@@ -561,6 +556,17 @@ export async function addToCart(item: InsertCartItem) {
   }
 }
 
+export async function getCartItemById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(cartItems)
+    .where(eq(cartItems.id, id))
+    .limit(1);
+  return result[0];
+}
+
 export async function updateCartItemQuantity(id: number, quantity: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -593,14 +599,14 @@ export async function transferCartItems(fromUserId: number, toUserId: number) {
 
   await db.delete(cartItems).where(eq(cartItems.userId, fromUserId));
 
-  for (const item of items) {
-    await db.insert(cartItems).values({
+  await db.insert(cartItems).values(
+    items.map(item => ({
       userId: toUserId,
       productId: item.productId,
       quantity: item.quantity,
       customizationNotes: item.customizationNotes ?? undefined,
-    });
-  }
+    }))
+  );
 }
 
 // ============= ORDER OPERATIONS =============
@@ -658,6 +664,25 @@ export async function getOrderByPaymentIntentId(paymentIntentId: string) {
   return result[0];
 }
 
+/** Batch-load order items for a list of orders (avoids N+1). */
+async function batchLoadOrderItems(
+  database: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  orderIds: number[]
+) {
+  if (orderIds.length === 0) return new Map<number, OrderItem[]>();
+  const allItems = await database
+    .select()
+    .from(orderItems)
+    .where(inArray(orderItems.orderId, orderIds));
+  const itemsByOrder = new Map<number, OrderItem[]>();
+  for (const item of allItems) {
+    const list = itemsByOrder.get(item.orderId) ?? [];
+    list.push(item);
+    itemsByOrder.set(item.orderId, list);
+  }
+  return itemsByOrder;
+}
+
 export async function getOrdersByUser(userId: number) {
   const db = await getDb();
   if (!db) return [];
@@ -667,15 +692,14 @@ export async function getOrdersByUser(userId: number) {
     .where(eq(orders.userId, userId))
     .orderBy(desc(orders.createdAt));
 
-  // Add item counts to each order
-  const ordersWithItems = await Promise.all(
-    ordersList.map(async order => {
-      const items = await getOrderItems(order.id);
-      return { ...order, items };
-    })
+  const itemsByOrder = await batchLoadOrderItems(
+    db,
+    ordersList.map(o => o.id)
   );
-
-  return ordersWithItems;
+  return ordersList.map(order => ({
+    ...order,
+    items: itemsByOrder.get(order.id) ?? [],
+  }));
 }
 
 export async function getOrdersForAccount(
@@ -696,14 +720,14 @@ export async function getOrdersForAccount(
     .where(whereClause)
     .orderBy(desc(orders.createdAt));
 
-  const ordersWithItems = await Promise.all(
-    ordersList.map(async order => {
-      const items = await getOrderItems(order.id);
-      return { ...order, items };
-    })
+  const itemsByOrder = await batchLoadOrderItems(
+    db,
+    ordersList.map(o => o.id)
   );
-
-  return ordersWithItems;
+  return ordersList.map(order => ({
+    ...order,
+    items: itemsByOrder.get(order.id) ?? [],
+  }));
 }
 
 export async function getOrderItems(orderId: number) {
@@ -720,20 +744,24 @@ export async function getAllOrders() {
     .from(orders)
     .orderBy(desc(orders.createdAt));
 
-  // Add user info and item counts to each order
-  const ordersWithDetails = await Promise.all(
-    ordersList.map(async order => {
-      const items = await getOrderItems(order.id);
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, order.userId))
-        .limit(1);
-      return { ...order, items, user };
-    })
-  );
+  const orderIds = ordersList.map(o => o.id);
+  const userIds = [...new Set(ordersList.map(o => o.userId))];
 
-  return ordersWithDetails;
+  // Batch load items and users in parallel (2 queries instead of 2N)
+  const [itemsByOrder, usersList] = await Promise.all([
+    batchLoadOrderItems(db, orderIds),
+    userIds.length > 0
+      ? db.select().from(users).where(inArray(users.id, userIds))
+      : Promise.resolve([]),
+  ]);
+
+  const usersById = new Map(usersList.map(u => [u.id, u]));
+
+  return ordersList.map(order => ({
+    ...order,
+    items: itemsByOrder.get(order.id) ?? [],
+    user: usersById.get(order.userId),
+  }));
 }
 
 export async function updateOrderStatus(
@@ -849,8 +877,6 @@ export async function updatePhotoUploadStatus(
 
 // ============= PROMO CODE OPERATIONS =============
 
-import { promoCodes, PromoCode } from "../drizzle/schema";
-
 export async function getPromoCodeByCode(
   code: string
 ): Promise<PromoCode | undefined> {
@@ -937,8 +963,6 @@ export async function calculateDiscount(
 }
 
 // ============= DELIVERY ZONE OPERATIONS =============
-
-import { deliveryZones, DeliveryZone } from "../drizzle/schema";
 
 export async function validateDeliveryZone(zipCode: string): Promise<{
   valid: boolean;

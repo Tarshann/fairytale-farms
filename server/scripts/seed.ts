@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { categories } from "../../drizzle/schema";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -61,7 +61,8 @@ async function run() {
     await db
       .insert(categories)
       .values(category)
-      .onDuplicateKeyUpdate({
+      .onConflictDoUpdate({
+        target: categories.slug,
         set: {
           description: category.description,
           displayOrder: category.displayOrder,

@@ -20,6 +20,7 @@ import AdminContacts from "./pages/admin/AdminContacts";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminInquiries from "./pages/admin/AdminInquiries";
 import ChatWidget from "./components/ChatWidget";
+import PageViewTracker from "./components/PageViewTracker";
 import Login from "./pages/Login";
 
 // Valentine's Day 2026 Collection
@@ -86,6 +87,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <PageViewTracker />
           <Router />
           <ChatWidget />
         </TooltipProvider>
