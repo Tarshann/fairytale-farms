@@ -1,6 +1,7 @@
 const DEFAULT_ADMIN_EMAILS = [
   "tarshann@gmail.com",
   "fairytalefarms.net@gmail.com",
+  "csisam13@gmail.com",
 ];
 
 const parseAdminEmails = (raw: string) =>
