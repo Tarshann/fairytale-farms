@@ -22,8 +22,12 @@ const appOrigin = (process.env.APP_ORIGIN ?? process.env.OAUTH_SERVER_URL ?? "")
   .trim();
 
 export const ENV = {
-  appId: rawAppId || (allowDevLogin ? "dev-app" : ""),
-  cookieSecret: rawCookieSecret || (allowDevLogin ? "dev-secret" : ""),
+  appId: rawAppId || "fairytale-farms",
+  cookieSecret:
+    rawCookieSecret ||
+    (allowDevLogin
+      ? "dev-secret"
+      : "fairytale-farms-fallback-please-set-JWT_SECRET"),
   databaseUrl: (process.env.DATABASE_URL ?? "").trim(),
   /** Canonical app URL for production (e.g. https://fairytalefarms.net). Used for checkout redirects when request origin is missing. */
   appOrigin: appOrigin || null,
@@ -48,5 +52,11 @@ export const ENV = {
 if (ENV.isProduction && !ENV.oauthEnabled) {
   console.warn(
     "[env] OAUTH_SERVER_URL is not set in production. Login/OAuth will be disabled. Set OAUTH_SERVER_URL to your app origin (e.g. https://fairytalefarms.net) to enable login."
+  );
+}
+
+if (!rawCookieSecret) {
+  console.warn(
+    "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
   );
 }
