@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import * as db from "../db";
 import { createLoginCode, hashLoginCode } from "./authCodes";
+import { sendLoginCode } from "./email";
 
 function json(res: Response, status: number, body: Record<string, unknown>) {
   res.status(status).json(body);
@@ -89,6 +90,8 @@ export function registerAuthRoutes(app: Express) {
       userAgent: String(req.headers["user-agent"] ?? ""),
     });
 
+    await sendLoginCode(email, code);
+
     if (!ENV.isProduction) {
       return json(res, 200, {
         ok: true,
@@ -98,9 +101,10 @@ export function registerAuthRoutes(app: Express) {
       });
     }
 
-    return json(res, 501, {
-      error:
-        "Email sender not configured for production. Implement sendEmail in /api/auth/request-code.",
+    return json(res, 200, {
+      ok: true,
+      expiresAt: expiresAt.toISOString(),
+      message: "If this email exists, a code was sent.",
     });
   });
 

@@ -1,6 +1,7 @@
 const DEFAULT_ADMIN_EMAILS = [
   "tarshann@gmail.com",
   "fairytalefarms.net@gmail.com",
+  "csisam13@gmail.com",
 ];
 
 const parseAdminEmails = (raw: string) =>
@@ -43,6 +44,11 @@ export const ENV = {
   isProduction,
   forgeApiUrl: (process.env.BUILT_IN_FORGE_API_URL ?? "").trim(),
   forgeApiKey: (process.env.BUILT_IN_FORGE_API_KEY ?? "").trim(),
+  smtpHost: (process.env.SMTP_HOST ?? "").trim(),
+  smtpPort: Number(process.env.SMTP_PORT ?? "587"),
+  smtpUser: (process.env.SMTP_USER ?? "").trim(),
+  smtpPass: (process.env.SMTP_PASS ?? "").trim(),
+  smtpFrom: (process.env.SMTP_FROM ?? "").trim(),
 };
 
 if (ENV.isProduction && !ENV.oauthEnabled) {
