@@ -526,20 +526,65 @@ export async function addToCart(item: InsertCartItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  // Atomic upsert: insert or increment quantity on conflict
-  const result = await db
-    .insert(cartItems)
-    .values(item)
-    .onConflictDoUpdate({
-      target: [cartItems.userId, cartItems.productId],
-      set: {
-        quantity: sql`${cartItems.quantity} + ${item.quantity || 1}`,
-        customizationNotes: item.customizationNotes ?? sql`${cartItems.customizationNotes}`,
-        updatedAt: sql`now()`,
-      },
-    })
-    .returning({ id: cartItems.id });
-  return result[0]?.id ?? 0;
+  try {
+    const existing = await db
+      .select()
+      .from(cartItems)
+      .where(
+        and(
+          eq(cartItems.userId, item.userId),
+          eq(cartItems.productId, item.productId)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      const newQuantity = existing[0].quantity + (item.quantity || 1);
+      await db
+        .update(cartItems)
+        .set({
+          quantity: newQuantity,
+          customizationNotes: item.customizationNotes,
+          updatedAt: new Date(),
+        })
+        .where(eq(cartItems.id, existing[0].id));
+      return existing[0].id;
+    } else {
+      const result = await db
+        .insert(cartItems)
+        .values(item)
+        .returning({ id: cartItems.id });
+      return result[0]?.id ?? 0;
+    }
+  } catch (error) {
+    // Handle race condition: if a concurrent request inserted the same
+    // (userId, productId) between our SELECT and INSERT, retry as update.
+    const existing = await db
+      .select()
+      .from(cartItems)
+      .where(
+        and(
+          eq(cartItems.userId, item.userId),
+          eq(cartItems.productId, item.productId)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      const newQuantity = existing[0].quantity + (item.quantity || 1);
+      await db
+        .update(cartItems)
+        .set({
+          quantity: newQuantity,
+          customizationNotes: item.customizationNotes,
+          updatedAt: new Date(),
+        })
+        .where(eq(cartItems.id, existing[0].id));
+      return existing[0].id;
+    }
+
+    throw error;
+  }
 }
 
 export async function getCartItemById(id: number) {
