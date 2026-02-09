@@ -417,11 +417,18 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const id = await db.addToCart({
-          userId: ctx.user.id,
-          ...input,
-        });
-        return { id, success: true };
+        try {
+          const id = await db.addToCart({
+            userId: ctx.user.id,
+            ...input,
+          });
+          return { id, success: true };
+        } catch {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Unable to add item to cart. Please try again.",
+          });
+        }
       }),
 
     updateQuantity: sessionProcedure
