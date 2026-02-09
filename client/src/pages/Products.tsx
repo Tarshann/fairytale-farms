@@ -67,6 +67,7 @@ function QuickViewModal({
               <img
                 src={getProductImageUrl(product)}
                 alt={product.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -156,6 +157,7 @@ function ProductCard({
             <img
               src={getProductImageUrl(product)}
               alt={product.name}
+              loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (

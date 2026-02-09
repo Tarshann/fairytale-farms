@@ -7,6 +7,8 @@ import {
   boolean,
   integer,
   serial,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
 
@@ -73,7 +75,9 @@ export const loginCodes = pgTable("loginCodes", {
   expiresAt: timestamp("expiresAt").notNull(),
   usedAt: timestamp("usedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("loginCodes_email_idx").on(table.email),
+]);
 
 export type LoginCode = typeof loginCodes.$inferSelect;
 export type InsertLoginCode = typeof loginCodes.$inferInsert;
@@ -123,7 +127,11 @@ export const products = pgTable("products", {
   productType: productTypeEnum("productType").default("standard").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("products_categoryId_idx").on(table.categoryId),
+  index("products_featured_idx").on(table.featured),
+  index("products_inStock_idx").on(table.inStock),
+]);
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
@@ -139,7 +147,10 @@ export const cartItems = pgTable("cartItems", {
   customizationNotes: text("customizationNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("cartItems_userId_idx").on(table.userId),
+  uniqueIndex("cartItems_userId_productId_idx").on(table.userId, table.productId),
+]);
 
 export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = typeof cartItems.$inferInsert;
@@ -174,7 +185,12 @@ export const orders = pgTable("orders", {
   }).default("0.00"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("orders_userId_idx").on(table.userId),
+  index("orders_customerEmail_idx").on(table.customerEmail),
+  index("orders_status_idx").on(table.status),
+  index("orders_stripePaymentIntentId_idx").on(table.stripePaymentIntentId),
+]);
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
@@ -192,7 +208,9 @@ export const orderItems = pgTable("orderItems", {
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   customizationNotes: text("customizationNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("orderItems_orderId_idx").on(table.orderId),
+]);
 
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = typeof orderItems.$inferInsert;
@@ -230,7 +248,10 @@ export const photoUploads = pgTable("photoUploads", {
   reviewNotes: text("reviewNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("photoUploads_orderId_idx").on(table.orderId),
+  index("photoUploads_userId_idx").on(table.userId),
+]);
 
 export type PhotoUpload = typeof photoUploads.$inferSelect;
 export type InsertPhotoUpload = typeof photoUploads.$inferInsert;
@@ -287,7 +308,9 @@ export const wishlistItems = pgTable("wishlistItems", {
   userId: integer("userId").notNull(),
   productId: integer("productId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("wishlistItems_userId_idx").on(table.userId),
+]);
 
 export type WishlistItem = typeof wishlistItems.$inferSelect;
 export type InsertWishlistItem = typeof wishlistItems.$inferInsert;
@@ -330,7 +353,9 @@ export const chatMessages = pgTable("chatMessages", {
   role: chatRoleEnum("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("chatMessages_sessionId_idx").on(table.sessionId),
+]);
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = typeof chatMessages.$inferInsert;

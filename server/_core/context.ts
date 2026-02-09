@@ -25,24 +25,29 @@ export async function createContext(
   }
 
   if (!user) {
-    const openId = `guest:${crypto.randomUUID()}`;
-    const sessionToken = await sdk.createSessionToken(openId, {
-      name: "Guest",
-      expiresInMs: ONE_YEAR_MS,
-    });
-    const cookieOptions = getSessionCookieOptions(opts.req);
-    opts.res.cookie(COOKIE_NAME, sessionToken, {
-      ...cookieOptions,
-      maxAge: ONE_YEAR_MS,
-    });
-    await db.upsertUser({
-      openId,
-      name: "Guest",
-      email: null,
-      loginMethod: "guest",
-      lastSignedIn: new Date(),
-    });
-    user = (await db.getUserByOpenId(openId)) ?? null;
+    try {
+      const openId = `guest:${crypto.randomUUID()}`;
+      const sessionToken = await sdk.createSessionToken(openId, {
+        name: "Guest",
+        expiresInMs: ONE_YEAR_MS,
+      });
+      const cookieOptions = getSessionCookieOptions(opts.req);
+      opts.res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
+      await db.upsertUser({
+        openId,
+        name: "Guest",
+        email: null,
+        loginMethod: "guest",
+        lastSignedIn: new Date(),
+      });
+      user = (await db.getUserByOpenId(openId)) ?? null;
+    } catch (guestError) {
+      console.error("[Context] Failed to create guest session:", guestError);
+      user = null;
+    }
   }
 
   return {

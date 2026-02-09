@@ -41,7 +41,7 @@ export default function Checkout() {
     }
   }, [hasSession, cartItems, cartLoading, setLocation]);
 
-  if (loading || !hasSession || cartLoading) {
+  if (loading || cartLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />

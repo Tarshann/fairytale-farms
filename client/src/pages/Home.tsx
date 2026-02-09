@@ -148,11 +148,13 @@ export default function Home() {
                 <img
                   src={cookiesImage}
                   alt="Fresh baked cookies"
+                  loading="lazy"
                   className="rounded-xl shadow-lg w-full h-48 md:h-64 object-cover"
                 />
                 <img
                   src={browniesImage}
                   alt="Rich fudgy brownies"
+                  loading="lazy"
                   className="rounded-xl shadow-lg w-full h-48 md:h-64 object-cover"
                 />
               </div>
@@ -218,16 +220,19 @@ export default function Home() {
               <img
                 src={kidsBirthdayImage}
                 alt="Kids birthday cake"
+                loading="lazy"
                 className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
               />
               <img
                 src={elegantCakeImage}
                 alt="Elegant celebration cake"
+                loading="lazy"
                 className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
               />
               <img
                 src={cupcakeImage}
                 alt="Cupcake set"
+                loading="lazy"
                 className="rounded-xl shadow-lg w-full h-40 md:h-56 object-cover"
               />
             </div>
@@ -340,6 +345,7 @@ export default function Home() {
                   key={index}
                   src={image.src}
                   alt={image.alt}
+                  loading="lazy"
                   className="rounded-xl shadow-md w-full aspect-square object-cover hover:shadow-lg transition-shadow"
                 />
               ))}
@@ -463,6 +469,7 @@ export default function Home() {
                 <img
                   src={aboutImage}
                   alt="Fairytale Farms bakery"
+                  loading="lazy"
                   className="rounded-2xl shadow-lg w-full h-80 md:h-96 object-cover"
                 />
               </div>
@@ -544,6 +551,7 @@ export default function Home() {
             <img
               src={ctaImage}
               alt="Celebration cookies"
+              loading="lazy"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-pink-900/80 to-purple-900/80" />
