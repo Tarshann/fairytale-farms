@@ -14,7 +14,7 @@ import * as db from "./db";
 import * as chatbot from "./chatbot";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
-import { sendLoginCode } from "./_core/email";
+import { sendLoginCode, isEmailConfigured } from "./_core/email";
 import crypto from "crypto";
 
 // Admin-only procedure
@@ -164,12 +164,13 @@ export const appRouter = router({
           console.log(`[Auth] Login code for ${normalizedEmail}: ${code}`);
         }
 
-        await sendLoginCode(normalizedEmail, code);
+        const emailSent = await sendLoginCode(normalizedEmail, code);
 
         return {
           success: true,
           expiresAt: expiresAt.toISOString(),
-          devCode: process.env.NODE_ENV !== "production" ? code : undefined,
+          devCode: !emailSent ? code : undefined,
+          emailSent,
         };
       }),
     verifyLoginCode: publicProcedure

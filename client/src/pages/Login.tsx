@@ -21,7 +21,11 @@ export default function Login() {
     onSuccess: data => {
       setCodeSent(true);
       setDevCode(data.devCode ?? null);
-      toast.success("Your sign-in code is on the way.");
+      if (data.devCode) {
+        toast.success("Your sign-in code is ready below.");
+      } else {
+        toast.success("Your sign-in code is on the way.");
+      }
     },
     onError: error => {
       toast.error(error.message || "Unable to send code.");
@@ -114,7 +118,9 @@ export default function Login() {
                   className="space-y-4 border-t border-border pt-4"
                 >
                   <p className="text-sm text-muted-foreground">
-                    Enter the 6-digit code we emailed you.
+                    {devCode
+                      ? "Enter the code shown below to sign in."
+                      : "Enter the 6-digit code we emailed you."}
                   </p>
                   <Input
                     id="login-code"
@@ -143,9 +149,14 @@ export default function Login() {
                     Resend code
                   </Button>
                   {devCode && (
-                    <p className="text-xs text-muted-foreground">
-                      Dev code: <span className="font-mono">{devCode}</span>
-                    </p>
+                    <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-center">
+                      <p className="text-sm font-medium text-amber-800 mb-1">
+                        Your sign-in code
+                      </p>
+                      <p className="text-2xl font-bold tracking-widest text-amber-900">
+                        {devCode}
+                      </p>
+                    </div>
                   )}
                 </form>
               )}
