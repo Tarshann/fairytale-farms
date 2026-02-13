@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags, ShoppingCart, AlertTriangle } from "lucide-react";
 
 // Define the pages that can be toggled
 const SITE_PAGES = [
@@ -92,6 +92,25 @@ export default function AdminSettings() {
     },
   });
 
+  const { data: checkoutStatus, isLoading: checkoutStatusLoading } =
+    trpc.settings.checkoutEnabled.useQuery(undefined, {
+      enabled: isAuthenticated && user?.role === "admin",
+    });
+
+  const setCheckoutEnabledMutation = trpc.settings.setCheckoutEnabled.useMutation({
+    onSuccess: (data) => {
+      utils.settings.checkoutEnabled.invalidate();
+      toast.success(
+        data.enabled
+          ? "Checkout enabled — customers can now place orders"
+          : "Checkout disabled — ordering is paused"
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update checkout setting");
+    },
+  });
+
   const setCategoryVisibleMutation = trpc.categories.setVisible.useMutation({
     onSuccess: (_, variables) => {
       utils.categories.list.invalidate();
@@ -161,6 +180,52 @@ export default function AdminSettings() {
           <h1 className="text-3xl md:text-4xl font-bold mb-8">
             Site <span className="text-gradient-gold">Settings</span>
           </h1>
+
+          {/* Checkout Toggle Section */}
+          <Card className={`mb-8 border-2 ${checkoutStatus?.enabled === false ? "border-destructive" : "border-green-500"}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                Online Ordering
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Enable or disable all purchasing on the site. When disabled, customers can still browse
+                products and contact you, but cannot add items to cart or check out.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {checkoutStatusLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium">
+                        {checkoutStatus?.enabled ? "Ordering is OPEN" : "Ordering is CLOSED"}
+                      </h3>
+                      {!checkoutStatus?.enabled && (
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {checkoutStatus?.enabled
+                        ? "Customers can add to cart and complete purchases"
+                        : "All add-to-cart and checkout buttons are disabled site-wide"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={checkoutStatus?.enabled ?? true}
+                    disabled={setCheckoutEnabledMutation.isPending}
+                    onCheckedChange={checked =>
+                      setCheckoutEnabledMutation.mutate({ enabled: checked })
+                    }
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Category Visibility Section */}
           <Card className="mb-8">

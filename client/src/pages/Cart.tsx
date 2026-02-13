@@ -8,7 +8,7 @@ import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { trackRemoveFromCart, trackCheckoutStarted } from "@/lib/analytics";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, AlertTriangle } from "lucide-react";
 
 export default function Cart() {
   const [, setLocation] = useLocation();
@@ -17,6 +17,9 @@ export default function Cart() {
   const { data: cartItems, isLoading } = trpc.cart.get.useQuery(undefined, {
     enabled: hasSession,
   });
+
+  const { data: checkoutStatus } = trpc.settings.checkoutEnabled.useQuery();
+  const checkoutDisabled = checkoutStatus?.enabled === false;
 
   const utils = trpc.useUtils();
 
@@ -253,14 +256,33 @@ export default function Cart() {
                       </span>
                     </div>
 
-                    <Button
-                      size="lg"
-                      className="w-full"
-                      onClick={handleCheckout}
-                    >
-                      Proceed to Checkout
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    {checkoutDisabled ? (
+                      <div className="space-y-3">
+                        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-start gap-2">
+                          <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Ordering is currently closed</p>
+                            <p className="text-sm mt-1">
+                              Please contact us for any inquiries.
+                            </p>
+                          </div>
+                        </div>
+                        <Link href="/contact">
+                          <Button size="lg" className="w-full">
+                            Contact Us
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={handleCheckout}
+                      >
+                        Proceed to Checkout
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    )}
 
                     <Link href="/products">
                       <Button variant="outline" className="w-full">

@@ -34,6 +34,7 @@ import {
   PromoCode,
   deliveryZones,
   DeliveryZone,
+  siteSettings,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1247,4 +1248,35 @@ export async function getWishlistCount(userId: number) {
     .where(eq(wishlistItems.userId, userId));
 
   return result[0]?.count || 0;
+}
+
+// ============= SITE SETTINGS OPERATIONS =============
+
+export async function getSiteSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(siteSettings)
+    .where(eq(siteSettings.key, key))
+    .limit(1);
+  return result[0]?.value ?? null;
+}
+
+export async function setSiteSetting(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .insert(siteSettings)
+    .values({ key, value, updatedAt: new Date() })
+    .onConflictDoUpdate({
+      target: siteSettings.key,
+      set: { value, updatedAt: new Date() },
+    });
+}
+
+export async function isCheckoutEnabled(): Promise<boolean> {
+  const value = await getSiteSetting("checkout_enabled");
+  // Default to true if not set
+  return value !== "false";
 }
