@@ -43,8 +43,8 @@ function QuickViewModal({
       toast.success(`${product.name} added to cart!`);
       onClose();
     },
-    onError: () => {
-      toast.error("Failed to add to cart");
+    onError: (error) => {
+      toast.error(error.message || "Failed to add to cart");
     }
   });
 

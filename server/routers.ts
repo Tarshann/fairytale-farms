@@ -131,9 +131,33 @@ async function getStripe() {
   return _stripe;
 }
 
+const assertCheckoutEnabled = async () => {
+  const enabled = await db.isCheckoutEnabled();
+  if (!enabled) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Ordering is currently closed. Please contact us for inquiries.",
+    });
+  }
+};
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
+
+  // ============= SITE SETTINGS ROUTES =============
+  settings: router({
+    checkoutEnabled: publicProcedure.query(async () => {
+      return { enabled: await db.isCheckoutEnabled() };
+    }),
+
+    setCheckoutEnabled: adminProcedure
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await db.setSiteSetting("checkout_enabled", input.enabled.toString());
+        return { success: true, enabled: input.enabled };
+      }),
+  }),
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -417,6 +441,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCheckoutEnabled();
         try {
           const id = await db.addToCart({
             userId: ctx.user.id,
@@ -467,6 +492,7 @@ export const appRouter = router({
   // ============= ORDER ROUTES =============
   orders: router({
     createCheckout: sessionProcedure.mutation(async ({ ctx }) => {
+      await assertCheckoutEnabled();
       const stripe = await getStripe();
 
       // Get user's cart items
@@ -552,6 +578,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCheckoutEnabled();
         const orderNumber = `FF-${Date.now()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
 
         const orderId = await db.createOrder({
@@ -691,6 +718,7 @@ export const appRouter = router({
     reorder: protectedProcedure
       .input(z.object({ orderId: z.number() }))
       .mutation(async ({ ctx, input }) => {
+        await assertCheckoutEnabled();
         const order = await db.getOrderById(input.orderId);
         if (!order) {
           throw new TRPCError({
@@ -948,6 +976,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        await assertCheckoutEnabled();
         const stripe = await getStripe();
 
         // Validate delivery zone

@@ -32,8 +32,8 @@ export default function Wishlist() {
     onSuccess: () => {
       toast.success("Added to cart!");
     },
-    onError: () => {
-      toast.error("Failed to add to cart");
+    onError: (error) => {
+      toast.error(error.message || "Failed to add to cart");
     },
   });
 

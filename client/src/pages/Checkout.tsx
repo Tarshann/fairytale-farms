@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navigation from "@/components/Navigation";
@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2, CreditCard, AlertTriangle } from "lucide-react";
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
@@ -20,6 +20,9 @@ export default function Checkout() {
       enabled: hasSession,
     }
   );
+
+  const { data: checkoutStatus } = trpc.settings.checkoutEnabled.useQuery();
+  const checkoutDisabled = checkoutStatus?.enabled === false;
 
   const createCheckoutMutation = trpc.orders.createCheckout.useMutation({
     onSuccess: data => {
@@ -195,35 +198,56 @@ export default function Checkout() {
                     <span className="text-primary">${subtotal.toFixed(2)}</span>
                   </div>
 
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={handleCheckout}
-                    disabled={createCheckoutMutation.isPending}
-                  >
-                    {createCheckoutMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-2 h-4 w-4" />
-                        Pay with Stripe
-                      </>
-                    )}
-                  </Button>
+                  {checkoutDisabled ? (
+                    <div className="space-y-3">
+                      <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Ordering is currently closed</p>
+                          <p className="text-sm mt-1">
+                            Please contact us for any inquiries.
+                          </p>
+                        </div>
+                      </div>
+                      <Link href="/contact">
+                        <Button size="lg" className="w-full">
+                          Contact Us
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={handleCheckout}
+                        disabled={createCheckoutMutation.isPending}
+                      >
+                        {createCheckoutMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Pay with Stripe
+                          </>
+                        )}
+                      </Button>
 
-                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                    </svg>
-                    Secure checkout powered by Stripe
-                  </div>
+                      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                        </svg>
+                        Secure checkout powered by Stripe
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
