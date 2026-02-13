@@ -19,7 +19,8 @@
     "test:watch": "vitest",
     "test:unit": "vitest run",
     "test:integration": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx server/scripts/seed.ts",
     "db:reset": "pnpm db:migrate && pnpm db:seed"
