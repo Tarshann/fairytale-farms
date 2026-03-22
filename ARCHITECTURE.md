@@ -1,443 +1,589 @@
-# Fairytale Farms Bakery - Architecture Summary
+# Fairytale Farms Bakery — Architecture Overview
 
-**Project Status:** Production-ready e-commerce bakery website with Stripe payments, custom orders via AI chatbot, and Valentine's Day 2026 collection
+**Project Status:** Production-ready e-commerce bakery website with Stripe payments, AI chatbot for custom orders, and Valentine's Day 2026 collection
+**Last Updated:** March 22, 2026
+**Database:** PostgreSQL (Neon serverless)
+**Deployment:** Vercel / Render / Docker / Railway (multi-target)
 
-**Last Updated:** January 20, 2026  
-**Repository:** Connected to GitHub via `user_github` remote  
-**Deployment:** Manus-hosted at https://3000-irw4lgnlljuebi53qf55a-cb358bf6.us1.manus.computer
+---
+
+## Table of Contents
+
+1. [Technology Stack](#1-technology-stack)
+2. [Project Structure](#2-project-structure)
+3. [Architecture Patterns](#3-architecture-patterns)
+4. [Database Design](#4-database-design)
+5. [API Layer](#5-api-layer)
+6. [Frontend Architecture](#6-frontend-architecture)
+7. [Authentication & Authorization](#7-authentication--authorization)
+8. [Payments & Stripe Integration](#8-payments--stripe-integration)
+9. [AI Chatbot](#9-ai-chatbot)
+10. [Testing](#10-testing)
+11. [Deployment](#11-deployment)
+12. [Design System](#12-design-system)
+13. [Security](#13-security)
+14. [Current State & Roadmap](#14-current-state--roadmap)
 
 ---
 
 ## 1. Technology Stack
 
 ### Frontend
-- **Framework:** React 19.2.1 with Vite 7.1.7
-- **Routing:** Wouter 3.3.5 (lightweight client-side router)
-- **UI Components:** Radix UI (accordion, dialog, dropdown, select, etc.)
-- **Styling:** Tailwind CSS 4.1.14 with custom pastel color scheme
-- **State Management:** React Query 5.90.2 (via tRPC)
-- **API Client:** tRPC 11.6.0 with React Query integration
-- **Animations:** Framer Motion 12.23.22
-- **Icons:** Lucide React 0.453.0
-- **Form Handling:** React Hook Form 7.64.0 with Zod validation
-- **Notifications:** Sonner 2.0.7 (toast notifications)
-- **File Size:** 896KB (client/src directory)
+
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 19.2.1 | UI framework |
+| Vite | 7.1.7 | Build tool & dev server |
+| Wouter | 3.3.5 | Client-side routing (lightweight) |
+| Tailwind CSS | 4.1.14 | Utility-first styling |
+| Radix UI | 40+ components | Accessible component primitives |
+| TanStack React Query | 5.90.2 | Server state management |
+| tRPC (client) | 11.6.0 | Type-safe API consumption |
+| React Hook Form | 7.64.0 | Form state management |
+| Zod | (via tRPC) | Runtime validation |
+| Framer Motion | 12.23.22 | Animations |
+| Lucide React | 0.453.0 | Icons |
+| Sonner | 2.0.7 | Toast notifications |
+| PostHog | 1.342.1 | Analytics (optional) |
 
 ### Backend
-- **Runtime:** Node.js with TypeScript
-- **Framework:** Express 4.21.2
-- **API Layer:** tRPC 11.6.0 (type-safe RPC framework)
-- **Database:** MySQL 3.15.0 via Drizzle ORM 0.44.5
-- **Authentication:** JWT-based with OAuth integration
-- **File Storage:** AWS S3 via @aws-sdk/client-s3
-- **Payments:** Stripe 20.1.2 (checkout sessions, webhooks)
-- **AI Integration:** Anthropic Claude API for chatbot
-- **File Size:** 232KB (server directory)
 
-### Database
-- **ORM:** Drizzle ORM 0.44.5
-- **Schema:** MySQL with 13+ tables
-- **File Size:** 216KB (drizzle directory)
-- **Migrations:** Managed via drizzle-kit
+| Technology | Version | Purpose |
+|---|---|---|
+| Node.js | 22 | Runtime |
+| Express | 4.21.2 | HTTP server |
+| tRPC | 11.6.0 | Type-safe RPC framework |
+| Drizzle ORM | 0.44.5 | Database ORM (schema-first) |
+| PostgreSQL | (Neon serverless) | Database |
+| Stripe | 20.1.2 | Payment processing |
+| Anthropic SDK | 0.71.2 | AI chatbot (Claude API) |
+| AWS S3 | SDK v3 | File/image storage |
+| Nodemailer | 8.0.1 | Email (passwordless login) |
+| jose | (JWT) | Session management |
 
-### Development & Testing
-- **Language:** TypeScript 5.9.3
-- **Testing:** Vitest 2.1.4 (29 tests passing)
-- **Code Formatting:** Prettier 3.6.2
-- **Build Tool:** Vite 7.1.7 + esbuild 0.25.0
-- **Package Manager:** pnpm 10.15.1
+### Development & Build
+
+| Tool | Purpose |
+|---|---|
+| pnpm 10.15.1 | Package manager |
+| TypeScript 5.9.3 | Type safety (strict mode) |
+| esbuild 0.25.0 | Server bundling |
+| Vitest 2.1.4 | Test runner |
+| Prettier 3.6.2 | Code formatting |
+
+**Total dependencies:** 140 (97 production + 28 dev + patches)
 
 ---
 
 ## 2. Project Structure
 
 ```
-fairytale-farms-bakery/
-├── client/                          # Frontend React application
+fairytale-farms/
+├── client/                         # React frontend (Vite)
 │   ├── src/
-│   │   ├── pages/                   # Route components (Home, Products, Cart, etc.)
-│   │   ├── components/              # Reusable UI components
-│   │   │   ├── Navigation.tsx        # Header with logo and menu
-│   │   │   ├── Footer.tsx            # Footer with links and social
-│   │   │   ├── ChatWidget.tsx        # AI chatbot floating widget
-│   │   │   ├── AIChatBox.tsx         # Chatbot conversation UI
-│   │   │   └── ui/                   # Radix UI component wrappers
-│   │   ├── _core/                   # Core utilities
-│   │   │   └── hooks/useAuth.ts      # Authentication hook
-│   │   ├── lib/trpc.ts               # tRPC client configuration
-│   │   ├── contexts/                 # React contexts (Theme, etc.)
-│   │   ├── App.tsx                   # Main app with routing
-│   │   └── index.css                 # Global styles with Tailwind
-│   └── public/                       # Static assets (images, favicon)
+│   │   ├── pages/                  # 22 page components
+│   │   ├── components/             # Reusable components
+│   │   │   ├── Navigation.tsx      # Header with logo, menu, cart badge
+│   │   │   ├── Footer.tsx          # Site footer with links
+│   │   │   ├── ChatWidget.tsx      # Floating AI chatbot (14KB)
+│   │   │   ├── AIChatBox.tsx       # Chat UI with message history (10KB)
+│   │   │   ├── DashboardLayout.tsx # Admin layout wrapper
+│   │   │   ├── Map.tsx             # Google Maps integration
+│   │   │   └── ui/                 # 40+ Radix-based UI primitives
+│   │   ├── lib/trpc.ts             # tRPC client configuration
+│   │   ├── contexts/               # React contexts (Theme)
+│   │   ├── hooks/                  # Custom hooks (auth)
+│   │   ├── _core/                  # Core utilities
+│   │   ├── App.tsx                 # Router with 21 routes
+│   │   ├── main.tsx                # Entry point with providers
+│   │   └── index.css               # Tailwind global styles
+│   └── public/                     # Static assets
 │
-├── server/                          # Backend Node.js application
-│   ├── _core/
-│   │   ├── index.ts                  # Express server setup
-│   │   ├── trpc.ts                   # tRPC router configuration
-│   │   ├── systemRouter.ts           # System/health endpoints
-│   │   ├── cookies.ts                # Session cookie management
-│   │   └── auth.logout.test.ts       # Authentication tests
-│   ├── routers.ts                    # Main tRPC router with all procedures
-│   ├── db.ts                         # Database helper functions
-│   ├── chatbot.ts                    # AI chatbot integration
-│   └── stripe/
-│       └── webhook.ts                # Stripe webhook handler
+├── server/                         # Node.js backend
+│   ├── _core/                      # Core infrastructure
+│   │   ├── index.ts                # Express server setup, middleware, security headers
+│   │   ├── trpc.ts                 # tRPC initialization & auth middleware
+│   │   ├── context.ts              # Request context creation (JWT parsing)
+│   │   ├── oauth.ts                # OAuth helpers
+│   │   ├── authRoutes.ts           # Auth endpoints (login, email codes)
+│   │   └── env.ts                  # Environment variable config
+│   ├── routers.ts                  # Main tRPC router — all procedures (1,360 lines)
+│   ├── db.ts                       # Database helper functions (1,282 lines)
+│   ├── chatbot.ts                  # AI chatbot logic (753 lines)
+│   ├── webhook.ts                  # Stripe webhook handler (327 lines)
+│   ├── storage.ts                  # S3 file operations
+│   ├── scripts/seed.ts             # Database seeding
+│   └── *.test.ts                   # 6 test files (~766 lines)
 │
-├── drizzle/                         # Database schema and migrations
-│   ├── schema.ts                     # Complete MySQL schema definition
-│   └── migrations/                   # Database migration files
+├── drizzle/                        # Database layer
+│   ├── schema.ts                   # PostgreSQL table definitions (15 tables)
+│   ├── migrations/                 # Drizzle-generated migrations
+│   └── drop-all-neon.sql           # Neon database reset script
 │
-├── package.json                      # Project dependencies and scripts
-├── tsconfig.json                     # TypeScript configuration
-├── vite.config.ts                    # Vite build configuration
-├── drizzle.config.ts                 # Drizzle ORM configuration
-├── todo.md                           # Project task tracking
-└── ARCHITECTURE.md                   # This file
+├── shared/                         # Code shared between client & server
+│   ├── const.ts                    # Constants (cookie names, error messages)
+│   ├── types.ts                    # Shared type exports
+│   └── _core/errors/               # Error definitions
+│
+├── api/                            # Vercel serverless entry point
+│   └── index.ts                    # tRPC handler for Vercel
+│
+├── *.mjs                           # 10+ utility scripts (seeding, data updates)
+│
+├── package.json                    # Dependencies & 28 scripts
+├── tsconfig.json                   # TypeScript (ES2017, ESNext modules, strict)
+├── vite.config.ts                  # Vite + Tailwind + React + manual chunks
+├── drizzle.config.ts               # Drizzle ORM → PostgreSQL config
+├── vitest.config.ts                # Test runner config
+├── Dockerfile                      # Multi-stage Docker build
+├── vercel.json                     # Vercel deployment config
+└── render.yaml                     # Render.com deployment config
+```
+
+### Key File Sizes
+
+| File | Lines | Responsibility |
+|---|---|---|
+| `server/routers.ts` | 1,360 | All tRPC procedures (the API surface) |
+| `server/db.ts` | 1,282 | Database queries and business logic |
+| `server/chatbot.ts` | 753 | AI chatbot conversation logic |
+| `client/src/pages/Home.tsx` | ~600 | Landing page (hero, products, testimonials) |
+| `client/src/pages/Products.tsx` | 693 | Product listing with category filters |
+| `client/src/pages/BuildYourOwn.tsx` | ~450 | Interactive Valentine's box builder |
+| `server/webhook.ts` | 327 | Stripe event handling |
+
+---
+
+## 3. Architecture Patterns
+
+### End-to-End Type Safety (tRPC)
+
+The defining architectural choice: **tRPC** provides full type inference from database schema to React components with zero code generation.
+
+```
+[Drizzle Schema] → [DB helpers] → [tRPC Router] → [tRPC Client] → [React Component]
+     types            types          types            types            types
+```
+
+A change to a procedure's input/output in `routers.ts` immediately surfaces type errors in consuming client components.
+
+### Monorepo with Shared Code
+
+The `shared/` directory contains constants, types, and error definitions used by both client and server. Path aliases keep imports clean:
+- `@/` → `client/src/`
+- `@shared/` → `shared/`
+- `@assets/` → `client/public/`
+
+### Middleware-Based Authorization
+
+tRPC middleware provides layered access control on every procedure:
+
+| Procedure | Access Level | Use Case |
+|---|---|---|
+| `publicProcedure` | No auth required | Product listings, categories |
+| `sessionProcedure` | Guest or authenticated | Cart operations, checkout |
+| `protectedProcedure` | Authenticated accounts only | Order history, wishlist |
+| `adminProcedure` | Admin role only | Product CRUD, order management |
+
+### Code Splitting & Lazy Loading
+
+React `lazy()` + `Suspense` for route-level splitting:
+- **Eager:** Home, Products (critical path)
+- **Lazy:** All other 19 routes
+
+Vite manual chunk configuration splits vendor code into separate bundles: `react`, `ui` (Radix), `motion` (Framer), `query` (TanStack).
+
+---
+
+## 4. Database Design
+
+**Engine:** PostgreSQL via Neon (serverless)
+**ORM:** Drizzle ORM (schema-first TypeScript)
+**Schema:** `drizzle/schema.ts`
+
+### Entity Relationships
+
+```
+users ──┬── cartItems ────── products ──── categories
+        ├── orders ──────── orderItems ─── products
+        ├── wishlistItems ── products
+        ├── chatInquiries ── chatMessages
+        ├── photoUploads
+        └── contactSubmissions
+
+promoCodes       (standalone)
+deliveryZones    (standalone)
+loginCodes       (standalone)
+siteSettings     (standalone)
+```
+
+### Tables (15)
+
+| Table | Purpose | Key Columns |
+|---|---|---|
+| `users` | Accounts | openId, name, email, role (user/admin), loginMethod |
+| `categories` | Product groupings | name, slug, displayOrder, visible |
+| `products` | Bakery items | categoryId, name, basePrice, productType, inventory fields |
+| `cartItems` | Cart persistence | userId, productId, quantity, customizationNotes |
+| `orders` | Orders | orderNumber, status, totalAmount, delivery fields, Stripe IDs |
+| `orderItems` | Line items | orderId, productId, quantity, price |
+| `wishlistItems` | Favorites | userId, productId |
+| `chatInquiries` | Custom order requests | status, productType, budget, deliveryDate |
+| `chatMessages` | Chat history | inquiryId, role (user/assistant), content |
+| `promoCodes` | Discounts | code, discountType, discountValue, maxUses, expiresAt |
+| `deliveryZones` | Service areas | zipCode, zoneName |
+| `photoUploads` | Portrait images | userId, s3Key, s3Url |
+| `contactSubmissions` | Contact form | name, email, message |
+| `loginCodes` | Passwordless auth | email, code, expiresAt |
+| `siteSettings` | Global config | key, value |
+
+### PostgreSQL Enums
+
+- **userRole:** `user`, `admin`
+- **orderStatus:** `pending`, `processing`, `completed`, `cancelled`
+- **productType:** `standard`, `tier`, `build_your_own_item`, `custom_portrait`
+- **loginMethod:** `oauth`, `email_code`
+
+---
+
+## 5. API Layer
+
+All procedures defined in `server/routers.ts`, organized by domain.
+
+### Procedures Summary
+
+| Domain | Count | Key Procedures |
+|---|---|---|
+| **Categories** | 6 | `list`, `listAdmin`, `getBySlug`, `setVisible` |
+| **Products** | 10+ | `list`, `listByCategory`, `featured`, `getById`, `getBySlug`, `create`, `update`, `delete`, `listAll`, `updatePrice`, `updateInventory` |
+| **Cart** | 5 | `add`, `remove`, `get`, `updateQuantity`, `clear` |
+| **Orders** | 5 | `create`, `list`, `getById`, `listAll`, `updateStatus` |
+| **Wishlist** | 4 | `add`, `remove`, `list`, `toggle` |
+| **Chatbot** | 7 | `createInquiry`, `sendMessage`, `getInquiry`, `getMessages`, `listInquiries`, `updateInquiryStatus`, `uploadImage` |
+| **Stripe** | 1+webhook | `createCheckoutSession` + `POST /api/stripe/webhook` |
+| **Auth** | 2 | `me`, `logout` |
+| **System** | 1 | `GET /health` |
+
+### Request Flow
+
+```
+Client Request
+  → Express middleware (CORS, security headers, cookie parser)
+  → tRPC adapter
+  → Context creation (parse JWT → resolve user/guest)
+  → Procedure middleware (auth level check)
+  → Procedure handler (business logic)
+  → Database (Drizzle ORM → Neon PostgreSQL)
+  → Response (auto-serialized, fully typed)
 ```
 
 ---
 
-## 3. Database Schema
+## 6. Frontend Architecture
 
-### Core Tables
+### Routing (Wouter — 21 routes)
 
-**users** - User accounts and authentication
-- id (PK), openId, name, email, loginMethod, role, createdAt, updatedAt, lastSignedIn
+| Route | Page | Loading |
+|---|---|---|
+| `/` | Home | Eager |
+| `/products` | Products | Eager |
+| `/products/:slug` | ProductDetail | Lazy |
+| `/valentines` | ValentinesCollection | Lazy |
+| `/build-your-own` | BuildYourOwn | Lazy |
+| `/custom-portrait-pucks` | CustomPortraitPucks | Lazy |
+| `/cart` | Cart | Lazy |
+| `/checkout` | Checkout | Lazy |
+| `/order-confirmation/:id` | OrderConfirmation | Lazy |
+| `/my-orders` | MyOrders | Lazy |
+| `/orders/:id` | OrderDetail | Lazy |
+| `/wishlist` | Wishlist | Lazy |
+| `/contact` | Contact | Lazy |
+| `/login` | Login | Lazy |
+| `/delivery-zones` | DeliveryZones | Lazy |
+| `/lab` | Lab | Lazy |
+| `/about` | About | Lazy |
+| `/bickering-bros` | BickeringBros | Lazy |
+| `/gallery` | Gallery | Lazy |
+| `/faq` | FAQ | Lazy |
+| `/admin/*` | Admin pages (6) | Lazy |
 
-**categories** - Product categories
-- id (PK), name, slug, description, displayOrder, createdAt, updatedAt
+### Provider Hierarchy
 
-**products** - Bakery products and Valentine's items
-- id (PK), categoryId (FK), name, slug, description, basePrice, imageUrl, imageKey
-- isCustomizable, customizationInstructions, inStock, featured, displayOrder
-- inventoryCap, inventorySold, availableFrom, availableUntil
-- requiresPhotoUpload, requiresDeposit, depositPercentage
-- productType (standard|tier|build_your_own_item|custom_portrait)
-- createdAt, updatedAt
+```tsx
+<QueryClientProvider>
+  <trpc.Provider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <App />          // Router + pages
+        <Toaster />      // Toast notifications
+        <ChatWidget />   // Floating AI chatbot
+      </TooltipProvider>
+    </ThemeProvider>
+  </trpc.Provider>
+</QueryClientProvider>
+```
 
-**cartItems** - Shopping cart persistence
-- id (PK), userId (FK), productId (FK), quantity, customizationNotes, createdAt, updatedAt
+### Data Fetching Pattern
 
-**orders** - Customer orders
-- id (PK), userId (FK), orderNumber, status, totalAmount, customerName, customerEmail, customerPhone
-- deliveryAddress, deliveryZipCode, deliveryNotes, deliveryDate, pickupDate
-- stripePaymentIntentId, stripeCustomerId, stripePriceId, stripeSubscriptionId
-- depositPaid, depositAmount, remainingBalance, createdAt, updatedAt
+All server communication via tRPC hooks (React Query under the hood):
 
-**orderItems** - Line items in orders
-- id (PK), orderId (FK), productId (FK), quantity, price, customizationNotes, createdAt
+```tsx
+// Query
+const { data: products } = trpc.products.list.useQuery();
 
-**wishlistItems** - User saved products
-- id (PK), userId (FK), productId (FK), createdAt
+// Mutation with cache invalidation
+const addToCart = trpc.cart.add.useMutation({
+  onSuccess: () => utils.cart.get.invalidate(),
+});
+```
 
-**chatInquiries** - AI chatbot custom order inquiries
-- id (PK), userId (FK), status, productType, description, budget, deliveryDate
-- uploadedImageUrl, uploadedImageKey, adminNotes, createdAt, updatedAt
+### Admin Pages (6)
 
-**chatMessages** - Conversation history
-- id (PK), inquiryId (FK), role (user|assistant), content, createdAt
-
-**promos** - Promotional codes
-- id (PK), code, discountType, discountValue, maxUses, usedCount, expiresAt, createdAt
-
-**pageVisibility** - Admin control for page visibility
-- id (PK), pageName, isVisible, createdAt, updatedAt
-
----
-
-## 4. Key Features & Implementation
-
-### 4.1 E-Commerce Core
-- **Product Catalog:** 50+ products across 8 categories with images, descriptions, pricing
-- **Shopping Cart:** Persistent across sessions using database storage
-- **Checkout:** Stripe integration with session-based checkout
-- **Order Management:** Customer order history, admin order dashboard with status tracking
-- **Inventory:** Real-time inventory tracking with caps for Valentine's items
-
-### 4.2 Valentine's Day 2026 Collection
-- **Tier System:** 3 pre-designed boxes (Crush $50, Sweetheart $75, Romance $100)
-- **Build Your Own:** Custom box creation with live pricing calculator
-- **Cake Flavor Selection:** Dropdown for choosing cake flavor (Vanilla, Chocolate, Strawberry, Red Velvet, Lemon, Funfetti)
-- **Add-Ons:** Chocolate-covered strawberries (Half Dozen $20, Dozen $35)
-- **Custom Portrait Pucks:** Photo upload for personalized treats
-- **Delivery System:** ZIP code validator, date picker, same-day delivery toggle
-- **Inventory Caps:** Tier boxes (40/35/15 units), BYO (10 units), Custom (10 units)
-- **Auto-Cutoff:** Feb 12 for tiers, Feb 10 for custom portraits
-
-### 4.3 Payment Processing
-- **Stripe Integration:** Checkout sessions, payment intents, webhooks
-- **Automatic Receipts:** Stripe sends order confirmation emails automatically
-- **Deposit System:** 50% deposit for custom orders (schema ready)
-- **Promo Codes:** Academy member discounts via Stripe coupons
-- **Test Mode:** Configured with Stripe test keys (sandbox environment)
-
-### 4.4 AI Chatbot
-- **Backend:** Anthropic Claude API with custom system prompt
-- **Frontend:** Floating chat widget with message history
-- **Features:** Image upload, quick reply buttons, typing indicators
-- **Storage:** Conversations stored in database for admin review
-- **Admin Interface:** Inquiry list with status management, conversation history
-- **Analytics:** Inquiry volume tracking, conversion metrics
-
-### 4.5 Authentication & Authorization
-- **OAuth Integration:** Manus OAuth portal for user login
-- **JWT Tokens:** Secure session management with cookies
-- **Role-Based Access:** User vs Admin roles
-- **Admin Dashboard:** Protected routes for product/order/inquiry management
-
-### 4.6 Frontend Pages
-- **Home** - Hero section, featured products, testimonials, about section
-- **Products** - Category filtering (collapsible dropdown), search, quick view modal
-- **Product Detail** - Full product info, add to cart, custom options
-- **Cart** - Item management, quantity adjustment, checkout button
-- **Checkout** - Stripe payment form
-- **Order Confirmation** - Order details, tracking info
-- **My Orders** - Customer order history
-- **Valentine's Collection** - Tier showcase, Build Your Own, Add-Ons
-- **Build Your Own** - Interactive item selector with live pricing
-- **Custom Portrait Pucks** - Photo upload interface
-- **Lab** - Behind-the-scenes content, live view status
-- **Gallery** - Photo showcase organized by category
-- **About** - Brand story and values
-- **Bickering Bros** - Freeze-dried candy partner brand
-- **Wishlist** - Saved products
-- **FAQ** - Comprehensive Q&A (including Valentine's pricing)
-- **Contact** - Inquiry form with AI chatbot integration
-- **Delivery Zones** - ZIP code checker for service area
-
-### 4.7 Admin Features
-- **Product Management:** CRUD operations, price adjustment, inventory control
-- **Order Dashboard:** View all orders, update status, track fulfillment
-- **Inquiry Management:** Review chatbot inquiries, manage conversation history
-- **Analytics:** Sales metrics, inquiry volume, conversion tracking
-- **Page Visibility:** Toggle page visibility for seasonal content
-- **Site Settings:** Manage business info, contact details
+- `AdminDashboard` — Sales metrics and summary
+- `AdminProducts` — Product CRUD operations
+- `AdminOrders` — Order management and status updates
+- `AdminInquiries` (34KB) — Chatbot inquiry review with conversation history
+- `AdminContacts` — Contact form submissions
+- `AdminSettings` (15KB) — Category visibility, checkout toggle, site settings
 
 ---
 
-## 5. API Routes (tRPC Procedures)
+## 7. Authentication & Authorization
 
-### Authentication
-- `auth.me` - Get current user
-- `auth.logout` - Clear session
+### Three Authentication Methods
 
-### Categories
-- `categories.list` - Get all categories
-- `categories.getBySlug` - Get category by slug
-- `categories.create` - Create category (admin)
+1. **Guest Sessions** — Auto-created on first cart interaction. JWT stored in HTTP-only cookie. No login required for browsing or purchasing.
 
-### Products
-- `products.list` - Get all products
-- `products.listByCategory` - Get products by category
-- `products.featured` - Get featured products
-- `products.getById` - Get product by ID
-- `products.create` - Create product (admin)
-- `products.update` - Update product (admin)
-- `products.delete` - Delete product (admin)
+2. **OAuth** — Integration with Manus OAuth portal. Returns an `openId` that links to the user account.
 
-### Cart
-- `cart.add` - Add item to cart
-- `cart.remove` - Remove item from cart
-- `cart.list` - Get cart items
-- `cart.update` - Update cart item quantity
+3. **Email Codes** — Passwordless login via SMTP. 6-digit code sent to email, stored in `loginCodes` table with expiry.
 
-### Orders
-- `orders.create` - Create order from cart
-- `orders.list` - Get user's orders
-- `orders.getById` - Get order details
-- `orders.listAll` - Get all orders (admin)
-- `orders.updateStatus` - Update order status (admin)
+### Session Management
 
-### Wishlist
-- `wishlist.add` - Add product to wishlist
-- `wishlist.remove` - Remove from wishlist
-- `wishlist.list` - Get wishlist items
-- `wishlist.toggle` - Toggle wishlist status
+- **Token:** JWT signed with `JWT_SECRET`
+- **Storage:** Secure HTTP-only cookie (`ff_session`)
+- **Expiry:** 1 year
+- **Context Resolution:** Every request extracts JWT → looks up or creates user → attaches to tRPC context
 
-### Chatbot
-- `chatbot.createInquiry` - Start new inquiry
-- `chatbot.sendMessage` - Send chat message
-- `chatbot.getInquiry` - Get inquiry details
-- `chatbot.listInquiries` - List all inquiries (admin)
-- `chatbot.updateInquiryStatus` - Update status (admin)
-- `chatbot.uploadImage` - Upload image to inquiry
+### Roles
 
-### Stripe
-- `stripe.createCheckoutSession` - Create Stripe checkout
-- `stripe.webhook` - Handle Stripe events (POST /api/stripe/webhook)
+- **user** — Browse, cart, checkout, wishlist, order history
+- **admin** — All user capabilities + product CRUD, order management, inquiry review, site settings. Assigned by email match against configured admin emails.
 
 ---
 
-## 6. Design System
+## 8. Payments & Stripe Integration
+
+### Checkout Flow
+
+```
+Cart Page
+  → Checkout Page (delivery info, promo code)
+  → stripe.createCheckoutSession (server)
+  → Stripe Hosted Checkout (external)
+  → Webhook: checkout.session.completed
+  → Order created, cart cleared, inventory updated
+  → Confirmation Page
+```
+
+### Key Details
+
+- **Deposit Support:** Custom orders accept partial deposits (configurable percentage per product)
+- **Promo Codes:** Percentage or fixed-amount discounts via `promoCodes` table
+- **Admin Toggle:** Checkout can be globally enabled/disabled via `siteSettings`
+- **Webhook Handler:** `server/webhook.ts` processes `checkout.session.completed` and `payment_intent.succeeded`
+
+---
+
+## 9. AI Chatbot
+
+### Architecture (`server/chatbot.ts` — 753 lines)
+
+1. User opens the floating chat widget → creates a `chatInquiry` record
+2. Messages exchanged via `chatbot.sendMessage`:
+   - Stores user message in `chatMessages`
+   - Sends full conversation history + system prompt to Claude API
+   - Stores and returns assistant response
+3. Optional image upload for custom portrait orders (→ S3)
+4. Admin reviews inquiries via `AdminInquiries` dashboard
+
+### System Prompt
+
+The chatbot acts as a bakery consultant, helping customers describe custom cake/cookie orders — gathering details about flavor, design, size, budget, and delivery date.
+
+### Rate Limiting
+
+Chat messages are rate-limited to prevent abuse of the Claude API.
+
+---
+
+## 10. Testing
+
+**Framework:** Vitest 2.1.4
+**Test Files:** 6 files in `server/` (~766 lines, ~29 tests)
+
+| Test File | Coverage |
+|---|---|
+| `products.test.ts` | Product listing, category filtering, cart operations |
+| `valentine.test.ts` | Valentine's tiers, BYO pricing, custom portraits, delivery validation |
+| `wishlist.test.ts` | Add/remove/toggle/list wishlist items |
+| `admin.test.ts` | Admin access control, product CRUD, order management |
+| `auth.logout.test.ts` | Logout, session clearing |
+| `chatbot.test.ts` | Inquiry creation, message sending |
+
+### Commands
+
+```bash
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode
+pnpm test:unit         # Unit tests only
+pnpm test:integration  # Integration tests only
+```
+
+---
+
+## 11. Deployment
+
+### Four Deployment Targets
+
+| Target | Config | Type |
+|---|---|---|
+| **Vercel** | `vercel.json` + `api/index.ts` | Serverless + static |
+| **Render** | `render.yaml` | Single Node.js service |
+| **Docker** | `Dockerfile` (multi-stage) | Container (node:22-alpine) |
+| **Railway** | Standard Node.js | PaaS |
+
+### Build Pipeline
+
+```bash
+pnpm build
+  → vite build          # Client → dist/public/
+  → esbuild             # Server → dist/index.js
+
+pnpm start
+  → node dist/index.js  # Serves both API and static files
+```
+
+### Required Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Neon PostgreSQL connection string |
+| `JWT_SECRET` | Session token signing |
+| `APP_ORIGIN` | Application URL (Stripe redirects) |
+| `STRIPE_SECRET_KEY` | Stripe server-side key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signature validation |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe client-side key |
+| `ANTHROPIC_API_KEY` | Claude API for chatbot |
+| `SMTP_HOST/PORT/USER/PASS/FROM` | Email (passwordless login) |
+| `VITE_PUBLIC_POSTHOG_KEY` | PostHog analytics (optional) |
+| `VITE_UMAMI_WEBSITE_ID` | Umami analytics (optional) |
+| `OAUTH_SERVER_URL` | OAuth portal URL (optional) |
+| `VITE_APP_ID` | OAuth app ID (optional) |
+
+### No CI/CD Pipeline
+
+No GitHub Actions workflows are configured. Deployment is manual via the targets above.
+
+---
+
+## 12. Design System
 
 ### Color Palette
-- **Primary Gold:** #e6c78c
-- **Primary Pink:** #f5a9c1
-- **Primary Purple:** #b19cd9
-- **Primary Blue:** #a4c4e0
-- **Pastel Accents:** Soft pink, lavender, mint, peach, sky blue
-- **Base:** White background with pastel accents
+
+| Token | Value | Usage |
+|---|---|---|
+| Primary Gold | `#e6c78c` | Headings, accents |
+| Primary Pink | `#f5a9c1` | Buttons, highlights |
+| Primary Purple | `#b19cd9` | Secondary accents |
+| Primary Blue | `#a4c4e0` | Links, info elements |
+| Pastels | Soft pink, lavender, mint, peach, sky blue | Backgrounds, cards |
 
 ### Typography
-- **Headings:** Playfair Display (serif, elegant)
-- **Body:** Montserrat (sans-serif, modern)
+
+- **Headings:** Playfair Display (serif)
+- **Body:** Montserrat (sans-serif)
 
 ### Component Library
-- 40+ Radix UI components (buttons, dialogs, dropdowns, forms, etc.)
-- Custom styling via Tailwind CSS
-- Responsive design (mobile-first approach)
+
+40+ Radix UI primitives restyled with Tailwind CSS, covering:
+- **Form controls:** button, input, checkbox, radio, select, switch, textarea
+- **Layout:** card, accordion, tabs, collapsible, drawer
+- **Dialogs:** dialog, alert-dialog, hover-card, popover
+- **Navigation:** dropdown-menu, context-menu, navigation-menu, command
+- **Data display:** table, carousel, progress, slider, badge
+- **Date/time:** calendar, date-picker, time-picker, input-otp
+- **Feedback:** toast (sonner), alert
+- **Charts:** recharts integration
 
 ---
 
-## 7. Current Issues & Pending Tasks
+## 13. Security
 
-### Known Issues
-1. **Products Page Navigation** (In Progress)
-   - Category dropdown doesn't filter products when selection made
-   - View All buttons navigate to correct URL but page doesn't show filtered view
-   - Issue: URL parameters set correctly but component not responding to them
-
-### Pending Features
-- [ ] Fix category dropdown filtering on products page
-- [ ] Fix View All button to show filtered category view
-- [ ] Add Academy promo code setup guidance
-- [ ] Test full checkout flow with cake flavor selection
-- [ ] Send order confirmation emails (Stripe automatic receipts enabled)
-- [ ] Add remaining 50% charge automation for deposits
-- [ ] Product search functionality
-- [ ] Cross-browser compatibility testing
-- [ ] Performance optimization
+| Area | Implementation |
+|---|---|
+| **Authentication** | JWT in secure HTTP-only cookies |
+| **Authorization** | Role-based middleware on every tRPC procedure |
+| **Payments** | PCI-compliant via Stripe (no card data stored) |
+| **File Uploads** | Type/size validation, stored on AWS S3 |
+| **API Security** | tRPC type-safety prevents injection attacks |
+| **Security Headers** | X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, HSTS (production) |
+| **CORS** | Configured for allowed domains |
+| **Rate Limiting** | Chat message rate limiting |
+| **Database** | PostgreSQL with connection pooling via Neon |
 
 ---
 
-## 8. Deployment & Hosting
+## 14. Current State & Roadmap
 
-**Platform:** Manus (built-in hosting with custom domain support)  
-**Dev Server:** Running on port 3000  
-**Database:** MySQL (connection details in Settings → Database)  
-**File Storage:** AWS S3 (configured with environment variables)  
-**Environment Variables:** Automatically injected by Manus
+### Completed Features
 
-### Key Environment Variables
-```
-ANTHROPIC_API_KEY          # Claude API for chatbot
-STRIPE_SECRET_KEY          # Stripe payment processing
-STRIPE_WEBHOOK_SECRET      # Webhook signature verification
-VITE_STRIPE_PUBLISHABLE_KEY # Frontend Stripe key
-JWT_SECRET                 # Session token signing
-OAUTH_SERVER_URL           # Manus OAuth endpoint
-```
+- Full product catalog: 50+ items across 8 categories
+- Shopping cart with persistent storage (guest + authenticated)
+- Stripe checkout with webhook-based order creation
+- Valentine's Day 2026 collection (tier boxes, Build Your Own, custom portrait pucks)
+- AI chatbot for custom order consultations (Claude API)
+- Admin dashboard (products, orders, inquiries, contacts, settings)
+- Wishlist / favorites
+- Gallery page with categorized photos
+- FAQ page with Valentine's section
+- Passwordless email login + OAuth
+- Guest checkout (no login required)
+- Security headers and rate limiting
+- PostgreSQL migration (from MySQL to Neon)
+- Admin checkout toggle
+- All 29 tests passing
 
----
+### Pending / Incomplete
 
-## 9. Testing
+- Product search functionality
+- Cross-browser compatibility testing
+- Performance optimization
+- Real customer testimonials (placeholders in place)
+- Order confirmation emails (Stripe receipts are active)
+- Academy promo code setup
+- Photo review/approval workflow for custom portraits
+- Upload confirmation + admin notification emails
+- Admin order filtering/search
+- Wishlist count in navigation header
+- Heart icon on Product Detail page
 
-**Test Framework:** Vitest 2.1.4  
-**Test Coverage:** 29 tests passing  
-**Test Categories:**
-- Authentication (logout flow)
-- tRPC procedures (products, cart, orders, wishlist)
-- Valentine's Day features
-- Stripe integration
-- Database operations
+### Development Commands
 
-**Run Tests:**
 ```bash
-pnpm test
+pnpm install          # Install dependencies
+pnpm dev              # Start dev server (Vite + Node)
+pnpm build            # Build for production
+pnpm start            # Run production build
+pnpm test             # Run tests
+pnpm format           # Format with Prettier
+pnpm check            # Lint + typecheck
+pnpm typecheck        # TypeScript validation only
+pnpm db:push          # Push schema to PostgreSQL
 ```
 
 ---
 
-## 10. Development Workflow
-
-### Local Development
-```bash
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Run tests
-pnpm test
-
-# Format code
-pnpm format
-
-# Type check
-pnpm check
-
-# Build for production
-pnpm build
-```
-
-### Database Management
-```bash
-# Generate migrations and push schema
-pnpm db:push
-```
-
-### Git Workflow
-- Connected to GitHub via `user_github` remote
-- Automatic syncing via checkpoints
-- Latest checkpoint: `0388d9b7` (Removed duplicate testimonials)
-
----
-
-## 11. Performance Metrics
-
-**Codebase Size:**
-- Frontend: 896KB (128 TypeScript/TSX files)
-- Backend: 232KB
-- Database: 216KB
-- Total: ~1.3MB
-
-**Build Output:**
-- Client: Vite bundle (optimized for production)
-- Server: esbuild ESM bundle
-
----
-
-## 12. Security Considerations
-
-- **Authentication:** JWT-based with secure cookies
-- **Authorization:** Role-based access control (user/admin)
-- **Payments:** PCI-compliant via Stripe (no card data stored locally)
-- **File Upload:** Validated file types and sizes, stored on S3
-- **API Security:** tRPC type-safety prevents injection attacks
-- **CORS:** Configured for Manus deployment
-
----
-
-## 13. Recent Changes (Latest Checkpoint)
-
-**Checkpoint 0388d9b7** - Removed duplicate testimonials section from homepage
-- Kept newer, better-styled testimonials section
-- Removed older testimonials markup
-- 3 customer reviews remain (Sarah M., Jessica & Tom, Michael R.)
-
-**Previous Changes:**
-- Fixed products page navigation (dropdown, View All buttons)
-- Added customer testimonials to homepage
-- Fixed wedding cake product image
-- Removed Academy discount references
-- Added Valentine's box cake flavor dropdown
-- Removed $15 base price from Build Your Own
-- Updated Valentine's pricing and add-ons
-- Implemented FAQ page with Valentine's section
-
----
-
-## 14. Next Steps
-
-1. **Fix Products Page Filtering** - Debug why category filter URL doesn't trigger product filtering
-2. **Test Checkout Flow** - Verify Valentine's box with cake flavor saves correctly
-3. **Replace Testimonials** - Update placeholder testimonials with real customer reviews
-4. **Create Stripe Promo Code** - Set up Academy member discount code
-5. **Performance Optimization** - Optimize images, bundle size, and load times
-
----
-
-**Last Reviewed:** January 20, 2026  
-**Maintained By:** Manus AI Agent  
-**Status:** Production-Ready with Minor Issues
+**Codebase:** ~14,000+ lines of TypeScript/TSX
+**Status:** Production-ready with minor pending features
+**Last Updated:** March 22, 2026
