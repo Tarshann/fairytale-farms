@@ -173,6 +173,39 @@ export async function getUserByEmail(email: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// ============= ADMIN USER MANAGEMENT =============
+
+/** Get all users (for admin panel) */
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      loginMethod: users.loginMethod,
+      createdAt: users.createdAt,
+      lastSignedIn: users.lastSignedIn,
+    })
+    .from(users)
+    .orderBy(desc(users.lastSignedIn));
+}
+
+/** Update a user's role (admin only) */
+export async function updateUserRole(
+  userId: number,
+  role: "user" | "admin"
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(users)
+    .set({ role, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
 // ============= LOGIN CODE OPERATIONS =============
 
 export async function createLoginCode(code: InsertLoginCode) {
@@ -212,6 +245,19 @@ export async function markLoginCodeUsed(id: number) {
     .update(loginCodes)
     .set({ usedAt: new Date() })
     .where(eq(loginCodes.id, id));
+}
+
+/** Invalidate all unused login codes for an email (called before issuing a new code) */
+export async function invalidateLoginCodesForEmail(email: string) {
+  const db = await getDb();
+  if (!db) return;
+  const normalizedEmail = email.trim().toLowerCase();
+  await db
+    .update(loginCodes)
+    .set({ usedAt: new Date() })
+    .where(
+      and(eq(loginCodes.email, normalizedEmail), isNull(loginCodes.usedAt))
+    );
 }
 
 // --- Passwordless login + guest order attach ---

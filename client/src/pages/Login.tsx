@@ -17,6 +17,8 @@ export default function Login() {
   const [codeSent, setCodeSent] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
 
+  const meQuery = trpc.auth.me.useQuery(undefined, { enabled: false });
+
   const requestCode = trpc.auth.requestLoginCode.useMutation({
     onSuccess: data => {
       setCodeSent(true);
@@ -33,8 +35,18 @@ export default function Login() {
   });
 
   const verifyCode = trpc.auth.verifyLoginCode.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("You're signed in!");
+      // Check if the user is an admin and redirect accordingly
+      try {
+        const result = await meQuery.refetch();
+        if (result.data?.role === "admin") {
+          setLocation("/admin");
+          return;
+        }
+      } catch {
+        // Fall through to default redirect
+      }
       setLocation("/account/orders");
     },
     onError: error => {

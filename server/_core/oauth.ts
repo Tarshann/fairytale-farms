@@ -1,4 +1,4 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, SESSION_MAX_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
@@ -23,9 +23,16 @@ export function registerOAuthRoutes(app: Express) {
 
     const emailParam = getQueryParam(req, "email")?.trim().toLowerCase();
     const nameParam = getQueryParam(req, "name")?.trim();
-    const redirectParam = getQueryParam(req, "redirect") || "/admin";
+    // Only allow relative paths to prevent open redirect attacks
+    const rawRedirect = getQueryParam(req, "redirect") || "/admin";
+    const redirectParam = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/admin";
 
     if (!emailParam) {
+      // Sanitize redirectParam to prevent XSS injection in the HTML template
+      const safeRedirect = redirectParam.replace(/[&<>"']/g, (ch: string) => {
+        const entities: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+        return entities[ch] ?? ch;
+      });
       res.status(200).send(`
         <html>
           <head>
@@ -46,7 +53,7 @@ export function registerOAuthRoutes(app: Express) {
               <input type="email" name="email" required />
               <label>Name (optional)</label>
               <input type="text" name="name" />
-              <input type="hidden" name="redirect" value="${redirectParam}" />
+              <input type="hidden" name="redirect" value="${safeRedirect}" />
               <button type="submit">Sign In</button>
             </form>
           </body>
@@ -74,14 +81,16 @@ export function registerOAuthRoutes(app: Express) {
     const sdk = await getSdk();
     const sessionToken = await sdk.createSessionToken(openId, {
       name: displayName,
-      expiresInMs: ONE_YEAR_MS,
+      expiresInMs: SESSION_MAX_MS,
     });
     const cookieOptions = getSessionCookieOptions(req);
     res.cookie(COOKIE_NAME, sessionToken, {
       ...cookieOptions,
-      maxAge: ONE_YEAR_MS,
+      maxAge: SESSION_MAX_MS,
     });
-    res.redirect(302, redirectParam);
+    // Final redirect safety check: only allow relative paths
+    const safeRedirectTarget = redirectParam.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : "/admin";
+    res.redirect(302, safeRedirectTarget);
   });
 
   if (!ENV.oauthEnabled) {
@@ -123,13 +132,13 @@ export function registerOAuthRoutes(app: Express) {
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
+        expiresInMs: SESSION_MAX_MS,
       });
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, {
         ...cookieOptions,
-        maxAge: ONE_YEAR_MS,
+        maxAge: SESSION_MAX_MS,
       });
 
       res.redirect(302, "/");

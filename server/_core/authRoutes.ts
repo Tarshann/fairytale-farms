@@ -23,10 +23,13 @@ const verifyEmailLimits = new Map<string, RateLimitState>();
 
 const REQUEST_IP_MAX = 10;
 const REQUEST_EMAIL_MAX = 3;
-const VERIFY_IP_MAX = 15;
+const VERIFY_IP_MAX = 10;
 const VERIFY_EMAIL_MAX = 5;
 const WINDOW_MS = 60_000;
+/** Verify attempts use a stricter 10-minute window */
+const VERIFY_WINDOW_MS = 10 * 60_000;
 const CODE_TTL_MINUTES = 15;
+/** 30-day session for code-based login (hardened from longer durations) */
 const CODE_LOGIN_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 
 function enforceRateLimit(
@@ -92,17 +95,10 @@ export function registerAuthRoutes(app: Express) {
 
     await sendLoginCode(email, code);
 
-    if (!ENV.isProduction) {
-      return json(res, 200, {
-        ok: true,
-        devCode: code,
-        expiresAt: expiresAt.toISOString(),
-        message: "If this email exists, a code was sent.",
-      });
-    }
-
+    // Only expose devCode when NOT in production (for local development)
     return json(res, 200, {
       ok: true,
+      ...(ENV.isProduction ? {} : { devCode: code }),
       expiresAt: expiresAt.toISOString(),
       message: "If this email exists, a code was sent.",
     });
@@ -120,8 +116,8 @@ export function registerAuthRoutes(app: Express) {
 
     try {
       const ip = getIp(req);
-      enforceRateLimit(verifyIpLimits, ip, VERIFY_IP_MAX, WINDOW_MS);
-      enforceRateLimit(verifyEmailLimits, email, VERIFY_EMAIL_MAX, WINDOW_MS);
+      enforceRateLimit(verifyIpLimits, ip, VERIFY_IP_MAX, VERIFY_WINDOW_MS);
+      enforceRateLimit(verifyEmailLimits, email, VERIFY_EMAIL_MAX, VERIFY_WINDOW_MS);
     } catch {
       return json(res, 429, {
         error: "Too many attempts. Please wait and try again.",

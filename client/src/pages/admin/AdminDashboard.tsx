@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Settings,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -204,6 +205,20 @@ export default function AdminDashboard() {
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       AI chatbot order requests
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/users">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-blue-50 to-indigo-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <Users className="h-12 w-12 mx-auto text-blue-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Manage Users</h3>
+                    <p className="text-sm text-muted-foreground">
+                      User roles & access control
                     </p>
                   </div>
                 </CardContent>

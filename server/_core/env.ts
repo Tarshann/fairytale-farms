@@ -62,7 +62,13 @@ if (ENV.isProduction && !ENV.oauthEnabled) {
 }
 
 if (!rawCookieSecret) {
-  console.warn(
-    "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
-  );
+  if (isProduction) {
+    console.error(
+      "[env] CRITICAL: JWT_SECRET is not set in production. Sessions are insecure. Set JWT_SECRET immediately in your environment variables."
+    );
+  } else {
+    console.warn(
+      "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
+    );
+  }
 }
