@@ -1,4 +1,4 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS, SESSION_MAX_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import {
@@ -178,22 +178,25 @@ export const appRouter = router({
           .update(`${normalizedEmail}:${code}`)
           .digest("hex");
         const expiresAt = new Date(Date.now() + 10 * 60_000);
+
+        // Invalidate any previous unused codes for this email before creating new one
+        await db.invalidateLoginCodesForEmail(normalizedEmail);
+
         await db.createLoginCode({
           email: normalizedEmail,
           codeHash: hash,
           expiresAt,
         });
 
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`[Auth] Login code for ${normalizedEmail}: ${code}`);
-        }
-
         const emailSent = await sendLoginCode(normalizedEmail, code);
+
+        // Only expose devCode when email delivery is not configured (dev environments)
+        const showDevCode = !emailSent && !ENV.isProduction;
 
         return {
           success: true,
           expiresAt: expiresAt.toISOString(),
-          devCode: !emailSent ? code : undefined,
+          devCode: showDevCode ? code : undefined,
           emailSent,
         };
       }),
@@ -252,12 +255,12 @@ export const appRouter = router({
 
         const sessionToken = await sdk.createSessionToken(openId, {
           name: accountUser.name ?? "",
-          expiresInMs: ONE_YEAR_MS,
+          expiresInMs: SESSION_MAX_MS,
         });
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, {
           ...cookieOptions,
-          maxAge: ONE_YEAR_MS,
+          maxAge: SESSION_MAX_MS,
         });
 
         return { success: true };
@@ -835,6 +838,30 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await db.updateContactSubmissionStatus(input.id, "read");
+        return { success: true };
+      }),
+
+    // ---- User Management (admin only) ----
+    allUsers: adminProcedure.query(async () => {
+      return await db.getAllUsers();
+    }),
+
+    updateUserRole: adminProcedure
+      .input(
+        z.object({
+          userId: z.number(),
+          role: z.enum(["user", "admin"]),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        // Prevent admins from removing their own admin role
+        if (input.userId === ctx.user.id && input.role !== "admin") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You cannot remove your own admin role.",
+          });
+        }
+        await db.updateUserRole(input.userId, input.role);
         return { success: true };
       }),
   }),

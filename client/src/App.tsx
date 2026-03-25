@@ -39,6 +39,7 @@ const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminContacts = lazy(() => import("./pages/admin/AdminContacts"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminInquiries = lazy(() => import("./pages/admin/AdminInquiries"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 
 function LazyFallback() {
   return (
@@ -88,6 +89,7 @@ function Router() {
         <Route path={"/admin/contacts"} component={AdminContacts} />
         <Route path={"/admin/settings"} component={AdminSettings} />
         <Route path={"/admin/inquiries"} component={AdminInquiries} />
+        <Route path={"/admin/users"} component={AdminUsers} />
 
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
