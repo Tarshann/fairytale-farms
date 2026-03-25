@@ -32,8 +32,10 @@ import {
   InsertWishlistItem,
   promoCodes,
   PromoCode,
+  InsertPromoCode,
   deliveryZones,
   DeliveryZone,
+  InsertDeliveryZone,
   siteSettings,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -955,6 +957,49 @@ export async function updatePhotoUploadStatus(
 
 // ============= PROMO CODE OPERATIONS =============
 
+/** Get all promo codes (admin) */
+export async function getAllPromoCodes(): Promise<PromoCode[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(promoCodes)
+    .orderBy(desc(promoCodes.createdAt));
+}
+
+/** Create a promo code */
+export async function createPromoCode(
+  promoCode: InsertPromoCode
+): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .insert(promoCodes)
+    .values(promoCode)
+    .returning({ id: promoCodes.id });
+  return result[0]?.id ?? 0;
+}
+
+/** Update a promo code */
+export async function updatePromoCode(
+  id: number,
+  updates: Record<string, unknown>
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(promoCodes)
+    .set({ ...updates, updatedAt: new Date() })
+    .where(eq(promoCodes.id, id));
+}
+
+/** Delete a promo code */
+export async function deletePromoCode(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(promoCodes).where(eq(promoCodes.id, id));
+}
+
 export async function getPromoCodeByCode(
   code: string
 ): Promise<PromoCode | undefined> {
@@ -1080,6 +1125,46 @@ export async function getAllDeliveryZones(): Promise<DeliveryZone[]> {
     .select()
     .from(deliveryZones)
     .where(eq(deliveryZones.isActive, true));
+}
+
+/** Get all delivery zones including inactive (admin) */
+export async function getAllDeliveryZonesAdmin(): Promise<DeliveryZone[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(deliveryZones)
+    .orderBy(deliveryZones.state, deliveryZones.city);
+}
+
+/** Create a delivery zone */
+export async function createDeliveryZone(
+  zone: InsertDeliveryZone
+): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db
+    .insert(deliveryZones)
+    .values(zone)
+    .returning({ id: deliveryZones.id });
+  return result[0]?.id ?? 0;
+}
+
+/** Update a delivery zone */
+export async function updateDeliveryZone(
+  id: number,
+  updates: Record<string, unknown>
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(deliveryZones).set(updates).where(eq(deliveryZones.id, id));
+}
+
+/** Delete a delivery zone */
+export async function deleteDeliveryZone(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(deliveryZones).where(eq(deliveryZones.id, id));
 }
 
 // ============= PRODUCT INVENTORY OPERATIONS =============

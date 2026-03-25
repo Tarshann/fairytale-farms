@@ -15,6 +15,9 @@ import {
   Settings,
   Sparkles,
   Users,
+  Tag,
+  MapPin,
+  Image,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -138,7 +141,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Link href="/admin/products">
               <Card className="hover:shadow-card-hover transition-all cursor-pointer">
                 <CardContent className="p-6 text-center space-y-4">
@@ -219,6 +222,48 @@ export default function AdminDashboard() {
                     <h3 className="text-xl font-bold">Manage Users</h3>
                     <p className="text-sm text-muted-foreground">
                       User roles & access control
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/promo-codes">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <Tag className="h-12 w-12 mx-auto text-green-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Promo Codes</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Discounts & promotions
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/delivery-zones">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-amber-50 to-orange-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <MapPin className="h-12 w-12 mx-auto text-amber-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Delivery Zones</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Service areas & delivery fees
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/photo-reviews">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-purple-50 to-violet-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <Image className="h-12 w-12 mx-auto text-purple-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Photo Reviews</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Custom portrait photo approvals
                     </p>
                   </div>
                 </CardContent>

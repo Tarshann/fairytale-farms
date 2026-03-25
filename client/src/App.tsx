@@ -40,6 +40,9 @@ const AdminContacts = lazy(() => import("./pages/admin/AdminContacts"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminInquiries = lazy(() => import("./pages/admin/AdminInquiries"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminPromoCodes = lazy(() => import("./pages/admin/AdminPromoCodes"));
+const AdminDeliveryZones = lazy(() => import("./pages/admin/AdminDeliveryZones"));
+const AdminPhotoReviews = lazy(() => import("./pages/admin/AdminPhotoReviews"));
 
 function LazyFallback() {
   return (
@@ -90,6 +93,9 @@ function Router() {
         <Route path={"/admin/settings"} component={AdminSettings} />
         <Route path={"/admin/inquiries"} component={AdminInquiries} />
         <Route path={"/admin/users"} component={AdminUsers} />
+        <Route path={"/admin/promo-codes"} component={AdminPromoCodes} />
+        <Route path={"/admin/delivery-zones"} component={AdminDeliveryZones} />
+        <Route path={"/admin/photo-reviews"} component={AdminPhotoReviews} />
 
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />

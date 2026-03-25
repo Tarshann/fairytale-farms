@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags, ShoppingCart, AlertTriangle } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags, ShoppingCart, AlertTriangle, Plus } from "lucide-react";
 
 // Define the pages that can be toggled
 const SITE_PAGES = [
@@ -108,6 +108,24 @@ export default function AdminSettings() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update checkout setting");
+    },
+  });
+
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatSlug, setNewCatSlug] = useState("");
+
+  const createCategoryMutation = trpc.categories.create.useMutation({
+    onSuccess: () => {
+      utils.categories.list.invalidate();
+      utils.categories.listAdmin.invalidate();
+      toast.success("Category created");
+      setShowNewCategory(false);
+      setNewCatName("");
+      setNewCatSlug("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create category");
     },
   });
 
@@ -239,6 +257,71 @@ export default function AdminSettings() {
               </p>
             </CardHeader>
             <CardContent>
+              <div className="mb-4">
+                {showNewCategory ? (
+                  <div className="p-4 border rounded-lg border-primary space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label>Name</Label>
+                        <Input
+                          placeholder="Seasonal Treats"
+                          value={newCatName}
+                          onChange={(e) => {
+                            setNewCatName(e.target.value);
+                            setNewCatSlug(
+                              e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, "-")
+                                .replace(/^-|-$/g, "")
+                            );
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Slug</Label>
+                        <Input
+                          placeholder="seasonal-treats"
+                          value={newCatSlug}
+                          onChange={(e) => setNewCatSlug(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        disabled={createCategoryMutation.isPending}
+                        onClick={() => {
+                          if (!newCatName || !newCatSlug) {
+                            toast.error("Name and slug are required");
+                            return;
+                          }
+                          createCategoryMutation.mutate({
+                            name: newCatName,
+                            slug: newCatSlug,
+                          });
+                        }}
+                      >
+                        {createCategoryMutation.isPending ? "Creating..." : "Create"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowNewCategory(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowNewCategory(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Category
+                  </Button>
+                )}
+              </div>
               {categoriesLoading ? (
                 <div className="flex justify-center py-6">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />

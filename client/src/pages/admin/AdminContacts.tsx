@@ -20,13 +20,13 @@ export default function AdminContacts() {
 
   const utils = trpc.useUtils();
 
-  const markReadMutation = trpc.admin.markContactRead.useMutation({
+  const updateStatusMutation = trpc.contact.updateStatus.useMutation({
     onSuccess: () => {
       utils.admin.allContacts.invalidate();
-      toast.success("Message marked as read");
+      toast.success("Status updated");
     },
-    onError: error => {
-      toast.error(error.message || "Failed to mark as read");
+    onError: (error) => {
+      toast.error(error.message || "Failed to update status");
     },
   });
 
@@ -114,18 +114,30 @@ export default function AdminContacts() {
                             </div>
                           </div>
                         </div>
-                        {contact.status === "new" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              markReadMutation.mutate({ id: contact.id })
-                            }
-                            disabled={markReadMutation.isPending}
-                          >
-                            Mark as Read
-                          </Button>
-                        )}
+                        <select
+                          className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                            contact.status === "new"
+                              ? "bg-blue-100 text-blue-800"
+                              : contact.status === "read"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-green-100 text-green-800"
+                          }`}
+                          value={contact.status}
+                          disabled={updateStatusMutation.isPending}
+                          onChange={(e) =>
+                            updateStatusMutation.mutate({
+                              id: contact.id,
+                              status: e.target.value as
+                                | "new"
+                                | "read"
+                                | "replied",
+                            })
+                          }
+                        >
+                          <option value="new">New</option>
+                          <option value="read">Read</option>
+                          <option value="replied">Replied</option>
+                        </select>
                       </div>
                       <div className="bg-muted/50 p-4 rounded-lg">
                         <p className="text-sm whitespace-pre-wrap">

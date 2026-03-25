@@ -866,6 +866,113 @@ export const appRouter = router({
       }),
   }),
 
+  // ============= PROMO CODE ROUTES (ADMIN) =============
+  promoCodes: router({
+    list: adminProcedure.query(async () => {
+      return await db.getAllPromoCodes();
+    }),
+
+    create: adminProcedure
+      .input(
+        z.object({
+          code: z.string().min(1).max(50),
+          description: z.string().optional(),
+          discountType: z.enum(["percentage", "fixed_amount"]),
+          discountValue: z.string(),
+          minOrderAmount: z.string().nullable().optional(),
+          maxUses: z.number().nullable().optional(),
+          validFrom: z.string(),
+          validUntil: z.string(),
+          applicableProductTypes: z.string().nullable().optional(),
+          isActive: z.boolean().default(true),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const id = await db.createPromoCode({
+          ...input,
+          validFrom: new Date(input.validFrom),
+          validUntil: new Date(input.validUntil),
+        });
+        return { id, success: true };
+      }),
+
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          description: z.string().optional(),
+          discountType: z.enum(["percentage", "fixed_amount"]).optional(),
+          discountValue: z.string().optional(),
+          minOrderAmount: z.string().nullable().optional(),
+          maxUses: z.number().nullable().optional(),
+          validFrom: z.string().optional(),
+          validUntil: z.string().optional(),
+          applicableProductTypes: z.string().nullable().optional(),
+          isActive: z.boolean().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, validFrom, validUntil, ...rest } = input;
+        const updates: Record<string, unknown> = { ...rest };
+        if (validFrom !== undefined) updates.validFrom = new Date(validFrom);
+        if (validUntil !== undefined) updates.validUntil = new Date(validUntil);
+        await db.updatePromoCode(id, updates);
+        return { success: true };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deletePromoCode(input.id);
+        return { success: true };
+      }),
+  }),
+
+  // ============= DELIVERY ZONE ROUTES (ADMIN) =============
+  deliveryZonesAdmin: router({
+    list: adminProcedure.query(async () => {
+      return await db.getAllDeliveryZonesAdmin();
+    }),
+
+    create: adminProcedure
+      .input(
+        z.object({
+          zipCode: z.string().min(1).max(10),
+          city: z.string().max(100).optional(),
+          state: z.string().max(2).optional(),
+          deliveryFee: z.string().default("0.00"),
+          isActive: z.boolean().default(true),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const id = await db.createDeliveryZone(input);
+        return { id, success: true };
+      }),
+
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          city: z.string().max(100).optional(),
+          state: z.string().max(2).optional(),
+          deliveryFee: z.string().optional(),
+          isActive: z.boolean().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        await db.updateDeliveryZone(id, updates);
+        return { success: true };
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteDeliveryZone(input.id);
+        return { success: true };
+      }),
+  }),
+
   // ============= VALENTINE'S DAY ROUTES =============
   valentines: router({
     // Get all Valentine's products
