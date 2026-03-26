@@ -89,7 +89,7 @@ export default function AdminPromoCodes() {
       discountType: newDiscountType,
       discountValue: newDiscountValue,
       minOrderAmount: newMinOrder || null,
-      maxUses: newMaxUses ? parseInt(newMaxUses) : null,
+      maxUses: newMaxUses ? parseInt(newMaxUses, 10) : null,
       validFrom: new Date(newValidFrom).toISOString(),
       validUntil: new Date(newValidUntil).toISOString(),
       isActive: true,

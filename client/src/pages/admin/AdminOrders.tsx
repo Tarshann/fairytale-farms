@@ -196,7 +196,7 @@ export default function AdminOrders() {
                               >
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-sm">
-                                    {item.product?.name ||
+                                    {item.productName ||
                                       `Product #${item.productId}`}
                                   </p>
                                   {item.customizationNotes && (
@@ -207,15 +207,9 @@ export default function AdminOrders() {
                                 </div>
                                 <div className="text-right text-sm flex-shrink-0 ml-4">
                                   <span>Qty: {item.quantity}</span>
-                                  {item.product?.basePrice && (
-                                    <span className="ml-4">
-                                      $
-                                      {(
-                                        parseFloat(item.product.basePrice) *
-                                        item.quantity
-                                      ).toFixed(2)}
-                                    </span>
-                                  )}
+                                  <span className="ml-4">
+                                    ${parseFloat(item.subtotal || "0").toFixed(2)}
+                                  </span>
                                 </div>
                               </div>
                             )
