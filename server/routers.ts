@@ -14,7 +14,15 @@ import * as db from "./db";
 import * as chatbot from "./chatbot";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
-import { sendLoginCode, isEmailConfigured } from "./_core/email";
+import {
+  sendLoginCode,
+  isEmailConfigured,
+  sendOrderConfirmation,
+  sendOrderStatusUpdate,
+  sendAbandonedCartEmail,
+  sendReviewRequestEmail,
+  sendAdminOrderNotification,
+} from "./_core/email";
 import crypto from "crypto";
 
 // Admin-only procedure
@@ -754,10 +762,32 @@ export const appRouter = router({
         z.object({
           id: z.number(),
           status: z.enum(["pending", "processing", "completed", "cancelled"]),
+          adminNote: z.string().optional(),
+          sendEmail: z.boolean().default(true),
         })
       )
       .mutation(async ({ input }) => {
         await db.updateOrderStatus(input.id, input.status);
+        // Optionally persist admin note
+        if (input.adminNote) {
+          await db.updateOrderAdminNote(input.id, input.adminNote);
+        }
+        // Send customer status email for actionable statuses
+        if (
+          input.sendEmail &&
+          (input.status === "processing" || input.status === "completed" || input.status === "cancelled")
+        ) {
+          const order = await db.getOrderById(input.id);
+          if (order?.customerEmail) {
+            await sendOrderStatusUpdate({
+              orderNumber: order.orderNumber,
+              customerName: order.customerName || "Valued Customer",
+              customerEmail: order.customerEmail,
+              status: input.status as "processing" | "completed" | "cancelled",
+              adminNote: input.adminNote,
+            });
+          }
+        }
         return { success: true };
       }),
 
@@ -1317,6 +1347,204 @@ export const appRouter = router({
       .input(z.object({ sessionId: z.string() }))
       .query(async ({ input }) => {
         return await chatbot.getConversationHistory(input.sessionId);
+      }),
+  }),
+
+  // ============= REVIEWS ROUTES =============
+  reviews: router({
+    listByProduct: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getReviewsByProductWithUser(input.productId);
+      }),
+
+    ratingSummary: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getProductRatingSummary(input.productId);
+      }),
+
+    myReview: protectedProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUserReviewForProduct(ctx.user.id, input.productId);
+      }),
+
+    submit: protectedProcedure
+      .input(
+        z.object({
+          productId: z.number(),
+          rating: z.number().min(1).max(5),
+          title: z.string().max(200).optional(),
+          comment: z.string().max(2000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        // Prevent duplicate reviews
+        const existing = await db.getUserReviewForProduct(ctx.user.id, input.productId);
+        if (existing) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You have already reviewed this product.",
+          });
+        }
+        const id = await db.createReview({
+          productId: input.productId,
+          userId: ctx.user.id,
+          rating: input.rating,
+          title: input.title,
+          comment: input.comment,
+          status: "pending",
+        });
+        return { id, success: true };
+      }),
+
+    // Admin
+    pending: adminProcedure.query(async () => {
+      return await db.getPendingReviews();
+    }),
+
+    all: adminProcedure.query(async () => {
+      return await db.getAllReviewsAdmin();
+    }),
+
+    updateStatus: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["pending", "published", "rejected"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await db.updateReviewStatus(input.id, input.status);
+        return { success: true };
+      }),
+  }),
+
+  // ============= SEARCH ROUTES =============
+  search: router({
+    products: publicProcedure
+      .input(
+        z.object({
+          query: z.string().min(1).max(200),
+        })
+      )
+      .query(async ({ input }) => {
+        const results = await db.searchProducts(input.query);
+        return results;
+      }),
+  }),
+
+  // ============= ABANDONED CART ROUTES =============
+  abandonedCart: router({
+    track: sessionProcedure
+      .input(
+        z.object({
+          cartContents: z.string(), // JSON
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user.email) return { success: false };
+        await db.upsertAbandonedCart(
+          ctx.user.id,
+          ctx.user.email,
+          input.cartContents
+        );
+        return { success: true };
+      }),
+
+    clear: sessionProcedure.mutation(async ({ ctx }) => {
+      await db.deleteAbandonedCartForUser(ctx.user.id);
+      return { success: true };
+    }),
+
+    // Admin
+    all: adminProcedure.query(async () => {
+      return await db.getAllAbandonedCartsAdmin();
+    }),
+  }),
+
+  // ============= AI AUTOMATION ROUTES =============
+  ai: router({
+    // Demand Forecast
+    demandForecast: adminProcedure.query(async () => {
+      const [velocity, revenue] = await Promise.all([
+        db.getOrderVelocityByProduct(30),
+        db.getRevenueByDay(30),
+      ]);
+      return { velocity, revenue };
+    }),
+
+    // Low Stock Alerts
+    lowStockAlerts: adminProcedure.query(async () => {
+      return await db.getActiveLowStockAlerts();
+    }),
+
+    resolveLowStockAlert: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.resolveLowStockAlert(input.id);
+        return { success: true };
+      }),
+
+    // Pricing Recommendations
+    pricingRecommendations: adminProcedure.query(async () => {
+      return await db.getPendingPricingRecommendations();
+    }),
+
+    allPricingRecommendations: adminProcedure.query(async () => {
+      return await db.getAllPricingRecommendations();
+    }),
+
+    applyPricingRecommendation: adminProcedure
+      .input(z.object({ id: z.number(), productId: z.number(), newPrice: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.updateProduct(input.productId, { basePrice: input.newPrice });
+        await db.updatePricingRecommendationStatus(input.id, "applied");
+        return { success: true };
+      }),
+
+    rejectPricingRecommendation: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.updatePricingRecommendationStatus(input.id, "rejected");
+        return { success: true };
+      }),
+
+    // Marketing Campaigns
+    marketingCampaigns: adminProcedure.query(async () => {
+      return await db.getAllMarketingCampaigns();
+    }),
+
+    updateCampaignStatus: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["draft", "approved", "published", "rejected"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        await db.updateMarketingCampaignStatus(input.id, input.status);
+        return { success: true };
+      }),
+
+    updateCampaign: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          caption: z.string().optional(),
+          suggestedImagePrompt: z.string().optional(),
+          scheduledFor: z.string().nullable().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, scheduledFor, ...rest } = input;
+        const updates: Record<string, unknown> = { ...rest };
+        if (scheduledFor !== undefined) {
+          updates.scheduledFor = scheduledFor ? new Date(scheduledFor) : null;
+        }
+        await db.updateMarketingCampaign(id, updates as Parameters<typeof db.updateMarketingCampaign>[1]);
+        return { success: true };
       }),
   }),
 

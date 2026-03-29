@@ -1,4 +1,4 @@
-import { eq, ne, desc, and, sql, isNull, gt, or, inArray } from "drizzle-orm";
+import { eq, ne, desc, and, sql, isNull, gt, lt, or, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import {
@@ -35,6 +35,21 @@ import {
   deliveryZones,
   DeliveryZone,
   siteSettings,
+  reviews,
+  Review,
+  InsertReview,
+  abandonedCarts,
+  AbandonedCart,
+  InsertAbandonedCart,
+  marketingCampaigns,
+  MarketingCampaign,
+  InsertMarketingCampaign,
+  pricingRecommendations,
+  PricingRecommendation,
+  InsertPricingRecommendation,
+  lowStockAlerts,
+  LowStockAlert,
+  InsertLowStockAlert,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -851,6 +866,34 @@ export async function updateOrderStatus(
   await db.update(orders).set({ status }).where(eq(orders.id, id));
 }
 
+export async function updateOrderAdminNote(id: number, adminNote: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(orders).set({ adminNote, updatedAt: new Date() }).where(eq(orders.id, id));
+}
+
+export async function markOrderReviewRequestSent(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(orders).set({ reviewRequestSentAt: new Date() }).where(eq(orders.id, id));
+}
+
+export async function getCompletedOrdersWithoutReviewRequest(cutoffDate: Date) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(orders)
+    .where(
+      and(
+        eq(orders.status, "completed"),
+        isNull(orders.reviewRequestSentAt),
+        lt(orders.updatedAt, cutoffDate)
+      )
+    )
+    .limit(50);
+}
+
 export async function updateOrderPayment(
   id: number,
   paymentIntentId: string,
@@ -1326,3 +1369,37 @@ export async function isCheckoutEnabled(): Promise<boolean> {
   // Default to true if not set
   return value !== "false";
 }
+
+// ─── Extensions: Reviews, Abandoned Carts, Campaigns, Pricing, Search ────────
+export {
+  createReview,
+  getReviewsByProduct,
+  getReviewsByProductWithUser,
+  getProductRatingSummary,
+  getUserReviewForProduct,
+  getPendingReviews,
+  getAllReviewsAdmin,
+  updateReviewStatus,
+  updateReviewAiData,
+  upsertAbandonedCart,
+  markAbandonedCartRecovered,
+  deleteAbandonedCartForUser,
+  getAbandonedCartsForRecovery,
+  markAbandonedCartEmailSent,
+  getAllAbandonedCartsAdmin,
+  createMarketingCampaign,
+  getAllMarketingCampaigns,
+  updateMarketingCampaignStatus,
+  updateMarketingCampaign,
+  createPricingRecommendation,
+  getPendingPricingRecommendations,
+  getAllPricingRecommendations,
+  updatePricingRecommendationStatus,
+  createLowStockAlert,
+  getActiveLowStockAlerts,
+  resolveLowStockAlert,
+  hasUnresolvedAlertForProduct,
+  searchProducts,
+  getOrderVelocityByProduct,
+  getRevenueByDay,
+} from "./db_extensions";

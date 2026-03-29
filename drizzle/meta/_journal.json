@@ -57,6 +57,20 @@
       "when": 1738684800000,
       "tag": "0007_add_category_visible",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1738684800000,
+      "tag": "0008_add_site_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1738684800001,
+      "tag": "0009_ai_automation",
+      "breakpoints": true
     }
   ]
 }

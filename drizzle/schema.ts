@@ -183,6 +183,8 @@ export const orders = pgTable("orders", {
     precision: 10,
     scale: 2,
   }).default("0.00"),
+  adminNote: text("adminNote"),
+  reviewRequestSentAt: timestamp("reviewRequestSentAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => [
@@ -371,3 +373,114 @@ export const siteSettings = pgTable("siteSettings", {
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type InsertSiteSetting = typeof siteSettings.$inferInsert;
+
+// ==========================================
+// AI Automation & Production Readiness Extensions
+// ==========================================
+
+export const reviewStatusEnum = pgEnum("review_status", ["pending", "published", "rejected"]);
+export const abandonedCartStatusEnum = pgEnum("abandoned_cart_status", ["pending", "recovered", "lost"]);
+export const campaignStatusEnum = pgEnum("campaign_status", ["draft", "approved", "published", "rejected"]);
+export const pricingRecommendationStatusEnum = pgEnum("pricing_recommendation_status", ["pending", "applied", "rejected"]);
+
+/**
+ * Product Reviews
+ */
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull(),
+  userId: integer("userId").notNull(),
+  rating: integer("rating").notNull(),
+  title: varchar("title", { length: 200 }),
+  comment: text("comment"),
+  status: reviewStatusEnum("status").default("pending").notNull(),
+  aiSentimentScore: decimal("aiSentimentScore", { precision: 3, scale: 2 }),
+  aiFlagged: boolean("aiFlagged").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+  index("reviews_productId_idx").on(table.productId),
+  index("reviews_userId_idx").on(table.userId),
+  index("reviews_status_idx").on(table.status),
+]);
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
+
+/**
+ * Abandoned Carts tracking
+ */
+export const abandonedCarts = pgTable("abandonedCarts", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  userEmail: varchar("userEmail", { length: 320 }).notNull(),
+  cartContents: text("cartContents").notNull(), // JSON string of items
+  status: abandonedCartStatusEnum("status").default("pending").notNull(),
+  recoveryEmailSentAt: timestamp("recoveryEmailSentAt"),
+  recoveredOrderId: integer("recoveredOrderId"),
+  lastActiveAt: timestamp("lastActiveAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+  index("abandonedCarts_userId_idx").on(table.userId),
+  index("abandonedCarts_status_idx").on(table.status),
+]);
+
+export type AbandonedCart = typeof abandonedCarts.$inferSelect;
+export type InsertAbandonedCart = typeof abandonedCarts.$inferInsert;
+
+/**
+ * AI Generated Marketing Campaigns
+ */
+export const marketingCampaigns = pgTable("marketingCampaigns", {
+  id: serial("id").primaryKey(),
+  platform: varchar("platform", { length: 50 }).notNull(), // e.g., instagram, facebook
+  caption: text("caption").notNull(),
+  suggestedImagePrompt: text("suggestedImagePrompt"),
+  status: campaignStatusEnum("status").default("draft").notNull(),
+  scheduledFor: timestamp("scheduledFor"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
+export type InsertMarketingCampaign = typeof marketingCampaigns.$inferInsert;
+
+/**
+ * AI Dynamic Pricing Recommendations
+ */
+export const pricingRecommendations = pgTable("pricingRecommendations", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull(),
+  currentPrice: decimal("currentPrice", { precision: 10, scale: 2 }).notNull(),
+  suggestedPrice: decimal("suggestedPrice", { precision: 10, scale: 2 }).notNull(),
+  reasoning: text("reasoning").notNull(),
+  status: pricingRecommendationStatusEnum("status").default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+  index("pricingRecommendations_productId_idx").on(table.productId),
+  index("pricingRecommendations_status_idx").on(table.status),
+]);
+
+export type PricingRecommendation = typeof pricingRecommendations.$inferSelect;
+export type InsertPricingRecommendation = typeof pricingRecommendations.$inferInsert;
+
+/**
+ * Low Stock Alerts
+ */
+export const lowStockAlerts = pgTable("lowStockAlerts", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull(),
+  currentStock: integer("currentStock").notNull(),
+  forecastedDemand: integer("forecastedDemand"),
+  resolved: boolean("resolved").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+  index("lowStockAlerts_productId_idx").on(table.productId),
+  index("lowStockAlerts_resolved_idx").on(table.resolved),
+]);
+
+export type LowStockAlert = typeof lowStockAlerts.$inferSelect;
+export type InsertLowStockAlert = typeof lowStockAlerts.$inferInsert;

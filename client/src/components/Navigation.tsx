@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
+import SearchBar from "@/components/SearchBar";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -98,6 +99,11 @@ export default function Navigation() {
                 </a>
               </Link>
             ))}
+          </div>
+
+          {/* Desktop Search */}
+          <div className="hidden lg:block w-56 xl:w-72">
+            <SearchBar placeholder="Search products..." />
           </div>
 
           {/* Desktop Actions */}
@@ -223,6 +229,14 @@ export default function Navigation() {
                 </a>
               </Link>
             ))}
+
+            {/* Mobile Search */}
+            <div className="pt-2 pb-1">
+              <SearchBar
+                placeholder="Search products..."
+                onClose={() => setMobileMenuOpen(false)}
+              />
+            </div>
 
             <div className="pt-4 space-y-2 border-t border-border">
               <Link href="/wishlist">

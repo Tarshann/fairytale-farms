@@ -10,6 +10,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { ENV } from "./env";
+import { securityHeaders, apiRateLimit, requestLogger, globalErrorHandler } from "./security";
+import { startCronJobs } from "../cron";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -44,27 +46,69 @@ async function startServer() {
     }
   );
 
-  // Security headers
-  app.use((_req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("X-XSS-Protection", "1; mode=block");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader(
-      "Permissions-Policy",
-      "camera=(), microphone=(), geolocation=(), payment=(self)"
+  // Security headers, rate limiting, request logging
+  app.use(requestLogger);
+  app.use(securityHeaders);
+  app.use(apiRateLimit);
+
+  // SEO: robots.txt
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain");
+    const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
+    res.send(
+      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /my-orders\nDisallow: /cart\nDisallow: /checkout\nSitemap: ${appOrigin}/sitemap.xml`
     );
-    if (ENV.isProduction) {
-      res.setHeader(
-        "Strict-Transport-Security",
-        "max-age=31536000; includeSubDomains; preload"
+  });
+
+  // SEO: sitemap.xml (static routes; product slugs injected at runtime)
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const { products, categories } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const db = await getDb();
+      const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
+      const now = new Date().toISOString().split("T")[0];
+
+      const staticRoutes = [
+        { loc: "/", priority: "1.0", changefreq: "weekly" },
+        { loc: "/products", priority: "0.9", changefreq: "daily" },
+        { loc: "/about", priority: "0.7", changefreq: "monthly" },
+        { loc: "/contact", priority: "0.6", changefreq: "monthly" },
+      ];
+
+      let productUrls: string[] = [];
+      let categoryUrls: string[] = [];
+
+      if (db) {
+        const prods = await db.select({ slug: products.slug }).from(products).where(eq(products.inStock, true));
+        productUrls = prods.map(
+          p => `  <url><loc>${appOrigin}/products/${p.slug}</loc><lastmod>${now}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`
+        );
+        const cats = await db.select({ slug: categories.slug }).from(categories).where(eq(categories.visible, true));
+        categoryUrls = cats.map(
+          c => `  <url><loc>${appOrigin}/categories/${c.slug}</loc><lastmod>${now}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`
+        );
+      }
+
+      const staticXml = staticRoutes.map(
+        r => `  <url><loc>${appOrigin}${r.loc}</loc><lastmod>${now}</lastmod><changefreq>${r.changefreq}</changefreq><priority>${r.priority}</priority></url>`
       );
-      res.setHeader(
-        "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.stripe.com https://*.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'"
-      );
+
+      const xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        ...staticXml,
+        ...productUrls,
+        ...categoryUrls,
+        "</urlset>",
+      ].join("\n");
+
+      res.type("application/xml").send(xml);
+    } catch (err) {
+      console.error("[Sitemap] Error generating sitemap:", err);
+      res.status(500).send("Error generating sitemap");
     }
-    next();
   });
 
   app.use(express.json({ limit: "10mb" }));
@@ -108,8 +152,13 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Global error handler (must be last)
+  app.use(globalErrorHandler);
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Start background AI automation cron jobs
+    startCronJobs();
   });
 }
 

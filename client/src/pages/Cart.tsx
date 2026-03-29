@@ -9,6 +9,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import { trackRemoveFromCart, trackCheckoutStarted } from "@/lib/analytics";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, AlertTriangle } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 export default function Cart() {
   const [, setLocation] = useLocation();
@@ -22,6 +23,34 @@ export default function Cart() {
   const checkoutDisabled = checkoutStatus?.enabled === false;
 
   const utils = trpc.useUtils();
+
+  // Abandoned cart tracking — debounced 30s after last cart interaction
+  const trackAbandonedCart = trpc.abandonedCart.track.useMutation();
+  const clearAbandonedCart = trpc.abandonedCart.clear.useMutation();
+  const abandonedCartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!hasSession || !cartItems || cartItems.length === 0) return;
+
+    // Clear any previous timer
+    if (abandonedCartTimer.current) clearTimeout(abandonedCartTimer.current);
+
+    // Set a 30-second debounce — if the user leaves without checking out, track it
+    abandonedCartTimer.current = setTimeout(() => {
+      const cartPayload = cartItems.map(item => ({
+        id: item.id,
+        productId: item.productId,
+        name: item.product?.name || "",
+        quantity: item.quantity,
+        basePrice: item.product?.basePrice || "0",
+      }));
+      trackAbandonedCart.mutate({ cartContents: JSON.stringify(cartPayload) });
+    }, 30_000);
+
+    return () => {
+      if (abandonedCartTimer.current) clearTimeout(abandonedCartTimer.current);
+    };
+  }, [cartItems, hasSession]);
 
   const updateQuantityMutation = trpc.cart.updateQuantity.useMutation({
     onSuccess: () => {
@@ -66,6 +95,9 @@ export default function Cart() {
       toast.error("Your cart is empty");
       return;
     }
+    // Cancel abandoned cart timer and clear any pending record
+    if (abandonedCartTimer.current) clearTimeout(abandonedCartTimer.current);
+    if (hasSession) clearAbandonedCart.mutate();
     const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     trackCheckoutStarted(itemCount, subtotal);
     setLocation("/checkout");

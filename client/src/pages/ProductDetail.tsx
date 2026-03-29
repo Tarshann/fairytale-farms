@@ -17,7 +17,8 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { toast } from "sonner";
 import { trackProductViewed, trackAddToCart } from "@/lib/analytics";
-import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star } from "lucide-react";
+import ProductReviews from "@/components/ProductReviews";
 
 const CAKE_FLAVORS = [
   "Chocolate",
@@ -241,9 +242,36 @@ export default function ProductDetail() {
     );
   }
 
+  const appOrigin = typeof window !== "undefined" ? window.location.origin : "";
+  const jsonLd = product
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.description || "",
+        image: product.imageUrl ? [product.imageUrl] : [],
+        offers: {
+          "@type": "Offer",
+          price: parseFloat(product.basePrice).toFixed(2),
+          priceCurrency: "USD",
+          availability: product.inStock
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          url: `${appOrigin}/products/${product.slug}`,
+        },
+      }
+    : null;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
+
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
 
       <main className="flex-1 py-12">
         <div className="container">
@@ -436,6 +464,14 @@ export default function ProductDetail() {
                 </Card>
               )}
             </div>
+          </div>
+          {/* Customer Reviews */}
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+              Customer Reviews
+            </h2>
+            <ProductReviews productId={product.id} />
           </div>
         </div>
       </main>
