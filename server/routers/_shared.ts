@@ -36,6 +36,26 @@ export const getClientIp = (req: Request): string => {
   return req.ip || req.socket?.remoteAddress || "unknown";
 };
 
+// ─── Safe Origin Helper ─────────────────────────────────────────────────────
+/**
+ * Returns a validated, safe origin for Stripe checkout redirect URLs.
+ * Only allows origins that match the configured APP_ORIGIN or known localhost patterns.
+ * Falls back to APP_ORIGIN or the production domain — never trusts raw request headers.
+ */
+const ALLOWED_ORIGINS_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+export const getSafeCheckoutOrigin = (req: Request): string => {
+  const appOrigin = ENV.appOrigin;
+  // In production, always use the configured APP_ORIGIN — never trust the request header.
+  if (appOrigin) return appOrigin;
+  // In development, allow localhost origins from the request header.
+  const reqOrigin = req.headers.origin;
+  if (typeof reqOrigin === "string" && ALLOWED_ORIGINS_RE.test(reqOrigin)) {
+    return reqOrigin;
+  }
+  // Final fallback for local dev.
+  return "http://localhost:3000";
+};
+
 // ─── Checkout Guard ───────────────────────────────────────────────────────────
 export const assertCheckoutEnabled = async () => {
   const enabled = await db.isCheckoutEnabled();
@@ -61,3 +81,4 @@ export { publicProcedure, protectedProcedure, sessionProcedure, router };
 export { TRPCError };
 export { db };
 export { ENV };
+

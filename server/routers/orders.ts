@@ -13,6 +13,7 @@ import {
   ENV,
   assertCheckoutEnabled,
   getStripe,
+  getSafeCheckoutOrigin,
 } from "./_shared";
 import { sendOrderStatusUpdate, sendOrderConfirmation } from "../_core/email";
 
@@ -44,7 +45,7 @@ export const ordersRouter = router({
         quantity: item.quantity,
       };
     });
-    const origin = ctx.req.headers.origin || ENV.appOrigin || "http://localhost:3000";
+    const origin = getSafeCheckoutOrigin(ctx.req);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -71,19 +72,19 @@ export const ordersRouter = router({
       z.object({
         items: z.array(
           z.object({
-            productId: z.number(),
-            productName: z.string(),
-            quantity: z.number(),
-            unitPrice: z.string(),
-            customizationNotes: z.string().optional(),
+            productId: z.number().int().positive(),
+            productName: z.string().min(1).max(200).trim(),
+            quantity: z.number().int().positive().max(100),
+            unitPrice: z.string().max(20).trim(),
+            customizationNotes: z.string().max(1000).trim().optional(),
           })
-        ),
-        totalAmount: z.string(),
-        customerName: z.string(),
-        customerEmail: z.string(),
-        customerPhone: z.string().optional(),
-        deliveryAddress: z.string().optional(),
-        deliveryNotes: z.string().optional(),
+        ).min(1).max(50),
+        totalAmount: z.string().max(20).trim(),
+        customerName: z.string().min(1).max(100).trim(),
+        customerEmail: z.string().email().max(254).trim(),
+        customerPhone: z.string().max(30).trim().optional(),
+        deliveryAddress: z.string().max(500).trim().optional(),
+        deliveryNotes: z.string().max(1000).trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -201,7 +202,7 @@ export const ordersRouter = router({
       z.object({
         id: z.number(),
         status: z.enum(["pending", "processing", "completed", "cancelled"]),
-        adminNote: z.string().optional(),
+        adminNote: z.string().max(2000).trim().optional(),
         sendEmail: z.boolean().default(true),
       })
     )
@@ -232,8 +233,8 @@ export const ordersRouter = router({
     .input(
       z.object({
         id: z.number(),
-        paymentIntentId: z.string(),
-        paymentStatus: z.string(),
+        paymentIntentId: z.string().min(1).max(100).trim(),
+        paymentStatus: z.string().min(1).max(50).trim(),
       })
     )
     .mutation(async ({ input }) => {

@@ -1,7 +1,8 @@
 /**
  * security.ts
  * Production-ready security middleware:
- *  - Enhanced Content-Security-Policy
+ *  - Strict Content-Security-Policy (no unsafe-eval)
+ *  - CORS with explicit origin allowlist
  *  - Global API rate limiting (Redis-backed when UPSTASH_REDIS_REST_URL is set)
  *  - Request logging / error tracking
  */
@@ -9,6 +10,45 @@
 import type { Request, Response, NextFunction } from "express";
 import { ENV } from "./env";
 import { checkRateLimit } from "./rateLimit";
+
+// ─── CORS Allowed Origins ─────────────────────────────────────────────────────
+// Production origin(s) are derived from APP_ORIGIN / OAUTH_SERVER_URL.
+// Localhost variants are always allowed in development.
+const LOCALHOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+function getAllowedOrigins(): Set<string> {
+  const origins = new Set<string>();
+  if (ENV.appOrigin) origins.add(ENV.appOrigin);
+  if (ENV.oAuthServerUrl) origins.add(ENV.oAuthServerUrl);
+  return origins;
+}
+
+export function corsMiddleware(req: Request, res: Response, next: NextFunction) {
+  const origin = req.headers.origin;
+  if (!origin) return next(); // non-browser requests (server-to-server, curl) — allow
+
+  const allowedOrigins = getAllowedOrigins();
+  const isLocalhost = LOCALHOST_RE.test(origin);
+  const isAllowed = allowedOrigins.has(origin) || (!ENV.isProduction && isLocalhost);
+
+  if (isAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, x-trpc-source"
+    );
+    res.setHeader("Vary", "Origin");
+  }
+
+  if (req.method === "OPTIONS") {
+    // Preflight — respond immediately
+    return res.status(204).end();
+  }
+
+  return next();
+}
 
 // ─── Security Headers ─────────────────────────────────────────────────────────
 
@@ -31,15 +71,17 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com",
+        // 'unsafe-inline' is required for Vite-bundled React apps (inline event handlers removed at build time).
+        // 'unsafe-eval' has been REMOVED. If GTM requires it, load scripts via server-side tag manager.
+        "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",
-        "connect-src 'self' https://api.stripe.com https://*.stripe.com https://app.posthog.com",
+        "connect-src 'self' https://api.stripe.com https://*.stripe.com https://app.posthog.com https://us.i.posthog.com",
         "frame-src https://js.stripe.com https://hooks.stripe.com",
         "object-src 'none'",
         "base-uri 'self'",
-        "form-action 'self'",
+        "form-action 'self' https://checkout.stripe.com",
         "upgrade-insecure-requests",
       ].join("; ")
     );

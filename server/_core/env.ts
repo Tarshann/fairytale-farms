@@ -1,8 +1,12 @@
-const DEFAULT_ADMIN_EMAILS = [
-  "tarshann@gmail.com",
-  "fairytalefarms.net@gmail.com",
-  "csisam13@gmail.com",
-];
+/**
+ * env.ts — centralised environment configuration.
+ *
+ * Security notes:
+ *  - Admin emails are loaded exclusively from the ADMIN_EMAILS env var.
+ *    No email addresses are hardcoded in source code.
+ *  - JWT_SECRET is required in production; the server will refuse to start
+ *    without it to prevent insecure session signing.
+ */
 
 const parseAdminEmails = (raw: string) =>
   raw
@@ -22,6 +26,14 @@ const oAuthServerUrl = (process.env.OAUTH_SERVER_URL ?? "").trim();
 const appOrigin = (process.env.APP_ORIGIN ?? process.env.OAUTH_SERVER_URL ?? "")
   .trim();
 
+// ─── Hard startup crash for missing critical secrets in production ────────────
+if (isProduction && !rawCookieSecret) {
+  console.error(
+    "[env] FATAL: JWT_SECRET is not set in production. Refusing to start with an insecure session secret. Set JWT_SECRET in your Railway environment variables immediately."
+  );
+  process.exit(1);
+}
+
 export const ENV = {
   appId: rawAppId || "fairytale-farms",
   cookieSecret:
@@ -38,12 +50,12 @@ export const ENV = {
   ownerEmail: (process.env.OWNER_EMAIL ?? process.env.ADMIN_EMAIL ?? "")
     .trim()
     .toLowerCase(),
-  adminEmails: Array.from(
-    new Set([
-      ...DEFAULT_ADMIN_EMAILS,
-      ...parseAdminEmails(process.env.ADMIN_EMAILS ?? ""),
-    ])
-  ),
+  /**
+   * Admin emails are loaded exclusively from the ADMIN_EMAILS environment variable.
+   * Format: comma-separated list of lowercase email addresses.
+   * Example: ADMIN_EMAILS=owner@example.com,admin@example.com
+   */
+  adminEmails: parseAdminEmails(process.env.ADMIN_EMAILS ?? ""),
   allowDevLogin,
   isProduction,
   forgeApiUrl: (process.env.BUILT_IN_FORGE_API_URL ?? "").trim(),
@@ -65,16 +77,10 @@ if (ENV.isProduction && !ENV.oauthEnabled) {
   );
 }
 
-if (!rawCookieSecret) {
-  if (isProduction) {
-    console.error(
-      "[env] CRITICAL: JWT_SECRET is not set in production. Sessions are insecure. Set JWT_SECRET immediately in your environment variables."
-    );
-  } else {
-    console.warn(
-      "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
-    );
-  }
+if (!rawCookieSecret && !isProduction) {
+  console.warn(
+    "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
+  );
 }
 
 if (isProduction && !ENV.stripeSecretKey) {
@@ -86,5 +92,11 @@ if (isProduction && !ENV.stripeSecretKey) {
 if (isProduction && !ENV.stripeWebhookSecret) {
   console.error(
     "[env] CRITICAL: STRIPE_WEBHOOK_SECRET is not set in production. Webhook signature verification will fail."
+  );
+}
+
+if (isProduction && ENV.adminEmails.length === 0) {
+  console.warn(
+    "[env] WARNING: ADMIN_EMAILS is not set. No users will be automatically promoted to admin. Set ADMIN_EMAILS=owner@example.com in your environment variables."
   );
 }

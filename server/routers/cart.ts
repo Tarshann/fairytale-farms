@@ -12,9 +12,9 @@ export const cartRouter = router({
   add: sessionProcedure
     .input(
       z.object({
-        productId: z.number(),
-        quantity: z.number().min(1).default(1),
-        customizationNotes: z.string().optional(),
+        productId: z.number().int().positive(),
+        quantity: z.number().int().min(1).max(100).default(1),
+        customizationNotes: z.string().max(1000).trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -31,7 +31,7 @@ export const cartRouter = router({
     }),
 
   updateQuantity: sessionProcedure
-    .input(z.object({ id: z.number(), quantity: z.number().min(1) }))
+    .input(z.object({ id: z.number().int().positive(), quantity: z.number().int().min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
       const item = await db.getCartItemById(input.id);
       if (!item || item.userId !== ctx.user.id) {

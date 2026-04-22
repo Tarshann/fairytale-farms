@@ -10,7 +10,7 @@ import { appRouter } from "../routers/index";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { ENV } from "./env";
-import { securityHeaders, apiRateLimit, requestLogger, globalErrorHandler } from "./security";
+import { securityHeaders, apiRateLimit, requestLogger, globalErrorHandler, corsMiddleware } from "./security";
 import { startCronJobs } from "../cron";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -46,8 +46,9 @@ async function startServer() {
     }
   );
 
-  // Security headers, rate limiting, request logging
+  // Security headers, CORS, rate limiting, request logging
   app.use(requestLogger);
+  app.use(corsMiddleware);
   app.use(securityHeaders);
   app.use(apiRateLimit);
 

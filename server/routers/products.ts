@@ -48,18 +48,18 @@ export const productsRouter = router({
   create: adminProcedure
     .input(
       z.object({
-        categoryId: z.number(),
-        name: z.string(),
-        slug: z.string(),
-        description: z.string().optional(),
-        basePrice: z.string(),
-        imageUrl: z.string().optional(),
-        imageKey: z.string().optional(),
+        categoryId: z.number().int().positive(),
+        name: z.string().min(1).max(200).trim(),
+        slug: z.string().min(1).max(100).trim().regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+        description: z.string().max(5000).trim().optional(),
+        basePrice: z.string().max(20).trim(),
+        imageUrl: z.string().url().max(2000).optional(),
+        imageKey: z.string().max(500).trim().optional(),
         isCustomizable: z.boolean().default(false),
-        customizationInstructions: z.string().optional(),
+        customizationInstructions: z.string().max(2000).trim().optional(),
         inStock: z.boolean().default(true),
         featured: z.boolean().default(false),
-        displayOrder: z.number().default(0),
+        displayOrder: z.number().int().min(0).default(0),
       })
     )
     .mutation(async ({ input }) => {
@@ -70,23 +70,23 @@ export const productsRouter = router({
   update: adminProcedure
     .input(
       z.object({
-        id: z.number(),
-        categoryId: z.number().optional(),
-        name: z.string().optional(),
-        slug: z.string().optional(),
-        description: z.string().optional(),
-        basePrice: z.string().optional(),
-        imageUrl: z.string().optional(),
-        imageKey: z.string().optional(),
+        id: z.number().int().positive(),
+        categoryId: z.number().int().positive().optional(),
+        name: z.string().min(1).max(200).trim().optional(),
+        slug: z.string().min(1).max(100).trim().regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens").optional(),
+        description: z.string().max(5000).trim().optional(),
+        basePrice: z.string().max(20).trim().optional(),
+        imageUrl: z.string().url().max(2000).optional(),
+        imageKey: z.string().max(500).trim().optional(),
         isCustomizable: z.boolean().optional(),
-        customizationInstructions: z.string().optional(),
+        customizationInstructions: z.string().max(2000).trim().optional(),
         inStock: z.boolean().optional(),
         featured: z.boolean().optional(),
-        displayOrder: z.number().optional(),
-        inventoryCap: z.number().nullable().optional(),
-        inventorySold: z.number().optional(),
-        availableFrom: z.string().nullable().optional(),
-        availableUntil: z.string().nullable().optional(),
+        displayOrder: z.number().int().min(0).optional(),
+        inventoryCap: z.number().int().min(0).nullable().optional(),
+        inventorySold: z.number().int().min(0).optional(),
+        availableFrom: z.string().max(50).nullable().optional(),
+        availableUntil: z.string().max(50).nullable().optional(),
       })
     )
     .mutation(async ({ input }) => {

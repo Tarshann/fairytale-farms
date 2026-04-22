@@ -10,43 +10,23 @@ import { sendLoginCode } from "../_core/email";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "./_shared";
 import { db, ENV, getClientIp } from "./_shared";
+import { checkRateLimit } from "../_core/rateLimit";
 import type { Request } from "express";
 
-// ─── Rate Limiting (in-memory, single-instance only) ─────────────────────────
-// NOTE: For multi-instance / serverless deployments, replace this with
-// an Upstash Redis rate limiter. See docs/rate-limiting.md for guidance.
-type LoginRateLimitState = { count: number; resetAt: number };
+// ─── Rate Limiting (Redis-backed via shared rateLimit module) ─────────────────
 const LOGIN_RATE_LIMIT_WINDOW_MS = 10 * 60_000; // 10 minutes
 const LOGIN_RATE_LIMIT_MAX = 5;
-const loginRateLimitState: Map<string, LoginRateLimitState> = new Map();
 
-const getLoginRateKey = (req: Request, email: string) =>
-  `${getClientIp(req)}:${email.toLowerCase()}`;
-
-const cleanupLoginRateLimits = () => {
-  const now = Date.now();
-  for (const [key, state] of loginRateLimitState) {
-    if (state.resetAt <= now) loginRateLimitState.delete(key);
-  }
-};
-
-const enforceLoginRateLimit = (req: Request, email: string) => {
-  cleanupLoginRateLimits();
-  const now = Date.now();
-  const key = getLoginRateKey(req, email);
-  const state = loginRateLimitState.get(key);
-  if (!state || state.resetAt <= now) {
-    loginRateLimitState.set(key, { count: 1, resetAt: now + LOGIN_RATE_LIMIT_WINDOW_MS });
-    return;
-  }
-  if (state.count >= LOGIN_RATE_LIMIT_MAX) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((state.resetAt - now) / 1000));
+const enforceLoginRateLimit = async (req: Request, email: string) => {
+  const key = `login:${getClientIp(req)}:${email.toLowerCase()}`;
+  const result = await checkRateLimit(key, LOGIN_RATE_LIMIT_MAX, LOGIN_RATE_LIMIT_WINDOW_MS);
+  if (!result.allowed) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((result.retryAfterMs ?? 60_000) / 1000));
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
       message: `Too many login attempts. Try again in ${retryAfterSeconds}s.`,
     });
   }
-  state.count += 1;
 };
 
 // ─── Router ───────────────────────────────────────────────────────────────────
@@ -60,9 +40,9 @@ export const authRouter = router({
   }),
 
   requestLoginCode: publicProcedure
-    .input(z.object({ email: z.string().email() }))
+    .input(z.object({ email: z.string().email().max(254).trim() }))
     .mutation(async ({ input, ctx }) => {
-      enforceLoginRateLimit(ctx.req, input.email);
+      await enforceLoginRateLimit(ctx.req, input.email);
       const code = crypto.randomInt(100000, 1000000).toString();
       const normalizedEmail = input.email.trim().toLowerCase();
       const hash = crypto
@@ -83,9 +63,9 @@ export const authRouter = router({
     }),
 
   verifyLoginCode: publicProcedure
-    .input(z.object({ email: z.string().email(), code: z.string().min(6).max(6) }))
+    .input(z.object({ email: z.string().email().max(254).trim(), code: z.string().min(6).max(6) }))
     .mutation(async ({ input, ctx }) => {
-      enforceLoginRateLimit(ctx.req, input.email);
+      await enforceLoginRateLimit(ctx.req, input.email);
       const normalizedEmail = input.email.trim().toLowerCase();
       const record = await db.getLatestActiveLoginCode(normalizedEmail);
       if (!record) {

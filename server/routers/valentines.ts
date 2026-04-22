@@ -13,6 +13,7 @@ import {
   ENV,
   assertCheckoutEnabled,
   getStripe,
+  getSafeCheckoutOrigin,
 } from "./_shared";
 
 export const valentinesRouter = router({
@@ -34,7 +35,7 @@ export const valentinesRouter = router({
   }),
 
   validateDeliveryZone: publicProcedure
-    .input(z.object({ zipCode: z.string() }))
+    .input(z.object({ zipCode: z.string().min(5).max(10).trim() }))
     .query(async ({ input }) => {
       return await db.validateDeliveryZone(input.zipCode);
     }),
@@ -44,13 +45,13 @@ export const valentinesRouter = router({
   }),
 
   validatePromoCode: publicProcedure
-    .input(z.object({ code: z.string() }))
+    .input(z.object({ code: z.string().min(1).max(50).trim().toUpperCase() }))
     .query(async ({ input }) => {
       return await db.validatePromoCode(input.code);
     }),
 
   checkAvailability: publicProcedure
-    .input(z.object({ productId: z.number(), quantity: z.number() }))
+    .input(z.object({ productId: z.number().int().positive(), quantity: z.number().int().min(1).max(100) }))
     .query(async ({ input }) => {
       return await db.checkProductAvailability(input.productId, input.quantity);
     }),
@@ -59,11 +60,11 @@ export const valentinesRouter = router({
     .input(
       z.object({
         orderId: z.number(),
-        fileUrl: z.string(),
-        fileKey: z.string(),
-        fileName: z.string(),
-        fileSize: z.number(),
-        mimeType: z.string(),
+        fileUrl: z.string().url().max(2000),
+        fileKey: z.string().min(1).max(500).trim(),
+        fileName: z.string().min(1).max(255).trim(),
+        fileSize: z.number().int().positive().max(20 * 1024 * 1024), // 20MB max
+        mimeType: z.enum(["image/jpeg", "image/png"]),  // enforce at schema level
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -106,7 +107,7 @@ export const valentinesRouter = router({
       z.object({
         id: z.number(),
         status: z.enum(["pending_review", "approved", "rejected"]),
-        reviewNotes: z.string().optional(),
+        reviewNotes: z.string().max(1000).trim().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -121,12 +122,12 @@ export const valentinesRouter = router({
   createValentinesCheckout: protectedProcedure
     .input(
       z.object({
-        promoCode: z.string().optional(),
-        deliveryZipCode: z.string(),
-        scheduledDeliveryDate: z.string().optional(),
+        promoCode: z.string().min(1).max(50).trim().toUpperCase().optional(),
+        deliveryZipCode: z.string().min(5).max(10).trim(),
+        scheduledDeliveryDate: z.string().max(50).optional(),
         deliveryType: z.enum(["same_day", "scheduled"]).default("same_day"),
-        deliveryAddress: z.string(),
-        deliveryNotes: z.string().optional(),
+        deliveryAddress: z.string().min(1).max(500).trim(),
+        deliveryNotes: z.string().max(1000).trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -201,7 +202,7 @@ export const valentinesRouter = router({
         });
       }
 
-      const origin = ctx.req.headers.origin || ENV.appOrigin || "http://localhost:3000";
+      const origin = getSafeCheckoutOrigin(ctx.req);
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],

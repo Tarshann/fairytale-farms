@@ -14,7 +14,7 @@ export const categoriesRouter = router({
   }),
 
   getBySlug: publicProcedure
-    .input(z.object({ slug: z.string() }))
+    .input(z.object({ slug: z.string().min(1).max(100).trim() }))
     .query(async ({ input }) => {
       return await db.getCategoryBySlug(input.slug);
     }),
@@ -29,10 +29,10 @@ export const categoriesRouter = router({
   create: adminProcedure
     .input(
       z.object({
-        name: z.string(),
-        slug: z.string(),
-        description: z.string().optional(),
-        displayOrder: z.number().default(0),
+        name: z.string().min(1).max(100).trim(),
+        slug: z.string().min(1).max(100).trim().regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+        description: z.string().max(2000).trim().optional(),
+        displayOrder: z.number().int().min(0).default(0),
       })
     )
     .mutation(async ({ input }) => {
