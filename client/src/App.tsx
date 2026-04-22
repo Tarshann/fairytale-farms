@@ -30,6 +30,8 @@ const About = lazy(() => import("./pages/About"));
 const BickeringBros = lazy(() => import("./pages/BickeringBros"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const ChatWidget = lazy(() => import("./components/ChatWidget"));
 
 // Admin routes (separate chunk)
@@ -83,6 +85,8 @@ function Router() {
         <Route path={"/bickering-bros"} component={BickeringBros} />
         <Route path={"/gallery"} component={Gallery} />
         <Route path={"/faq"} component={FAQ} />
+        <Route path={"/privacy"} component={PrivacyPolicy} />
+        <Route path={"/terms"} component={TermsOfService} />
 
         {/* Admin routes */}
         <Route path={"/admin"} component={AdminDashboard} />

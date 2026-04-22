@@ -53,6 +53,10 @@ export const ENV = {
   smtpUser: (process.env.SMTP_USER ?? "").trim(),
   smtpPass: (process.env.SMTP_PASS ?? "").trim(),
   smtpFrom: (process.env.SMTP_FROM ?? "").trim(),
+  /** Stripe secret key for server-side API calls */
+  stripeSecretKey: (process.env.STRIPE_SECRET_KEY ?? "").trim() || null,
+  /** Stripe webhook signing secret for verifying webhook events */
+  stripeWebhookSecret: (process.env.STRIPE_WEBHOOK_SECRET ?? "").trim() || null,
 };
 
 if (ENV.isProduction && !ENV.oauthEnabled) {
@@ -71,4 +75,16 @@ if (!rawCookieSecret) {
       "[env] JWT_SECRET is not set. Using fallback secret — sessions will not survive server restarts. Set JWT_SECRET in Railway environment variables."
     );
   }
+}
+
+if (isProduction && !ENV.stripeSecretKey) {
+  console.error(
+    "[env] CRITICAL: STRIPE_SECRET_KEY is not set in production. Payments will fail."
+  );
+}
+
+if (isProduction && !ENV.stripeWebhookSecret) {
+  console.error(
+    "[env] CRITICAL: STRIPE_WEBHOOK_SECRET is not set in production. Webhook signature verification will fail."
+  );
 }

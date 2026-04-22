@@ -1,18 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, CreditCard, AlertTriangle } from "lucide-react";
+import { Loader2, CreditCard, AlertTriangle, Calendar, Phone, MessageSquare } from "lucide-react";
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { user, hasSession, loading } = useAuth();
+
+  // ── Pre-Stripe form state ──────────────────────────────────────────────────
+  const [phone, setPhone] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
 
   const { data: cartItems, isLoading: cartLoading } = trpc.cart.get.useQuery(
     undefined,
@@ -65,12 +73,18 @@ export default function Checkout() {
     return sum + parseFloat(item.product.basePrice) * item.quantity;
   }, 0);
 
+  // Minimum selectable date = tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
+
   const handleCheckout = () => {
     if (user?.email && typeof window !== "undefined") {
-      localStorage.setItem(
-        "lastCheckoutEmail",
-        user.email.trim().toLowerCase()
-      );
+      localStorage.setItem("lastCheckoutEmail", user.email.trim().toLowerCase());
+    }
+    // Persist pre-Stripe metadata so order-confirmation page can display it
+    if (typeof window !== "undefined") {
+      localStorage.setItem("checkoutMeta", JSON.stringify({ phone, preferredDate, orderNotes }));
     }
     createCheckoutMutation.mutate();
   };
@@ -141,28 +155,81 @@ export default function Checkout() {
               </Card>
 
               <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold mb-4">
-                    Customer Information
-                  </h2>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name:</span>
-                      <span className="font-medium">
-                        {user?.name || "Guest checkout"}
-                      </span>
+                <CardContent className="p-6 space-y-4">
+                  <h2 className="text-xl font-bold">Your Information</h2>
+                  <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide mb-1">Name</p>
+                      <p className="font-medium">{user?.name || "Guest checkout"}</p>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Email:</span>
-                      <span className="font-medium">
-                        {user?.email || "Collected at Stripe"}
-                      </span>
+                    <div>
+                      <p className="text-muted-foreground text-xs uppercase tracking-wide mb-1">Email</p>
+                      <p className="font-medium">{user?.email || "Collected at Stripe"}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-4">
-                    You'll be able to add shipping address and payment details
-                    on the next page.
+
+                  <div className="space-y-1">
+                    <Label htmlFor="phone" className="flex items-center gap-1.5 text-sm">
+                      <Phone className="h-3.5 w-3.5" />
+                      Phone Number <span className="text-muted-foreground">(optional)</span>
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(615) 555-0100"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      We'll text you when your order is ready for pickup.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h2 className="text-xl font-bold">Pickup Preferences</h2>
+                  <p className="text-sm text-muted-foreground">
+                    All orders are porch-pickup from our home bakery in{" "}
+                    <strong>Castalian Springs, TN</strong>. Let us know your
+                    preferred date and any special notes.
                   </p>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="preferredDate" className="flex items-center gap-1.5 text-sm">
+                      <Calendar className="h-3.5 w-3.5" />
+                      Preferred Pickup Date <span className="text-muted-foreground">(optional)</span>
+                    </Label>
+                    <Input
+                      id="preferredDate"
+                      type="date"
+                      min={minDate}
+                      value={preferredDate}
+                      onChange={e => setPreferredDate(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      We'll do our best to accommodate your preferred date. We'll confirm via email.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="orderNotes" className="flex items-center gap-1.5 text-sm">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Special Instructions <span className="text-muted-foreground">(optional)</span>
+                    </Label>
+                    <Textarea
+                      id="orderNotes"
+                      placeholder="Allergies, flavor preferences, occasion details, inscription requests..."
+                      value={orderNotes}
+                      onChange={e => setOrderNotes(e.target.value)}
+                      rows={3}
+                      maxLength={500}
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {orderNotes.length}/500
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -189,7 +256,7 @@ export default function Checkout() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground pt-2">
-                      Shipping and taxes calculated at checkout
+                      Payment processed securely via Stripe
                     </p>
                   </div>
 

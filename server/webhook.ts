@@ -1,13 +1,20 @@
+/**
+ * Stripe Webhook Handler
+ *
+ * Processes Stripe events and creates orders in the database.
+ * Sends real transactional emails to both the customer and the bakery owner.
+ */
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import Stripe from "stripe";
 import { getDb } from "./db";
 import { orders, orderItems, cartItems } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { notifyOwner } from "./_core/notification";
+import { sendOrderConfirmation, sendAdminOrderNotification } from "./_core/email";
+import { ENV } from "./_core/env";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover",
+const stripe = new Stripe(ENV.stripeSecretKey!, {
+  apiVersion: "2025-01-27.acacia",
 });
 
 export async function handleStripeWebhook(req: Request, res: Response) {
@@ -24,21 +31,18 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      ENV.stripeWebhookSecret!
     );
-  } catch (err: any) {
-    console.error("[Webhook] Signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[Webhook] Signature verification failed:", message);
+    return res.status(400).send(`Webhook Error: ${message}`);
   }
 
-  // Handle test events
+  // Return early for Stripe CLI test events (no real data to process)
   if (event.id.startsWith("evt_test_")) {
-    console.log(
-      "[Webhook] Test event detected, returning verification response"
-    );
-    return res.json({
-      verified: true,
-    });
+    console.log("[Webhook] Test event detected, returning verification response");
+    return res.json({ verified: true });
   }
 
   console.log("[Webhook] Received event:", event.type, event.id);
@@ -77,7 +81,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // Extract user information from metadata
+  // ── Extract user identity ────────────────────────────────────────────────
   const userId = session.client_reference_id
     ? parseInt(session.client_reference_id)
     : session.metadata?.user_id
@@ -89,12 +93,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  const lineItemsResponse = await stripe.checkout.sessions.listLineItems(
-    session.id,
-    {
-      expand: ["data.price.product"],
-    }
-  );
+  // ── Expand line items ────────────────────────────────────────────────────
+  const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id, {
+    expand: ["data.price.product"],
+  });
 
   const purchasedItems = lineItemsResponse.data
     .map(item => {
@@ -126,23 +128,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
   if (purchasedItems.length === 0) {
-    console.error(
-      "[Webhook] No purchasable line items found for session:",
-      session.id
-    );
+    console.error("[Webhook] No purchasable line items found for session:", session.id);
     return;
   }
 
-  const totalAmount = session.amount_total
-    ? (session.amount_total / 100).toFixed(2)
-    : "0.00";
-
+  // ── Idempotency guard ────────────────────────────────────────────────────
   const paymentIntentId =
     typeof session.payment_intent === "string"
       ? session.payment_intent
       : session.payment_intent?.id;
 
-  // Idempotency: skip if we already processed this Stripe session
   if (paymentIntentId) {
     const existingOrder = await db
       .select({ id: orders.id })
@@ -155,17 +150,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
   }
 
-  // Generate order number with crypto-safe randomness
+  // ── Build order record ───────────────────────────────────────────────────
   const randomSuffix = crypto.randomInt(1000, 9999);
   const orderNumber = `FF${Date.now()}${randomSuffix}`;
 
-  // Create order
   const customerEmail =
     session.customer_email || session.metadata?.customer_email || "";
   const customerName =
     session.metadata?.customer_name ||
     session.customer_details?.name ||
     "Customer";
+
+  const totalAmount = session.amount_total
+    ? (session.amount_total / 100).toFixed(2)
+    : "0.00";
 
   const isDeposit = session.metadata?.is_deposit === "true";
   const discountAmount = session.metadata?.discount_amount
@@ -185,32 +183,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     ? Number.parseFloat(session.metadata.remaining_amount)
     : null;
 
-  const [orderResult] = await db.insert(orders).values({
-    userId,
-    orderNumber,
-    totalAmount,
-    customerName,
-    customerEmail,
-    status: "pending",
-    stripePaymentIntentId: paymentIntentId,
-    stripePaymentStatus: session.payment_status,
-    promoCode,
-    discountAmount:
-      discountAmount !== null ? discountAmount.toFixed(2) : undefined,
-    deliveryZipCode,
-    deliveryType,
-    scheduledDeliveryDate,
-    depositPaid: isDeposit ? true : undefined,
-    depositAmount: isDeposit ? totalAmount : undefined,
-    remainingAmount:
-      isDeposit && remainingAmount !== null
-        ? remainingAmount.toFixed(2)
-        : undefined,
-  }).returning({ id: orders.id });
+  // ── Persist order ────────────────────────────────────────────────────────
+  const [orderResult] = await db
+    .insert(orders)
+    .values({
+      userId,
+      orderNumber,
+      totalAmount,
+      customerName,
+      customerEmail,
+      status: "pending",
+      stripePaymentIntentId: paymentIntentId,
+      stripePaymentStatus: session.payment_status,
+      promoCode,
+      discountAmount:
+        discountAmount !== null ? discountAmount.toFixed(2) : undefined,
+      deliveryZipCode,
+      deliveryType,
+      scheduledDeliveryDate,
+      depositPaid: isDeposit ? true : undefined,
+      depositAmount: isDeposit ? totalAmount : undefined,
+      remainingAmount:
+        isDeposit && remainingAmount !== null
+          ? remainingAmount.toFixed(2)
+          : undefined,
+    })
+    .returning({ id: orders.id });
 
   const orderId = orderResult.id;
 
-  // Batch insert all order items in a single query
   await db.insert(orderItems).values(
     purchasedItems.map(item => ({
       orderId,
@@ -223,105 +224,47 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }))
   );
 
+  // Clear the user's cart after successful order creation
   await db.delete(cartItems).where(eq(cartItems.userId, userId));
 
   console.log("[Webhook] Order created successfully:", orderNumber);
 
-  // Send order confirmation email to customer
+  // ── Send transactional emails ────────────────────────────────────────────
+  const emailItems = purchasedItems.map(item => ({
+    name: item.productName,
+    quantity: item.quantity,
+    price: `$${(item.unitPrice * item.quantity).toFixed(2)}`,
+    customizationNotes: item.customizationNotes,
+  }));
+
+  const emailData = {
+    orderNumber,
+    customerName,
+    customerEmail,
+    totalAmount,
+    isDeposit,
+    remainingAmount:
+      isDeposit && remainingAmount !== null ? remainingAmount.toFixed(2) : null,
+    promoCode: promoCode ?? null,
+    discountAmount:
+      discountAmount !== null ? discountAmount.toFixed(2) : null,
+    deliveryZipCode: deliveryZipCode ?? null,
+    deliveryType: deliveryType ?? null,
+    scheduledDeliveryDate: scheduledDeliveryDate ?? null,
+    items: emailItems,
+  };
+
+  // Send customer confirmation email
   if (customerEmail) {
-    const itemDetails = purchasedItems.map(item => ({
-      name: item.productName,
-      quantity: item.quantity,
-      price: `$${(item.unitPrice * item.quantity).toFixed(2)}`,
-      customizationNotes: item.customizationNotes,
-    }));
-
-    await sendOrderConfirmationEmail({
-      orderNumber,
-      customerName,
-      customerEmail,
-      totalAmount,
-      items: itemDetails,
-    });
+    const sent = await sendOrderConfirmation(emailData);
+    if (!sent) {
+      console.warn(
+        "[Webhook] Customer confirmation email not sent (SMTP may not be configured). Order:",
+        orderNumber
+      );
+    }
   }
-}
 
-interface OrderEmailData {
-  orderNumber: string;
-  customerName: string;
-  customerEmail: string;
-  totalAmount: string;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: string;
-    customizationNotes?: string | null | undefined;
-  }>;
-}
-
-async function sendOrderConfirmationEmail(data: OrderEmailData) {
-  const itemsList = data.items
-    .map(item => {
-      const notes = item.customizationNotes
-        ? ` (Notes: ${item.customizationNotes})`
-        : "";
-      return `• ${item.name} (x${item.quantity}) - ${item.price}${notes}`;
-    })
-    .join("\n");
-
-  const emailContent = `
-Hi ${data.customerName}!
-
-Thank you for your order from Fairytale Farms! 🎂
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ORDER CONFIRMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Order Number: ${data.orderNumber}
-
-Your Items:
-${itemsList}
-
-Total: $${parseFloat(data.totalAmount).toFixed(2)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PICKUP INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-We'll contact you to arrange pickup at our location in Castalian Springs, Tennessee.
-
-Porch pickup is available - we'll let you know when your order is ready!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-QUESTIONS?
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Reply to this email or contact us at:
-fairytalefarms.net@gmail.com
-
-Thank you for supporting our small family bakery!
-
-With love,
-Fairytale Farms 🧁
-`.trim();
-
-  try {
-    // Notify the bakery owner about the new order
-    await notifyOwner({
-      title: `🎂 New Order #${data.orderNumber}`,
-      content: `New order from ${data.customerName} (${data.customerEmail})\n\nItems:\n${itemsList}\n\nTotal: $${parseFloat(data.totalAmount).toFixed(2)}`,
-    });
-    console.log(
-      "[Webhook] Owner notification sent for order:",
-      data.orderNumber
-    );
-    console.log(
-      "[Webhook] Customer email would be sent to:",
-      data.customerEmail
-    );
-    console.log("[Webhook] Email content:", emailContent);
-  } catch (error) {
-    console.error("[Webhook] Failed to send notifications:", error);
-  }
+  // Send admin notification email
+  await sendAdminOrderNotification(emailData);
 }

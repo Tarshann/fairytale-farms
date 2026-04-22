@@ -2,12 +2,13 @@
  * security.ts
  * Production-ready security middleware:
  *  - Enhanced Content-Security-Policy
- *  - Global API rate limiting
+ *  - Global API rate limiting (Redis-backed when UPSTASH_REDIS_REST_URL is set)
  *  - Request logging / error tracking
  */
 
 import type { Request, Response, NextFunction } from "express";
 import { ENV } from "./env";
+import { checkRateLimit } from "./rateLimit";
 
 // ─── Security Headers ─────────────────────────────────────────────────────────
 
@@ -47,13 +48,7 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   next();
 }
 
-// ─── Global API Rate Limiter ──────────────────────────────────────────────────
-
-type RateLimitEntry = { count: number; resetAt: number };
-const globalRateLimitMap = new Map<string, RateLimitEntry>();
-
-const GLOBAL_WINDOW_MS = 60_000; // 1 minute
-const GLOBAL_MAX_REQUESTS = 200; // per IP per minute
+// ─── IP Helper ────────────────────────────────────────────────────────────────
 
 function getIp(req: Request): string {
   const forwarded = req.headers["x-forwarded-for"];
@@ -62,50 +57,47 @@ function getIp(req: Request): string {
   return req.ip || req.socket?.remoteAddress || "unknown";
 }
 
-// Periodic cleanup to prevent memory growth
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of globalRateLimitMap) {
-    if (entry.resetAt <= now) globalRateLimitMap.delete(key);
-  }
-}, 5 * 60_000);
+// ─── Global API Rate Limiter ──────────────────────────────────────────────────
+// Delegates to Redis (Upstash) when available, in-memory otherwise.
+// See server/_core/rateLimit.ts for implementation details.
+
+const GLOBAL_WINDOW_MS = 60_000;   // 1 minute
+const GLOBAL_MAX_REQUESTS = 200;   // per IP per minute
 
 export function apiRateLimit(req: Request, res: Response, next: NextFunction) {
   // Only apply to /api routes
   if (!req.path.startsWith("/api/")) return next();
 
-  // Stripe webhook is exempt
+  // Stripe webhook is exempt (has its own signature verification)
   if (req.path === "/api/stripe/webhook") return next();
 
   const ip = getIp(req);
-  const now = Date.now();
-  const entry = globalRateLimitMap.get(ip);
 
-  if (!entry || entry.resetAt <= now) {
-    globalRateLimitMap.set(ip, { count: 1, resetAt: now + GLOBAL_WINDOW_MS });
-    return next();
-  }
+  checkRateLimit(`global:${ip}`, GLOBAL_MAX_REQUESTS, GLOBAL_WINDOW_MS)
+    .then(result => {
+      res.setHeader("X-RateLimit-Limit", GLOBAL_MAX_REQUESTS.toString());
+      res.setHeader("X-RateLimit-Remaining", result.remaining.toString());
 
-  entry.count += 1;
+      if (!result.allowed) {
+        const retryAfter = result.retryAfterMs
+          ? Math.ceil(result.retryAfterMs / 1000)
+          : 60;
+        res.setHeader("Retry-After", retryAfter.toString());
+        res.setHeader("X-RateLimit-Remaining", "0");
+        return res.status(429).json({
+          error: "Too many requests",
+          retryAfter,
+          message: `Rate limit exceeded. Try again in ${retryAfter}s.`,
+        });
+      }
 
-  if (entry.count > GLOBAL_MAX_REQUESTS) {
-    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
-    res.setHeader("Retry-After", retryAfter.toString());
-    res.setHeader("X-RateLimit-Limit", GLOBAL_MAX_REQUESTS.toString());
-    res.setHeader("X-RateLimit-Remaining", "0");
-    res.setHeader("X-RateLimit-Reset", Math.ceil(entry.resetAt / 1000).toString());
-    return res.status(429).json({
-      error: "Too many requests",
-      retryAfter,
-      message: `Rate limit exceeded. Try again in ${retryAfter}s.`,
+      return next();
+    })
+    .catch(err => {
+      // Rate limit check failure → fail open to avoid blocking legitimate traffic
+      console.error("[Security] Rate limit check failed, failing open:", err);
+      return next();
     });
-  }
-
-  res.setHeader("X-RateLimit-Limit", GLOBAL_MAX_REQUESTS.toString());
-  res.setHeader("X-RateLimit-Remaining", Math.max(0, GLOBAL_MAX_REQUESTS - entry.count).toString());
-  res.setHeader("X-RateLimit-Reset", Math.ceil(entry.resetAt / 1000).toString());
-
-  return next();
 }
 
 // ─── Request Logger ───────────────────────────────────────────────────────────

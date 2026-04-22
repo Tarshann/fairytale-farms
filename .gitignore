@@ -105,3 +105,6 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Manus agent artifacts — contains DB credentials and query logs; NEVER commit
+.manus/

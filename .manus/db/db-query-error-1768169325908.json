@@ -1,8 +1,0 @@
-{
-  "query": "INSERT INTO categories (name, description, image_url) VALUES ('Brownies', 'Delicious homemade brownies with various toppings', '/images/categories/brownies.jpg');",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute INSERT INTO categories (name, description, image_url) VALUES ('Brownies', 'Delicious homemade brownies with various toppings', '/images/categories/brownies.jpg');",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'image_url' in 'field list'"
-  ]
-}

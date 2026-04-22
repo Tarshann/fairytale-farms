@@ -1,9 +1,0 @@
-{
-  "query": "UPDATE products SET basePrice = 110.00 WHERE name = 'Themed Celebration Cake';",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3wVLnwvYiEjR9RM.58b0e4e79229 --database 99tqThJGckDQ8eA4qBx4Gt --execute UPDATE products SET basePrice = 110.00 WHERE name = 'Themed Celebration Cake';",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 65
-}

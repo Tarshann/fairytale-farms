@@ -910,6 +910,25 @@ export async function updateOrderPayment(
     .where(eq(orders.id, id));
 }
 
+/** Mark a deposit order's remaining balance as collected (e.g. at pickup via Stripe). */
+export async function updateOrderDepositPaid(
+  id: number,
+  remainingPaymentIntentId: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(orders)
+    .set({
+      depositPaid: true,
+      remainingAmount: "0.00",
+      stripePaymentIntentId: remainingPaymentIntentId,
+      stripePaymentStatus: "paid",
+      updatedAt: new Date(),
+    })
+    .where(eq(orders.id, id));
+}
+
 // ============= CONTACT OPERATIONS =============
 
 export async function createContactSubmission(

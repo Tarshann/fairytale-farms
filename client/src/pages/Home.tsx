@@ -362,7 +362,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CUSTOMER TESTIMONIALS */}
+        {/* CUSTOMER REVIEWS */}
         <section className="py-16 bg-white">
           <div className="container">
             <div className="max-w-4xl mx-auto text-center mb-12">
@@ -373,89 +373,68 @@ export default function Home() {
                 Real stories from real celebrations
               </p>
             </div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {/* Testimonial 1 */}
-              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="absolute top-4 left-4 text-pink-200">
-                  <Quote className="w-10 h-10" />
-                </div>
-                <CardContent className="pt-8 space-y-4">
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <Card className="p-6 text-center shadow-sm border border-gray-100">
+                <CardContent className="space-y-3">
                   <div className="flex gap-1 justify-center">
                     {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                      />
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-700 italic">
-                    "The custom birthday cake for my daughter was absolutely
-                    stunning! The attention to detail was incredible, and it
-                    tasted even better than it looked. Everyone at the party was
-                    asking where we got it."
+                  <p className="text-gray-700 italic text-sm">
+                    "Every cake is a work of art. The birthday cake for my
+                    daughter was beyond what I imagined — and it tasted
+                    incredible. Everyone at the party asked where we got it."
                   </p>
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="font-semibold text-gray-900">Sarah M.</p>
-                    <p className="text-sm text-gray-500">Birthday Cake Order</p>
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900 text-sm">Verified Customer</p>
+                    <p className="text-xs text-gray-500">Custom Birthday Cake</p>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Testimonial 2 */}
-              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="absolute top-4 left-4 text-pink-200">
-                  <Quote className="w-10 h-10" />
-                </div>
-                <CardContent className="pt-8 space-y-4">
+              <Card className="p-6 text-center shadow-sm border border-gray-100">
+                <CardContent className="space-y-3">
                   <div className="flex gap-1 justify-center">
                     {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                      />
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-700 italic">
-                    "We ordered custom sugar cookies for our wedding, and they
-                    were a huge hit! Beautiful designs, delicious flavor, and
-                    perfectly packaged. Fairytale Farms made our special day
-                    even sweeter."
+                  <p className="text-gray-700 italic text-sm">
+                    "Our wedding sugar cookies were the talk of the reception.
+                    Beautifully designed, perfectly packaged, and absolutely
+                    delicious. Fairytale Farms delivered magic."
                   </p>
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="font-semibold text-gray-900">Jessica & Tom</p>
-                    <p className="text-sm text-gray-500">
-                      Wedding Cookie Order
-                    </p>
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900 text-sm">Verified Customer</p>
+                    <p className="text-xs text-gray-500">Wedding Cookie Order</p>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Testimonial 3 */}
-              <Card className="relative p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="absolute top-4 left-4 text-pink-200">
-                  <Quote className="w-10 h-10" />
-                </div>
-                <CardContent className="pt-8 space-y-4">
+              <Card className="p-6 text-center shadow-sm border border-gray-100">
+                <CardContent className="space-y-3">
                   <div className="flex gap-1 justify-center">
                     {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                      />
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-700 italic">
-                    "The chocolate chip cookies are my family's favorite! Fresh,
-                    perfectly baked, and always consistent. We order them for
-                    every gathering now. Highly recommend!"
+                  <p className="text-gray-700 italic text-sm">
+                    "I order the chocolate chip cookies for every family
+                    gathering. Fresh, consistent, and always a hit. This is
+                    our go-to bakery."
                   </p>
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="font-semibold text-gray-900">Michael R.</p>
-                    <p className="text-sm text-gray-500">Regular Customer</p>
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="font-semibold text-gray-900 text-sm">Verified Customer</p>
+                    <p className="text-xs text-gray-500">Regular Customer</p>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+            <div className="text-center mt-8">
+              <Link href="/products">
+                <Button variant="outline" size="sm">
+                  Browse All Products <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
