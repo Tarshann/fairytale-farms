@@ -30,15 +30,15 @@ export const settingsRouter = router({
     if (!isEmailConfigured()) {
       return { success: false, error: "SMTP is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS in Railway." };
     }
-    const sent = await sendContactFormNotification({
+    const { ok, error } = await sendContactFormNotification({
       name: "Test Sender",
       email: ENV.smtpUser || "test@example.com",
       subject: "Test: Contact Form Forwarding",
       message: "This is a test message to verify that contact form emails are being forwarded correctly.",
     });
-    if (sent) {
+    if (ok) {
       return { success: true, error: null };
     }
-    return { success: false, error: "SMTP send failed — check Railway logs for details." };
+    return { success: false, error: error ?? "SMTP send failed — check Railway logs for details." };
   }),
 });

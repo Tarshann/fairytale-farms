@@ -18,9 +18,9 @@ export const contactRouter = router({
     )
     .mutation(async ({ input }) => {
       const id = await db.createContactSubmission(input);
-      const emailSent = await sendContactFormNotification(input);
+      const { ok: emailSent, error: emailError } = await sendContactFormNotification(input);
       if (!emailSent) {
-        console.warn("[Contact] Email notification not sent for submission id:", id);
+        console.warn("[Contact] Email notification failed for submission id:", id, emailError);
       }
       return { id, success: true, emailSent };
     }),

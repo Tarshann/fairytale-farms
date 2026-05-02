@@ -414,11 +414,11 @@ export interface ContactFormData {
   message: string;
 }
 
-export async function sendContactFormNotification(data: ContactFormData): Promise<boolean> {
+export async function sendContactFormNotification(data: ContactFormData): Promise<{ ok: boolean; error?: string }> {
   const transporter = getTransporter();
   if (!transporter) {
     console.warn("[Email] SMTP not configured — cannot forward contact form submission.");
-    return false;
+    return { ok: false, error: "SMTP not configured" };
   }
 
   const from = ENV.smtpFrom || ENV.smtpUser;
@@ -458,10 +458,11 @@ export async function sendContactFormNotification(data: ContactFormData): Promis
       html,
     });
     console.log("[Email] Contact form notification sent to:", to);
-    return true;
+    return { ok: true };
   } catch (error) {
-    console.error("[Email] Failed to send contact form notification:", error);
-    return false;
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[Email] Failed to send contact form notification:", msg);
+    return { ok: false, error: msg };
   }
 }
 
