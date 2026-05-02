@@ -65,6 +65,8 @@ export const ENV = {
   smtpUser: (process.env.SMTP_USER ?? "").trim(),
   smtpPass: (process.env.SMTP_PASS ?? "").trim(),
   smtpFrom: (process.env.SMTP_FROM ?? "").trim(),
+  /** Email address where contact form submissions are forwarded */
+  contactEmail: (process.env.CONTACT_EMAIL ?? "fairytalefarms.net@gmail.com").trim(),
   /** Stripe secret key for server-side API calls */
   stripeSecretKey: (process.env.STRIPE_SECRET_KEY ?? "").trim() || null,
   /** Stripe webhook signing secret for verifying webhook events */
