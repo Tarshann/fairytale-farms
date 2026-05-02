@@ -18,10 +18,11 @@ export const contactRouter = router({
     )
     .mutation(async ({ input }) => {
       const id = await db.createContactSubmission(input);
-      sendContactFormNotification(input).catch(err =>
-        console.error("[Contact] Email notification failed:", err)
-      );
-      return { id, success: true };
+      const emailSent = await sendContactFormNotification(input);
+      if (!emailSent) {
+        console.warn("[Contact] Email notification not sent for submission id:", id);
+      }
+      return { id, success: true, emailSent };
     }),
 
   list: adminProcedure.query(async () => {

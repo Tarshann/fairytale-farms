@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags, ShoppingCart, AlertTriangle } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Eye, EyeOff, Settings, Tags, ShoppingCart, AlertTriangle, Mail, CheckCircle, XCircle } from "lucide-react";
 
 // Define the pages that can be toggled
 const SITE_PAGES = [
@@ -52,6 +52,69 @@ const SITE_PAGES = [
     description: "Experimental treats section",
   },
 ];
+
+function EmailStatusCard() {
+  const { data: emailStatus } = trpc.settings.emailStatus.useQuery();
+  const testEmailMutation = trpc.settings.sendTestEmail.useMutation({
+    onSuccess: data => {
+      if (data.success) {
+        toast.success("Test email sent! Check fairytalefarms.net@gmail.com.");
+      } else {
+        toast.error(data.error || "Test email failed.");
+      }
+    },
+    onError: err => toast.error(err.message || "Test email failed."),
+  });
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Email Forwarding
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Contact form messages are forwarded to{" "}
+          <strong>{emailStatus?.contactEmail ?? "fairytalefarms.net@gmail.com"}</strong>
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center gap-3">
+            {emailStatus?.configured ? (
+              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+            ) : (
+              <XCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+            )}
+            <div>
+              <p className="font-medium">
+                {emailStatus?.configured ? "SMTP configured" : "SMTP not configured"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {emailStatus?.configured
+                  ? `Sending via ${emailStatus.smtpUser}`
+                  : "Set SMTP_HOST, SMTP_USER, SMTP_PASS in Railway"}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!emailStatus?.configured || testEmailMutation.isPending}
+            onClick={() => testEmailMutation.mutate()}
+          >
+            {testEmailMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="mr-2 h-4 w-4" />
+            )}
+            Send Test Email
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function AdminSettings() {
   const { user, isAuthenticated } = useAuth();
@@ -329,6 +392,9 @@ export default function AdminSettings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Email Forwarding Section */}
+          <EmailStatusCard />
 
           {/* Product Pricing Section */}
           <Card>
