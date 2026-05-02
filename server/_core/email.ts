@@ -404,7 +404,68 @@ export async function sendReviewRequestEmail(data: ReviewRequestData): Promise<b
   }
 }
 
-// ─── 6. Admin: New Order Notification ────────────────────────────────────────
+// ─── 6. Contact Form Notification ────────────────────────────────────────────
+
+export interface ContactFormData {
+  name: string;
+  email: string;
+  phone?: string | null;
+  subject?: string | null;
+  message: string;
+}
+
+export async function sendContactFormNotification(data: ContactFormData): Promise<boolean> {
+  const transporter = getTransporter();
+  if (!transporter) {
+    console.warn("[Email] SMTP not configured — cannot forward contact form submission.");
+    return false;
+  }
+
+  const from = ENV.smtpFrom || ENV.smtpUser;
+  const to = ENV.contactEmail;
+
+  const phoneRow = data.phone
+    ? `<tr><td style="color:#a0522d;width:120px;padding:6px 0;font-size:14px;vertical-align:top;">Phone</td><td style="color:#3d2010;font-size:14px;">${data.phone}</td></tr>`
+    : "";
+
+  const html = htmlWrap(`
+    <h2 style="color:#6b4226;margin:0 0 4px;">📬 New Contact Form Message</h2>
+    <p style="color:#555;margin:0 0 24px;">Someone sent a message through the Fairytale Farms website.</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+      <tr><td style="color:#a0522d;width:120px;padding:6px 0;font-size:14px;">Name</td><td style="font-weight:bold;color:#3d2010;font-size:14px;">${data.name}</td></tr>
+      <tr><td style="color:#a0522d;padding:6px 0;font-size:14px;">Email</td><td style="font-size:14px;"><a href="mailto:${data.email}" style="color:#6b4226;">${data.email}</a></td></tr>
+      ${phoneRow}
+      <tr><td style="color:#a0522d;padding:6px 0;font-size:14px;">Subject</td><td style="color:#3d2010;font-size:14px;">${data.subject || "(no subject)"}</td></tr>
+    </table>
+
+    ${divider()}
+
+    <p style="color:#a0522d;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Message</p>
+    <div style="background:#fdf8f3;border-left:4px solid #c8a882;padding:16px 20px;border-radius:4px;color:#3d2010;font-size:15px;line-height:1.7;white-space:pre-wrap;">${data.message}</div>
+
+    ${divider()}
+    <p style="color:#888;font-size:13px;">Reply directly to <a href="mailto:${data.email}" style="color:#6b4226;">${data.email}</a> to respond to this message.</p>
+  `);
+
+  try {
+    await transporter.sendMail({
+      from: `"Fairytale Farms Contact" <${from}>`,
+      to,
+      replyTo: data.email,
+      subject: `📬 New message from ${data.name}${data.subject ? `: ${data.subject}` : ""} — Fairytale Farms`,
+      text: `New contact form message\n\nName: ${data.name}\nEmail: ${data.email}${data.phone ? `\nPhone: ${data.phone}` : ""}\nSubject: ${data.subject || "(no subject)"}\n\nMessage:\n${data.message}`,
+      html,
+    });
+    console.log("[Email] Contact form notification sent to:", to);
+    return true;
+  } catch (error) {
+    console.error("[Email] Failed to send contact form notification:", error);
+    return false;
+  }
+}
+
+// ─── 7. Admin: New Order Notification ────────────────────────────────────────
 
 export async function sendAdminOrderNotification(data: OrderConfirmationData): Promise<boolean> {
   const transporter = getTransporter();

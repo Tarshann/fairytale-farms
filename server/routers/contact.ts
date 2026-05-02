@@ -3,6 +3,7 @@
  */
 import { z } from "zod";
 import { publicProcedure, router, adminProcedure, db } from "./_shared";
+import { sendContactFormNotification } from "../_core/email";
 
 export const contactRouter = router({
   submit: publicProcedure
@@ -17,6 +18,9 @@ export const contactRouter = router({
     )
     .mutation(async ({ input }) => {
       const id = await db.createContactSubmission(input);
+      sendContactFormNotification(input).catch(err =>
+        console.error("[Contact] Email notification failed:", err)
+      );
       return { id, success: true };
     }),
 
