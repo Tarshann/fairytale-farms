@@ -7,10 +7,14 @@ function getTransporter(): nodemailer.Transporter | null {
   if (!ENV.smtpHost || !ENV.smtpUser || !ENV.smtpPass) return null;
 
   if (!_transporter) {
+    const port = Number(ENV.smtpPort) || 587;
     _transporter = nodemailer.createTransport({
       host: ENV.smtpHost,
-      port: ENV.smtpPort,
-      secure: ENV.smtpPort === 465,
+      port,
+      secure: port === 465,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: {
         user: ENV.smtpUser,
         pass: ENV.smtpPass,
@@ -18,6 +22,10 @@ function getTransporter(): nodemailer.Transporter | null {
     });
   }
   return _transporter;
+}
+
+export function resetTransporter(): void {
+  _transporter = null;
 }
 
 export function isEmailConfigured(): boolean {
@@ -462,6 +470,7 @@ export async function sendContactFormNotification(data: ContactFormData): Promis
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[Email] Failed to send contact form notification:", msg);
+    resetTransporter();
     return { ok: false, error: msg };
   }
 }

@@ -3,7 +3,7 @@
  */
 import { z } from "zod";
 import { publicProcedure, router, adminProcedure, db } from "./_shared";
-import { isEmailConfigured, sendContactFormNotification } from "../_core/email";
+import { isEmailConfigured, sendContactFormNotification, resetTransporter } from "../_core/email";
 import { ENV } from "../_core/env";
 
 export const settingsRouter = router({
@@ -30,12 +30,21 @@ export const settingsRouter = router({
     if (!isEmailConfigured()) {
       return { success: false, error: "SMTP is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS in Railway." };
     }
-    const { ok, error } = await sendContactFormNotification({
-      name: "Test Sender",
-      email: ENV.smtpUser || "test@example.com",
-      subject: "Test: Contact Form Forwarding",
-      message: "This is a test message to verify that contact form emails are being forwarded correctly.",
-    });
+    const timeoutPromise = new Promise<{ ok: false; error: string }>(resolve =>
+      setTimeout(() => {
+        resetTransporter();
+        resolve({ ok: false, error: "Connection timed out after 20s — check SMTP_HOST and SMTP_PORT in Railway." });
+      }, 20000)
+    );
+    const { ok, error } = await Promise.race([
+      sendContactFormNotification({
+        name: "Test Sender",
+        email: ENV.smtpUser || "test@example.com",
+        subject: "Test: Contact Form Forwarding",
+        message: "This is a test message to verify that contact form emails are being forwarded correctly.",
+      }),
+      timeoutPromise,
+    ]);
     if (ok) {
       return { success: true, error: null };
     }
