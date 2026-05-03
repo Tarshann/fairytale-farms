@@ -65,6 +65,10 @@ export const ENV = {
   smtpUser: (process.env.SMTP_USER ?? "").trim(),
   smtpPass: (process.env.SMTP_PASS ?? "").trim(),
   smtpFrom: (process.env.SMTP_FROM ?? "").trim(),
+  /** Resend API key — preferred over SMTP when set (avoids Railway SMTP port blocks) */
+  resendApiKey: (process.env.RESEND_API_KEY ?? "").trim(),
+  /** Resend verified sender address. Defaults to onboarding@resend.dev (works without domain verification). */
+  resendFrom: (process.env.RESEND_FROM ?? "Fairytale Farms <onboarding@resend.dev>").trim(),
   /** Email address where contact form submissions are forwarded */
   contactEmail: (process.env.CONTACT_EMAIL ?? "fairytalefarms.net@gmail.com").trim(),
   /** Stripe secret key for server-side API calls */

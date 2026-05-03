@@ -1,11 +1,23 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { ENV } from "./env";
+
+// ─── Resend (preferred — works on Railway) ────────────────────────────────────
+
+let _resend: Resend | null = null;
+
+function getResend(): Resend | null {
+  if (!ENV.resendApiKey) return null;
+  if (!_resend) _resend = new Resend(ENV.resendApiKey);
+  return _resend;
+}
+
+// ─── SMTP fallback ────────────────────────────────────────────────────────────
 
 let _transporter: nodemailer.Transporter | null = null;
 
 function getTransporter(): nodemailer.Transporter | null {
   if (!ENV.smtpHost || !ENV.smtpUser || !ENV.smtpPass) return null;
-
   if (!_transporter) {
     const port = Number(ENV.smtpPort) || 587;
     _transporter = nodemailer.createTransport({
@@ -15,10 +27,7 @@ function getTransporter(): nodemailer.Transporter | null {
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
-      auth: {
-        user: ENV.smtpUser,
-        pass: ENV.smtpPass,
-      },
+      auth: { user: ENV.smtpUser, pass: ENV.smtpPass },
     });
   }
   return _transporter;
@@ -29,7 +38,69 @@ export function resetTransporter(): void {
 }
 
 export function isEmailConfigured(): boolean {
-  return Boolean(ENV.smtpHost && ENV.smtpUser && ENV.smtpPass);
+  return Boolean(ENV.resendApiKey || (ENV.smtpHost && ENV.smtpUser && ENV.smtpPass));
+}
+
+// ─── Unified send helper ──────────────────────────────────────────────────────
+
+async function sendEmail(opts: {
+  from: string;
+  to: string | string[];
+  replyTo?: string;
+  subject: string;
+  text: string;
+  html: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const resend = getResend();
+  if (resend) {
+    try {
+      const { error } = await resend.emails.send({
+        from: ENV.resendFrom,
+        to: Array.isArray(opts.to) ? opts.to : [opts.to],
+        reply_to: opts.replyTo,
+        subject: opts.subject,
+        text: opts.text,
+        html: opts.html,
+      });
+      if (error) {
+        console.error("[Email/Resend] Send failed:", error.message);
+        return { ok: false, error: error.message };
+      }
+      console.log("[Email/Resend] Sent to:", opts.to);
+      return { ok: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[Email/Resend] Exception:", msg);
+      return { ok: false, error: msg };
+    }
+  }
+
+  const transporter = getTransporter();
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: opts.from,
+        to: opts.to,
+        replyTo: opts.replyTo,
+        subject: opts.subject,
+        text: opts.text,
+        html: opts.html,
+      });
+      console.log("[Email/SMTP] Sent to:", opts.to);
+      return { ok: true };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[Email/SMTP] Send failed:", msg);
+      resetTransporter();
+      return { ok: false, error: msg };
+    }
+  }
+
+  return { ok: false, error: "No email provider configured (set RESEND_API_KEY in Railway)" };
+}
+
+function smtpFrom(displayName: string): string {
+  return `"${displayName}" <${ENV.smtpFrom || ENV.smtpUser || "noreply@fairytalefarms.net"}>`;
 }
 
 // ─── Shared HTML wrapper ─────────────────────────────────────────────────────
@@ -116,13 +187,10 @@ function itemsTable(
 // ─── 1. Login Code ────────────────────────────────────────────────────────────
 
 export async function sendLoginCode(to: string, code: string): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) {
-    console.warn("[Email] SMTP not configured — cannot send login code.");
+  if (!isEmailConfigured()) {
+    console.warn("[Email] No provider configured — cannot send login code.");
     return false;
   }
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
   const html = htmlWrap(`
     <h2 style="color:#6b4226;margin:0 0 8px;">Your Sign-In Code</h2>
     <p style="color:#555;margin:0 0 24px;">Use the code below to sign in to your Fairytale Farms account. It expires in <strong>10 minutes</strong>.</p>
@@ -131,20 +199,14 @@ export async function sendLoginCode(to: string, code: string): Promise<boolean> 
     </div>
     <p style="color:#888;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
   `);
-
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to,
-      subject: "Your Fairytale Farms sign-in code",
-      text: `Your sign-in code is: ${code}\n\nThis code expires in 10 minutes.`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send login code:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to,
+    subject: "Your Fairytale Farms sign-in code",
+    text: `Your sign-in code is: ${code}\n\nThis code expires in 10 minutes.`,
+    html,
+  });
+  return ok;
 }
 
 // ─── 2. Order Confirmation ────────────────────────────────────────────────────
@@ -170,13 +232,7 @@ export interface OrderConfirmationData {
 }
 
 export async function sendOrderConfirmation(data: OrderConfirmationData): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) {
-    console.warn("[Email] SMTP not configured — skipping order confirmation email.");
-    return false;
-  }
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
+  if (!isEmailConfigured()) return false;
   const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
 
   const depositNote = data.isDeposit
@@ -223,20 +279,14 @@ export async function sendOrderConfirmation(data: OrderConfirmationData): Promis
 
   const text = `Order Confirmed! #${data.orderNumber}\n\nHi ${data.customerName},\n\nThank you for your order from Fairytale Farms!\n\nItems:\n${data.items.map(i => `• ${i.name} ×${i.quantity} — ${i.price}`).join("\n")}\n\nTotal: $${parseFloat(data.totalAmount).toFixed(2)}\n\nWe'll be in touch soon!`;
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to: data.customerEmail,
-      subject: `Order Confirmed! #${data.orderNumber} — Fairytale Farms`,
-      text,
-      html,
-    });
-    console.log("[Email] Order confirmation sent to:", data.customerEmail);
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send order confirmation:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: data.customerEmail,
+    subject: `Order Confirmed! #${data.orderNumber} — Fairytale Farms`,
+    text,
+    html,
+  });
+  return ok;
 }
 
 // ─── 3. Order Status Update ───────────────────────────────────────────────────
@@ -271,10 +321,7 @@ const STATUS_LABELS: Record<string, { emoji: string; label: string; color: strin
 };
 
 export async function sendOrderStatusUpdate(data: OrderStatusUpdateData): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) return false;
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
+  if (!isEmailConfigured()) return false;
   const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
   const info = STATUS_LABELS[data.status] ?? STATUS_LABELS.processing;
 
@@ -300,19 +347,14 @@ export async function sendOrderStatusUpdate(data: OrderStatusUpdateData): Promis
     ${btn("View Order Details", `${appOrigin}/my-orders`)}
   `);
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to: data.customerEmail,
-      subject: `${info.emoji} Order #${data.orderNumber} — ${info.label}`,
-      text: `Hi ${data.customerName},\n\nYour order #${data.orderNumber} is now: ${info.label}\n\n${info.message}${data.adminNote ? `\n\nNote: ${data.adminNote}` : ""}`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send order status update:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: data.customerEmail,
+    subject: `${info.emoji} Order #${data.orderNumber} — ${info.label}`,
+    text: `Hi ${data.customerName},\n\nYour order #${data.orderNumber} is now: ${info.label}\n\n${info.message}${data.adminNote ? `\n\nNote: ${data.adminNote}` : ""}`,
+    html,
+  });
+  return ok;
 }
 
 // ─── 4. Abandoned Cart Recovery ───────────────────────────────────────────────
@@ -325,10 +367,7 @@ export interface AbandonedCartEmailData {
 }
 
 export async function sendAbandonedCartEmail(data: AbandonedCartEmailData): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) return false;
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
+  if (!isEmailConfigured()) return false;
   const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
 
   const html = htmlWrap(`
@@ -347,19 +386,14 @@ export async function sendAbandonedCartEmail(data: AbandonedCartEmailData): Prom
     <p style="color:#aaa;font-size:12px;margin-top:16px;">If you no longer wish to receive these reminders, simply ignore this email.</p>
   `);
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to: data.customerEmail,
-      subject: "🧁 You left something in your cart — Fairytale Farms",
-      text: `Hi ${data.customerName},\n\nYou have items waiting in your cart at Fairytale Farms!\n\n${data.items.map(i => `• ${i.name} ×${i.quantity}`).join("\n")}\n\nCart Total: $${parseFloat(data.cartTotal).toFixed(2)}\n\nComplete your order: ${appOrigin}/cart`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send abandoned cart email:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: data.customerEmail,
+    subject: "🧁 You left something in your cart — Fairytale Farms",
+    text: `Hi ${data.customerName},\n\nYou have items waiting in your cart at Fairytale Farms!\n\n${data.items.map(i => `• ${i.name} ×${i.quantity}`).join("\n")}\n\nCart Total: $${parseFloat(data.cartTotal).toFixed(2)}\n\nComplete your order: ${appOrigin}/cart`,
+    html,
+  });
+  return ok;
 }
 
 // ─── 5. Review Request ────────────────────────────────────────────────────────
@@ -372,10 +406,7 @@ export interface ReviewRequestData {
 }
 
 export async function sendReviewRequestEmail(data: ReviewRequestData): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) return false;
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
+  if (!isEmailConfigured()) return false;
   const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
 
   const productLinks = data.items
@@ -397,19 +428,14 @@ export async function sendReviewRequestEmail(data: ReviewRequestData): Promise<b
     <p style="color:#aaa;font-size:12px;margin-top:16px;">Reviews help other customers discover our baked goods. Thank you! 🧁</p>
   `);
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to: data.customerEmail,
-      subject: `How was your order? — Fairytale Farms`,
-      text: `Hi ${data.customerName},\n\nWe hope you loved your order #${data.orderNumber}! Please leave a review at ${appOrigin}/my-orders`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send review request email:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: data.customerEmail,
+    subject: `How was your order? — Fairytale Farms`,
+    text: `Hi ${data.customerName},\n\nWe hope you loved your order #${data.orderNumber}! Please leave a review at ${appOrigin}/my-orders`,
+    html,
+  });
+  return ok;
 }
 
 // ─── 6. Contact Form Notification ────────────────────────────────────────────
@@ -423,13 +449,10 @@ export interface ContactFormData {
 }
 
 export async function sendContactFormNotification(data: ContactFormData): Promise<{ ok: boolean; error?: string }> {
-  const transporter = getTransporter();
-  if (!transporter) {
-    console.warn("[Email] SMTP not configured — cannot forward contact form submission.");
-    return { ok: false, error: "SMTP not configured" };
+  if (!isEmailConfigured()) {
+    console.warn("[Email] No provider configured — cannot forward contact form submission.");
+    return { ok: false, error: "No email provider configured (set RESEND_API_KEY in Railway)" };
   }
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
   const to = ENV.contactEmail;
 
   const phoneRow = data.phone
@@ -456,35 +479,22 @@ export async function sendContactFormNotification(data: ContactFormData): Promis
     <p style="color:#888;font-size:13px;">Reply directly to <a href="mailto:${data.email}" style="color:#6b4226;">${data.email}</a> to respond to this message.</p>
   `);
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms Contact" <${from}>`,
-      to,
-      replyTo: data.email,
-      subject: `📬 New message from ${data.name}${data.subject ? `: ${data.subject}` : ""} — Fairytale Farms`,
-      text: `New contact form message\n\nName: ${data.name}\nEmail: ${data.email}${data.phone ? `\nPhone: ${data.phone}` : ""}\nSubject: ${data.subject || "(no subject)"}\n\nMessage:\n${data.message}`,
-      html,
-    });
-    console.log("[Email] Contact form notification sent to:", to);
-    return { ok: true };
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    console.error("[Email] Failed to send contact form notification:", msg);
-    resetTransporter();
-    return { ok: false, error: msg };
-  }
+  return sendEmail({
+    from: smtpFrom("Fairytale Farms Contact"),
+    to,
+    replyTo: data.email,
+    subject: `📬 New message from ${data.name}${data.subject ? `: ${data.subject}` : ""} — Fairytale Farms`,
+    text: `New contact form message\n\nName: ${data.name}\nEmail: ${data.email}${data.phone ? `\nPhone: ${data.phone}` : ""}\nSubject: ${data.subject || "(no subject)"}\n\nMessage:\n${data.message}`,
+    html,
+  });
 }
 
 // ─── 7. Admin: New Order Notification ────────────────────────────────────────
 
 export async function sendAdminOrderNotification(data: OrderConfirmationData): Promise<boolean> {
-  const transporter = getTransporter();
-  if (!transporter) return false;
-
+  if (!isEmailConfigured()) return false;
   const adminEmails = ENV.adminEmails;
   if (!adminEmails.length) return false;
-
-  const from = ENV.smtpFrom || ENV.smtpUser;
   const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
 
   const html = htmlWrap(`
@@ -503,17 +513,12 @@ export async function sendAdminOrderNotification(data: OrderConfirmationData): P
     ${btn("View in Admin", `${appOrigin}/admin/orders`)}
   `);
 
-  try {
-    await transporter.sendMail({
-      from: `"Fairytale Farms" <${from}>`,
-      to: adminEmails,
-      subject: `🎂 New Order #${data.orderNumber} — $${parseFloat(data.totalAmount).toFixed(2)}`,
-      text: `New order #${data.orderNumber} from ${data.customerName} (${data.customerEmail})\nTotal: $${parseFloat(data.totalAmount).toFixed(2)}`,
-      html,
-    });
-    return true;
-  } catch (error) {
-    console.error("[Email] Failed to send admin order notification:", error);
-    return false;
-  }
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: adminEmails,
+    subject: `🎂 New Order #${data.orderNumber} — $${parseFloat(data.totalAmount).toFixed(2)}`,
+    text: `New order #${data.orderNumber} from ${data.customerName} (${data.customerEmail})\nTotal: $${parseFloat(data.totalAmount).toFixed(2)}`,
+    html,
+  });
+  return ok;
 }
