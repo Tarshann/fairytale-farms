@@ -50,7 +50,10 @@ const FALLBACK: Testimonial[] = [
 
 function Stars({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
+    <div
+      className="flex items-center gap-0.5"
+      aria-label={`${rating} out of 5 stars`}
+    >
       {[1, 2, 3, 4, 5].map(i => (
         <Star
           key={i}
@@ -64,7 +67,9 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function Testimonials() {
-  const { data, isLoading } = trpc.reviews.recentPublished.useQuery({ limit: 6 });
+  const { data, isLoading } = trpc.reviews.recentPublished.useQuery({
+    limit: 6,
+  });
 
   // Don't flash the section while loading.
   if (isLoading) return null;
@@ -90,8 +95,8 @@ export default function Testimonials() {
             What Our Customers Say
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            We bake for our neighbors in Castalian Springs and across Sumner County.
-            Here's what they think.
+            We bake for our neighbors in Castalian Springs and across Sumner
+            County. Here's what they think.
           </p>
         </div>
 

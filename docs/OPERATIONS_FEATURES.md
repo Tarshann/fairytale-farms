@@ -13,6 +13,7 @@ confirmation and a status update (preparing / ready / cancelled). SMS is a
 **no-op** unless Twilio is configured — email is unaffected either way.
 
 **Activate:**
+
 1. Create a Twilio account, buy a number (or set up a Messaging Service).
 2. Set these env vars (Railway / Vercel):
    - `TWILIO_ACCOUNT_SID`
@@ -30,6 +31,7 @@ confirmation and a status update (preparing / ready / cancelled). SMS is a
 **What it does:** serves product images (`/images/*`) from a CDN edge.
 
 **Activate:**
+
 1. Put a CDN (e.g. CloudFront) in front of the deployed origin.
 2. Set both:
    - `ASSET_CDN_URL` (server) and `VITE_ASSET_CDN_URL` (client, baked in at build)
@@ -52,6 +54,7 @@ it bills real cards on a schedule, **validate against Stripe test mode before
 enabling.**
 
 **Activate:**
+
 1. Apply the schema change: `pnpm db:push` (adds `products.isSubscription` +
    `products.subscriptionInterval`; see `drizzle/0010_subscriptions.sql`).
 2. In the Stripe Dashboard, ensure the `invoice.paid` and

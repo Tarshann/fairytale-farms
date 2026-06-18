@@ -42,7 +42,9 @@ test("static SEO assets are served", async ({ request }) => {
   expect(robots.status()).toBeLessThan(400);
 });
 
-test("unknown routes still serve the SPA shell (no hard 500)", async ({ page }) => {
+test("unknown routes still serve the SPA shell (no hard 500)", async ({
+  page,
+}) => {
   const response = await page.goto("/this-route-does-not-exist-xyz");
   // SPA fallback returns index.html (200); should never be a server error.
   expect(response?.status()).toBeLessThan(500);

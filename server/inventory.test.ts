@@ -55,7 +55,9 @@ describe("inventory math (shared/inventory)", () => {
       expect(isLowStock({ inventoryCap: 100, inventorySold: 10 })).toBe(false); // 90 left
     });
     it("respects a custom threshold", () => {
-      expect(isLowStock({ inventoryCap: 100, inventorySold: 80 }, 25)).toBe(true); // 20 <= 25
+      expect(isLowStock({ inventoryCap: 100, inventorySold: 80 }, 25)).toBe(
+        true
+      ); // 20 <= 25
     });
   });
 });

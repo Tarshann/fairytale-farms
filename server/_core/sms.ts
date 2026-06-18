@@ -70,13 +70,18 @@ export async function sendSms(to: string, body: string): Promise<boolean> {
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      console.warn(`[SMS] Send failed (${res.status})${detail ? `: ${detail}` : ""}`);
+      console.warn(
+        `[SMS] Send failed (${res.status})${detail ? `: ${detail}` : ""}`
+      );
       return false;
     }
     console.log("[SMS] Sent to:", dest);
     return true;
   } catch (err) {
-    console.warn("[SMS] Error sending:", err instanceof Error ? err.message : String(err));
+    console.warn(
+      "[SMS] Error sending:",
+      err instanceof Error ? err.message : String(err)
+    );
     return false;
   }
 }
@@ -91,7 +96,9 @@ export async function sendAdminOrderSms(data: {
 }): Promise<boolean> {
   if (!isSmsConfigured() || ENV.adminSmsTo.length === 0) return false;
   const body = `🎂 New Fairytale Farms order #${data.orderNumber} from ${data.customerName} — $${parseFloat(data.totalAmount).toFixed(2)}. View: ${appOrigin()}/admin/orders`;
-  const results = await Promise.all(ENV.adminSmsTo.map(to => sendSms(to, body)));
+  const results = await Promise.all(
+    ENV.adminSmsTo.map(to => sendSms(to, body))
+  );
   return results.some(Boolean);
 }
 
@@ -107,9 +114,12 @@ export async function sendOrderConfirmationSms(data: {
 }
 
 const STATUS_SMS: Record<string, (n: string) => string> = {
-  processing: n => `Good news! Your Fairytale Farms order #${n} is now being prepared 👩‍🍳`,
-  completed: n => `Your Fairytale Farms order #${n} is ready! 🎉 ${appOrigin()}/my-orders`,
-  cancelled: n => `Your Fairytale Farms order #${n} has been cancelled. Questions? Reply to this message.`,
+  processing: n =>
+    `Good news! Your Fairytale Farms order #${n} is now being prepared 👩‍🍳`,
+  completed: n =>
+    `Your Fairytale Farms order #${n} is ready! 🎉 ${appOrigin()}/my-orders`,
+  cancelled: n =>
+    `Your Fairytale Farms order #${n} has been cancelled. Questions? Reply to this message.`,
 };
 
 /** Customer SMS on an order status change. */
