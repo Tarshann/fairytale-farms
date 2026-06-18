@@ -17,7 +17,7 @@ export function isSmsConfigured(): boolean {
 }
 
 /** Normalize a phone string to E.164-ish; returns null if it can't be used. */
-function normalizePhone(raw: string | null | undefined): string | null {
+export function normalizePhone(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;

@@ -18,6 +18,7 @@ import {
 } from "./_core/email";
 import { notifyOwner } from "./_core/notification";
 import { ENV } from "./_core/env";
+import { tracksInventory, remainingStock } from "../shared/inventory";
 import OpenAI from "openai";
 
 // ─── OpenAI Client ────────────────────────────────────────────────────────────
@@ -91,9 +92,9 @@ async function runDemandForecast() {
   for (const item of velocity) {
     if (!item.productId) continue;
     const product = productMap.get(item.productId);
-    if (!product || !product.inventoryCap) continue;
+    if (!product || !tracksInventory(product)) continue;
 
-    const remaining = product.inventoryCap - (product.inventorySold || 0);
+    const remaining = remainingStock(product) ?? 0;
     const dailyVelocity = Number(item.totalQuantity) / 30;
     const daysRemaining = remaining / Math.max(dailyVelocity, 0.01);
 
