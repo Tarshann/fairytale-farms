@@ -54,7 +54,19 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutCompleted(session);
+        // Subscription checkouts are billed via invoice.paid (covers the first
+        // charge AND every renewal), so the one-time path is left untouched.
+        if (session.mode === "subscription") {
+          console.log("[Webhook] Subscription created:", session.id);
+        } else {
+          await handleCheckoutCompleted(session);
+        }
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handleSubscriptionInvoice(invoice);
         break;
       }
 
@@ -276,6 +288,109 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   await sendAdminOrderNotification(emailData);
 
   // ── Send SMS notifications (no-ops unless Twilio is configured) ────────────
+  await sendAdminOrderSms({ orderNumber, customerName, totalAmount });
+  if (customerPhone) {
+    await sendOrderConfirmationSms({ customerPhone, orderNumber, customerName });
+  }
+}
+
+/**
+ * Records an order for each paid subscription invoice — the first charge and
+ * every renewal. Reads identity/product from the subscription metadata set in
+ * orders.createSubscriptionCheckout. Entirely separate from the one-time path
+ * and fail-soft: any missing field is logged and skipped, never thrown.
+ */
+async function handleSubscriptionInvoice(invoice: Stripe.Invoice) {
+  // The subscription id can live in a couple of places across API versions.
+  const subscriptionId =
+    typeof (invoice as any).subscription === "string"
+      ? (invoice as any).subscription
+      : (invoice as any).subscription?.id ||
+        (invoice as any).parent?.subscription_details?.subscription ||
+        null;
+
+  if (!subscriptionId) {
+    // Not a subscription invoice (e.g. a one-off) — nothing to do here.
+    return;
+  }
+
+  const db = await getDb();
+  if (!db) {
+    console.error("[Webhook] Database not available for subscription invoice");
+    return;
+  }
+
+  // Pull the subscription to read the metadata we stamped at checkout.
+  let meta: Record<string, string> = {};
+  try {
+    const sub = await stripe.subscriptions.retrieve(subscriptionId);
+    meta = (sub.metadata as Record<string, string>) || {};
+  } catch (err) {
+    console.warn(
+      "[Webhook] Could not retrieve subscription metadata:",
+      err instanceof Error ? err.message : String(err)
+    );
+  }
+
+  const userId = meta.user_id ? parseInt(meta.user_id) : NaN;
+  if (!Number.isFinite(userId)) {
+    console.warn("[Webhook] Subscription invoice missing user_id; skipping order.");
+    return;
+  }
+
+  const productId = meta.product_id ? parseInt(meta.product_id) : null;
+  const productName = meta.product_name || "Subscription";
+  const customerName = meta.customer_name || invoice.customer_name || "Customer";
+  const customerEmail =
+    meta.customer_email || invoice.customer_email || "";
+  const customerPhone =
+    (invoice as any).customer_phone || null;
+  const totalAmount = ((invoice.amount_paid ?? 0) / 100).toFixed(2);
+
+  const randomSuffix = crypto.randomInt(1000, 9999);
+  const orderNumber = `FFSUB${Date.now()}${randomSuffix}`;
+
+  const [orderResult] = await db
+    .insert(orders)
+    .values({
+      userId,
+      orderNumber,
+      totalAmount,
+      customerName,
+      customerEmail,
+      customerPhone: customerPhone ?? undefined,
+      status: "pending",
+      stripePaymentIntentId:
+        typeof (invoice as any).payment_intent === "string"
+          ? (invoice as any).payment_intent
+          : undefined,
+      stripePaymentStatus: "paid",
+    })
+    .returning({ id: orders.id });
+
+  if (productId) {
+    await db.insert(orderItems).values({
+      orderId: orderResult.id,
+      productId,
+      productName,
+      quantity: 1,
+      unitPrice: totalAmount,
+      subtotal: totalAmount,
+    });
+  }
+
+  console.log("[Webhook] Subscription order recorded:", orderNumber);
+
+  const emailData = {
+    orderNumber,
+    customerName,
+    customerEmail,
+    totalAmount,
+    items: [{ name: productName, quantity: 1, price: `$${totalAmount}` }],
+  };
+
+  if (customerEmail) await sendOrderConfirmation(emailData);
+  await sendAdminOrderNotification(emailData);
   await sendAdminOrderSms({ orderNumber, customerName, totalAmount });
   if (customerPhone) {
     await sendOrderConfirmationSms({ customerPhone, orderNumber, customerName });

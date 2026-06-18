@@ -27,6 +27,7 @@ const orderStatusEnum = pgEnum("order_status", [
   "cancelled",
 ]);
 const deliveryTypeEnum = pgEnum("delivery_type", ["same_day", "scheduled"]);
+const subscriptionIntervalEnum = pgEnum("subscription_interval", ["week", "month"]);
 const contactStatusEnum = pgEnum("contact_status", ["new", "read", "replied"]);
 const photoUploadStatusEnum = pgEnum("photo_upload_status", [
   "pending_review",
@@ -125,6 +126,10 @@ export const products = pgTable("products", {
   requiresDeposit: boolean("requiresDeposit").default(false).notNull(),
   depositPercentage: integer("depositPercentage").default(50),
   productType: productTypeEnum("productType").default("standard").notNull(),
+  // Subscription ("Bake Box") support. Off by default; a product only becomes
+  // subscribable when an admin sets isSubscription=true + an interval.
+  isSubscription: boolean("isSubscription").default(false).notNull(),
+  subscriptionInterval: subscriptionIntervalEnum("subscriptionInterval"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => [
