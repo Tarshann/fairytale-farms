@@ -104,11 +104,19 @@ function QuickViewModal({
                 </div>
               )}
               
-              {product.inventoryCap && product.inventoryCap > 0 && (
-                <p className="text-sm text-muted-foreground mb-4">
-                  <span className="font-medium">Limited availability:</span> Only {product.inventoryCap} remaining
-                </p>
-              )}
+              {product.inventoryCap && product.inventoryCap > 0 && (() => {
+                const remaining = product.inventoryCap - (product.inventorySold || 0);
+                if (remaining <= 0) {
+                  return (
+                    <p className="text-sm font-medium text-red-600 mb-4">Sold out</p>
+                  );
+                }
+                return (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    <span className="font-medium">Limited availability:</span> Only {remaining} remaining
+                  </p>
+                );
+              })()}
             </div>
             
             <div className="flex gap-3 mt-4">

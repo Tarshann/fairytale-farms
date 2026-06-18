@@ -14,7 +14,9 @@ import { sendOrderConfirmation, sendAdminOrderNotification } from "./_core/email
 import { ENV } from "./_core/env";
 
 const stripe = new Stripe(ENV.stripeSecretKey!, {
-  apiVersion: "2025-01-27.acacia",
+  // Pinned API version. Cast keeps the deliberate pin valid across stripe-node
+  // SDK bumps (the SDK's types only allow its own bundled version string).
+  apiVersion: "2025-01-27.acacia" as Stripe.StripeConfig["apiVersion"],
 });
 
 export async function handleStripeWebhook(req: Request, res: Response) {
