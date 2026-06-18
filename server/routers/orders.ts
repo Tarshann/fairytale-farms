@@ -16,6 +16,7 @@ import {
   getSafeCheckoutOrigin,
 } from "./_shared";
 import { sendOrderStatusUpdate, sendOrderConfirmation } from "../_core/email";
+import { sendOrderStatusSms } from "../_core/sms";
 
 export const ordersRouter = router({
   /**
@@ -54,6 +55,8 @@ export const ordersRouter = router({
       cancel_url: `${origin}/cart`,
       client_reference_id: ctx.user.id.toString(),
       customer_email: ctx.user.email || undefined,
+      // Collect a phone so we can send order SMS (used only if Twilio is set up).
+      phone_number_collection: { enabled: true },
       metadata: {
         user_id: ctx.user.id.toString(),
         customer_email: ctx.user.email || "",
@@ -223,6 +226,14 @@ export const ordersRouter = router({
             customerEmail: order.customerEmail,
             status: input.status as "processing" | "completed" | "cancelled",
             adminNote: input.adminNote,
+          });
+        }
+        // Customer SMS (no-op unless Twilio configured + a phone was captured).
+        if (order?.customerPhone) {
+          await sendOrderStatusSms({
+            customerPhone: order.customerPhone,
+            orderNumber: order.orderNumber,
+            status: input.status as "processing" | "completed" | "cancelled",
           });
         }
       }

@@ -212,6 +212,8 @@ export const valentinesRouter = router({
         cancel_url: `${origin}/cart`,
         client_reference_id: ctx.user.id.toString(),
         customer_email: ctx.user.email || undefined,
+        // Collect a phone so we can send order SMS (used only if Twilio is set up).
+        phone_number_collection: { enabled: true },
         metadata: {
           user_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || "",

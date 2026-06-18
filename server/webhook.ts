@@ -11,6 +11,7 @@ import { getDb } from "./db";
 import { orders, orderItems, cartItems } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendOrderConfirmation, sendAdminOrderNotification } from "./_core/email";
+import { sendOrderConfirmationSms, sendAdminOrderSms } from "./_core/sms";
 import { ENV } from "./_core/env";
 
 const stripe = new Stripe(ENV.stripeSecretKey!, {
@@ -162,6 +163,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     session.metadata?.customer_name ||
     session.customer_details?.name ||
     "Customer";
+  // Stripe Checkout collects a phone when phone_number_collection is enabled.
+  const customerPhone =
+    session.customer_details?.phone || session.metadata?.customer_phone || null;
 
   const totalAmount = session.amount_total
     ? (session.amount_total / 100).toFixed(2)
@@ -194,6 +198,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       totalAmount,
       customerName,
       customerEmail,
+      customerPhone: customerPhone ?? undefined,
       status: "pending",
       stripePaymentIntentId: paymentIntentId,
       stripePaymentStatus: session.payment_status,
@@ -269,4 +274,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Send admin notification email
   await sendAdminOrderNotification(emailData);
+
+  // ── Send SMS notifications (no-ops unless Twilio is configured) ────────────
+  await sendAdminOrderSms({ orderNumber, customerName, totalAmount });
+  if (customerPhone) {
+    await sendOrderConfirmationSms({ customerPhone, orderNumber, customerName });
+  }
 }
