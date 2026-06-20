@@ -16,6 +16,7 @@ import {
   getSafeCheckoutOrigin,
 } from "./_shared";
 import { sendOrderStatusUpdate, sendOrderConfirmation } from "../_core/email";
+import { sendOrderStatusSms } from "../_core/sms";
 
 export const ordersRouter = router({
   /**
@@ -54,6 +55,8 @@ export const ordersRouter = router({
       cancel_url: `${origin}/cart`,
       client_reference_id: ctx.user.id.toString(),
       customer_email: ctx.user.email || undefined,
+      // Collect a phone so we can send order SMS (used only if Twilio is set up).
+      phone_number_collection: { enabled: true },
       metadata: {
         user_id: ctx.user.id.toString(),
         customer_email: ctx.user.email || "",
@@ -63,6 +66,70 @@ export const ordersRouter = router({
     });
     return { checkoutUrl: session.url, sessionId: session.id };
   }),
+
+  /**
+   * Subscription ("Bake Box") checkout — creates a recurring Stripe session for
+   * a single subscription-flagged product. Isolated from the one-time path:
+   * uses mode "subscription" with an inline recurring price (no pre-created
+   * Stripe Price needed). Only works for products an admin has flagged
+   * isSubscription=true, so it is dormant until deliberately enabled.
+   */
+  createSubscriptionCheckout: sessionProcedure
+    .input(z.object({ productId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      await assertCheckoutEnabled();
+      const product = await db.getProductById(input.productId);
+      if (!product) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+      }
+      if (!product.isSubscription || !product.subscriptionInterval) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This product is not available as a subscription.",
+        });
+      }
+      const stripe = await getStripe();
+      const origin = getSafeCheckoutOrigin(ctx.req);
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: { name: product.name },
+              unit_amount: Math.round(parseFloat(product.basePrice || "0") * 100),
+              recurring: { interval: product.subscriptionInterval },
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/products/${product.slug}`,
+        client_reference_id: ctx.user.id.toString(),
+        customer_email: ctx.user.email || undefined,
+        phone_number_collection: { enabled: true },
+        // Carried onto the subscription so renewal invoices can rebuild the order.
+        subscription_data: {
+          metadata: {
+            user_id: ctx.user.id.toString(),
+            customer_email: ctx.user.email || "",
+            customer_name: ctx.user.name || "",
+            product_id: product.id.toString(),
+            product_name: product.name,
+          },
+        },
+        metadata: {
+          user_id: ctx.user.id.toString(),
+          customer_email: ctx.user.email || "",
+          customer_name: ctx.user.name || "",
+          product_id: product.id.toString(),
+          product_name: product.name,
+          is_subscription: "true",
+        },
+      });
+      return { checkoutUrl: session.url, sessionId: session.id };
+    }),
 
   /**
    * Manual order creation (used by admin or direct integrations).
@@ -223,6 +290,14 @@ export const ordersRouter = router({
             customerEmail: order.customerEmail,
             status: input.status as "processing" | "completed" | "cancelled",
             adminNote: input.adminNote,
+          });
+        }
+        // Customer SMS (no-op unless Twilio configured + a phone was captured).
+        if (order?.customerPhone) {
+          await sendOrderStatusSms({
+            customerPhone: order.customerPhone,
+            orderNumber: order.orderNumber,
+            status: input.status as "processing" | "completed" | "cancelled",
           });
         }
       }

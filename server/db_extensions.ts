@@ -74,6 +74,52 @@ export async function getReviewsByProductWithUser(productId: number) {
     .orderBy(desc(reviews.createdAt));
 }
 
+/**
+ * Recent published reviews across all products — powers the homepage
+ * testimonials section. Self-maintaining: as customers leave reviews and an
+ * admin publishes them, they flow straight onto the marketing site.
+ * Only returns reviews that carry a written comment (a bare star rating makes
+ * a poor testimonial). Reviewer identity is reduced to a first name for privacy.
+ */
+export async function getRecentPublishedReviews(limit = 6) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      title: reviews.title,
+      comment: reviews.comment,
+      createdAt: reviews.createdAt,
+      userName: users.name,
+      productName: products.name,
+      productSlug: products.slug,
+    })
+    .from(reviews)
+    .leftJoin(users, eq(reviews.userId, users.id))
+    .leftJoin(products, eq(reviews.productId, products.id))
+    .where(
+      and(
+        eq(reviews.status, "published"),
+        sql`${reviews.comment} IS NOT NULL AND length(trim(${reviews.comment})) > 0`,
+      ),
+    )
+    .orderBy(desc(reviews.rating), desc(reviews.createdAt))
+    .limit(Math.min(Math.max(limit, 1), 24));
+
+  return rows.map(r => ({
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    comment: r.comment,
+    createdAt: r.createdAt,
+    // First name only — never surface full name or email publicly.
+    authorName: (r.userName || "").trim().split(/\s+/)[0] || "Customer",
+    productName: r.productName,
+    productSlug: r.productSlug,
+  }));
+}
+
 export async function getProductRatingSummary(productId: number): Promise<{
   averageRating: number;
   totalReviews: number;
