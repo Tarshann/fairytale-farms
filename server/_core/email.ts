@@ -489,7 +489,78 @@ export async function sendContactFormNotification(data: ContactFormData): Promis
   });
 }
 
-// ─── 7. Admin: New Order Notification ────────────────────────────────────────
+// ─── 7. Photo Upload Confirmation (customer) ─────────────────────────────────
+
+export interface PhotoUploadConfirmationData {
+  customerName: string;
+  customerEmail: string;
+  orderNumber: string;
+  fileName: string;
+}
+
+export async function sendPhotoUploadConfirmation(data: PhotoUploadConfirmationData): Promise<boolean> {
+  if (!isEmailConfigured()) return false;
+  const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
+
+  const html = htmlWrap(`
+    <h2 style="color:#6b4226;margin:0 0 4px;">📸 Photo Received!</h2>
+    <p style="color:#555;margin:0 0 24px;">Hi ${data.customerName}, we've received your photo for order <strong>#${data.orderNumber}</strong>. Our team will review it and get started on your custom portrait puck!</p>
+
+    <div style="background:#fdf8f3;border-radius:8px;padding:16px 20px;margin:0 0 20px;">
+      <p style="margin:0;font-size:13px;color:#a0522d;text-transform:uppercase;letter-spacing:1px;">File Received</p>
+      <p style="margin:4px 0 0;font-size:16px;color:#3d2010;">${data.fileName}</p>
+    </div>
+
+    <p style="color:#555;font-size:14px;">We'll notify you if we have any questions about your photo or when your order is ready for pickup.</p>
+    ${divider()}
+    ${btn("View My Orders", `${appOrigin}/my-orders`)}
+    <p style="color:#888;font-size:13px;margin-top:16px;">For best results, we recommend photos with good lighting and a clear view of the subject.</p>
+  `);
+
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: data.customerEmail,
+    subject: `📸 Photo received for order #${data.orderNumber} — Fairytale Farms`,
+    text: `Hi ${data.customerName},\n\nWe've received your photo (${data.fileName}) for order #${data.orderNumber}.\n\nOur team will review it and get started on your custom portrait puck. We'll be in touch if we have any questions.\n\nView your orders: ${appOrigin}/my-orders`,
+    html,
+  });
+  return ok;
+}
+
+// ─── 8. Admin: New Photo Upload Notification ─────────────────────────────────
+
+export async function sendAdminPhotoNotification(data: PhotoUploadConfirmationData & { orderId: number }): Promise<boolean> {
+  if (!isEmailConfigured()) return false;
+  const adminEmails = ENV.adminEmails;
+  if (!adminEmails.length) return false;
+  const appOrigin = ENV.appOrigin || "https://fairytalefarms.net";
+
+  const html = htmlWrap(`
+    <h2 style="color:#6b4226;margin:0 0 4px;">📸 New Photo Upload</h2>
+    <p style="color:#555;margin:0 0 24px;">A customer has uploaded a photo for their custom portrait order.</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+      <tr><td style="color:#a0522d;width:140px;padding:6px 0;font-size:14px;">Order Number</td><td style="font-weight:bold;color:#3d2010;font-size:14px;">#${data.orderNumber}</td></tr>
+      <tr><td style="color:#a0522d;padding:6px 0;font-size:14px;">Customer</td><td style="color:#3d2010;font-size:14px;">${data.customerName}</td></tr>
+      <tr><td style="color:#a0522d;padding:6px 0;font-size:14px;">Email</td><td style="color:#3d2010;font-size:14px;">${data.customerEmail}</td></tr>
+      <tr><td style="color:#a0522d;padding:6px 0;font-size:14px;">File</td><td style="color:#3d2010;font-size:14px;">${data.fileName}</td></tr>
+    </table>
+
+    ${divider()}
+    ${btn("Review in Admin", `${appOrigin}/admin`)}
+  `);
+
+  const { ok } = await sendEmail({
+    from: smtpFrom("Fairytale Farms"),
+    to: adminEmails,
+    subject: `📸 New photo upload for order #${data.orderNumber} — needs review`,
+    text: `New photo uploaded!\n\nOrder: #${data.orderNumber}\nCustomer: ${data.customerName} (${data.customerEmail})\nFile: ${data.fileName}\n\nReview at: ${appOrigin}/admin`,
+    html,
+  });
+  return ok;
+}
+
+// ─── 9. Admin: New Order Notification ────────────────────────────────────────
 
 export async function sendAdminOrderNotification(data: OrderConfirmationData): Promise<boolean> {
   if (!isEmailConfigured()) return false;

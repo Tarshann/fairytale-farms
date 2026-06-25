@@ -27,7 +27,7 @@
 - [x] Build Stripe checkout integration
 - [x] Implement secure payment processing
 - [x] Create order confirmation page
-- [ ] Send order confirmation emails to customers
+- [x] Send order confirmation emails to customers
 - [x] Handle payment success and failure scenarios
 
 ## Order Management System
@@ -47,7 +47,7 @@
 - [x] Create pricing management interface
 - [x] Build order management view with all customer orders
 - [x] Add sales analytics and reporting
-- [ ] Implement admin notification system for new orders
+- [x] Implement admin notification system for new orders
 
 ## Frontend Design & Styling
 
@@ -87,7 +87,7 @@
 
 - [x] Create comprehensive project checkpoint
 - [x] Verify all features are working correctly
-- [ ] Prepare deployment documentation
+- [x] Prepare deployment documentation
 - [x] Deliver completed website to user
 
 ## Valentine's Day 2026 Launch Customizations
@@ -111,8 +111,8 @@
 
 - [x] Build photo upload widget for custom portrait pucks page
 - [x] Accept JPG/PNG formats with minimum 1MB file size
-- [ ] Send upload confirmation email to customer
-- [ ] Send admin notification when photo uploaded
+- [x] Send upload confirmation email to customer
+- [x] Send admin notification when photo uploaded
 - [x] Add photo review/approval workflow
 
 ### Delivery System
@@ -383,8 +383,8 @@
 
 ## Customer Testimonials & Order Emails
 
-- [ ] Add customer testimonials section to homepage
-- [ ] Create placeholder testimonials (editable later)
+- [x] Add customer testimonials section to homepage
+- [x] Create placeholder testimonials (editable later)
 - [x] Enable Stripe automatic receipts (configured in Stripe Dashboard settings)
 - [ ] Test email delivery after successful payment
 

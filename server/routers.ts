@@ -22,6 +22,8 @@ import {
   sendAbandonedCartEmail,
   sendReviewRequestEmail,
   sendAdminOrderNotification,
+  sendPhotoUploadConfirmation,
+  sendAdminPhotoNotification,
 } from "./_core/email";
 import crypto from "crypto";
 
@@ -1032,6 +1034,26 @@ export const appRouter = router({
           fileSize: input.fileSize,
           mimeType: input.mimeType,
         });
+
+        // Send email notifications (fire-and-forget; do not block the response)
+        const order = await db.getOrderById(input.orderId);
+        if (order) {
+          const emailData = {
+            customerName: order.customerName || ctx.user.name || "Customer",
+            customerEmail: order.customerEmail || ctx.user.email || "",
+            orderNumber: order.orderNumber,
+            fileName: input.fileName,
+            orderId: input.orderId,
+          };
+          if (emailData.customerEmail) {
+            sendPhotoUploadConfirmation(emailData).catch(err =>
+              console.error("[Email] Failed to send photo upload confirmation:", err)
+            );
+          }
+          sendAdminPhotoNotification(emailData).catch(err =>
+            console.error("[Email] Failed to send admin photo notification:", err)
+          );
+        }
 
         return { id, success: true };
       }),
