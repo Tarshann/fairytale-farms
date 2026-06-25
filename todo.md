@@ -37,7 +37,7 @@
 - [x] Create order detail view for customers
 - [x] Build admin order management dashboard
 - [x] Implement order status update functionality for admins
-- [ ] Add order filtering and search for admins
+- [x] Add order filtering and search for admins
 
 ## Admin Dashboard
 
@@ -68,7 +68,7 @@
 - [ ] Add social media integration
 - [x] Implement user authentication and account management
 - [x] Create user profile page
-- [ ] Add product image lightbox/zoom functionality
+- [x] Add product image lightbox/zoom functionality
 - [x] Implement loading states and error handling
 - [x] Add toast notifications for user actions
 
@@ -113,7 +113,7 @@
 - [x] Accept JPG/PNG formats with minimum 1MB file size
 - [ ] Send upload confirmation email to customer
 - [ ] Send admin notification when photo uploaded
-- [ ] Add photo review/approval workflow
+- [x] Add photo review/approval workflow
 
 ### Delivery System
 
@@ -136,7 +136,7 @@
 ### Admin Features
 
 - [x] Add real-time inventory counter in admin dashboard
-- [ ] Build photo review interface for custom portrait orders
+- [x] Build photo review interface for custom portrait orders
 - [x] Add order management for scheduled deliveries
 - [x] Implement promo code usage tracking
 
@@ -181,10 +181,10 @@
 - [x] Add tRPC procedures for add/remove/list wishlist items
 - [x] Add heart icon toggle to product cards on Products page
 - [x] Add heart icon to Quick View modal
-- [ ] Add heart icon to Product Detail page
+- [x] Add heart icon to Product Detail page
 - [x] Create dedicated Wishlist page to view saved products
 - [x] Add wishlist link to navigation
-- [ ] Show wishlist count in header
+- [x] Show wishlist count in header
 
 ## "In the Lab with Fairytale Farms" Section
 
