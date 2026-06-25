@@ -16,7 +16,7 @@
 - [x] Build product listing page with category filtering
 - [x] Create product detail pages with images, descriptions, and pricing
 - [x] Add customization options interface for personalized orders
-- [ ] Implement product search functionality
+- [x] Implement product search functionality
 - [x] Build admin product management (add, edit, delete, inventory control)
 
 ## Shopping Cart & Checkout
@@ -65,7 +65,7 @@
 
 - [x] Build contact page with business information
 - [x] Create customer inquiry form
-- [ ] Add social media integration
+- [x] Add social media integration
 - [x] Implement user authentication and account management
 - [x] Create user profile page
 - [x] Add product image lightbox/zoom functionality
