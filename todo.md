@@ -432,7 +432,7 @@
 - [x] Fix "View All" button on products page - wrapped with proper Link anchor
 - [x] Custom cake redirects to ordering/inquiry page instead of product detail
 - [x] Add customer testimonials section to homepage with 3 placeholder quotes
-- [ ] Add Academy promo code setup guidance
+- [x] Add Academy promo code setup guidance
 - [ ] Test full checkout flow with cake flavor selection
 
 ## Homepage Duplicate Sections Fix
