@@ -44,6 +44,7 @@ const AdminInquiries = lazy(() => import("./pages/admin/AdminInquiries"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminAI = lazy(() => import("./pages/admin/AdminAI"));
+const AdminPhotos = lazy(() => import("./pages/admin/AdminPhotos"));
 
 function LazyFallback() {
   return (
@@ -98,6 +99,7 @@ function Router() {
         <Route path={"/admin/users"} component={AdminUsers} />
         <Route path={"/admin/reviews"} component={AdminReviews} />
         <Route path={"/admin/ai"} component={AdminAI} />
+        <Route path={"/admin/photos"} component={AdminPhotos} />
 
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />

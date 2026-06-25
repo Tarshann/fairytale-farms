@@ -18,7 +18,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getProductImageUrl } from "@/lib/productImages";
 import { toast } from "sonner";
 import { trackProductViewed, trackAddToCart } from "@/lib/analytics";
-import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star, Heart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star, Heart, ZoomIn, X } from "lucide-react";
 import ProductReviews from "@/components/ProductReviews";
 
 const CAKE_FLAVORS = [
@@ -39,6 +39,7 @@ export default function ProductDetail() {
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
   const [selectedPickupDate, setSelectedPickupDate] = useState<string>("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const { data: checkoutStatus } = trpc.settings.checkoutEnabled.useQuery();
   const checkoutDisabled = checkoutStatus?.enabled === false;
@@ -65,6 +66,16 @@ export default function ProductDetail() {
       });
     }
   }, [product?.id]);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightboxOpen]);
 
   // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
   const isValentinesTier =
@@ -303,13 +314,23 @@ export default function ProductDetail() {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium">
+            <div
+              className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium relative group cursor-zoom-in"
+              onClick={() => getProductImageUrl(product) && setLightboxOpen(true)}
+            >
               {getProductImageUrl(product) && (
-                <img
-                  src={getProductImageUrl(product)}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={getProductImageUrl(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 rounded-full p-2 shadow-lg">
+                      <ZoomIn className="h-5 w-5 text-gray-700" />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
@@ -525,6 +546,31 @@ export default function ProductDetail() {
       </main>
 
       <Footer />
+
+      {/* Image Lightbox */}
+      {lightboxOpen && getProductImageUrl(product) && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+            onClick={e => {
+              e.stopPropagation();
+              setLightboxOpen(false);
+            }}
+            aria-label="Close image"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={getProductImageUrl(product)!}
+            alt={product.name}
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
