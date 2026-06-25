@@ -14,10 +14,11 @@ import {
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { getProductImageUrl } from "@/lib/productImages";
 import { toast } from "sonner";
 import { trackProductViewed, trackAddToCart } from "@/lib/analytics";
-import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star, Heart } from "lucide-react";
 import ProductReviews from "@/components/ProductReviews";
 
 const CAKE_FLAVORS = [
@@ -69,7 +70,26 @@ export default function ProductDetail() {
   const isValentinesTier =
     product?.productType === "tier" && product?.name?.includes("Box");
 
+  const { isAuthenticated } = useAuth();
   const utils = trpc.useUtils();
+
+  const { data: wishlistData } = trpc.wishlist.isInWishlist.useQuery(
+    { productId: product?.id ?? 0 },
+    { enabled: !!product?.id && isAuthenticated }
+  );
+  const isInWishlist = wishlistData ?? false;
+
+  const toggleWishlistMutation = trpc.wishlist.toggle.useMutation({
+    onSuccess: data => {
+      utils.wishlist.isInWishlist.invalidate({ productId: product?.id });
+      utils.wishlist.count.invalidate();
+      toast.success(data.added ? "Added to wishlist!" : "Removed from wishlist");
+    },
+    onError: () => {
+      toast.error("Failed to update wishlist");
+    },
+  });
+
   const addToCartMutation = trpc.cart.add.useMutation({
     onSuccess: () => {
       utils.cart.get.invalidate();
@@ -442,17 +462,45 @@ export default function ProductDetail() {
                       </div>
                     ) : (
                       <>
-                        <Button
-                          size="lg"
-                          className="w-full"
-                          onClick={handleAddToCart}
-                          disabled={addToCartMutation.isPending}
-                        >
-                          <ShoppingCart className="mr-2 h-5 w-4" />
-                          {addToCartMutation.isPending
-                            ? "Adding..."
-                            : "Add to Cart"}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="lg"
+                            className="flex-1"
+                            onClick={handleAddToCart}
+                            disabled={addToCartMutation.isPending}
+                          >
+                            <ShoppingCart className="mr-2 h-5 w-4" />
+                            {addToCartMutation.isPending
+                              ? "Adding..."
+                              : "Add to Cart"}
+                          </Button>
+
+                          {isAuthenticated && (
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              className={`border-pink-200 hover:bg-pink-50 ${
+                                isInWishlist
+                                  ? "text-pink-500 border-pink-300"
+                                  : "text-muted-foreground hover:text-pink-500"
+                              }`}
+                              onClick={() =>
+                                product &&
+                                toggleWishlistMutation.mutate({ productId: product.id })
+                              }
+                              disabled={toggleWishlistMutation.isPending}
+                              title={
+                                isInWishlist
+                                  ? "Remove from wishlist"
+                                  : "Add to wishlist"
+                              }
+                            >
+                              <Heart
+                                className={`h-5 w-5 ${isInWishlist ? "fill-pink-500 text-pink-500" : ""}`}
+                              />
+                            </Button>
+                          )}
+                        </div>
 
                         <div className="text-center text-sm text-muted-foreground">
                           Total: $
