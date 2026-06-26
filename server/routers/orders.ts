@@ -217,13 +217,21 @@ export const ordersRouter = router({
       ) {
         const order = await db.getOrderById(input.id);
         if (order?.customerEmail) {
-          await sendOrderStatusUpdate({
-            orderNumber: order.orderNumber,
-            customerName: order.customerName || "Valued Customer",
-            customerEmail: order.customerEmail,
-            status: input.status as "processing" | "completed" | "cancelled",
-            adminNote: input.adminNote,
-          });
+          try {
+            await sendOrderStatusUpdate({
+              orderNumber: order.orderNumber,
+              customerName: order.customerName || "Valued Customer",
+              customerEmail: order.customerEmail,
+              status: input.status as "processing" | "completed" | "cancelled",
+              adminNote: input.adminNote,
+            });
+          } catch (emailErr) {
+            console.error("[orders.updateStatus] Failed to send status email to customer", {
+              orderId: input.id,
+              status: input.status,
+              error: emailErr instanceof Error ? emailErr.message : String(emailErr),
+            });
+          }
         }
       }
       return { success: true };
