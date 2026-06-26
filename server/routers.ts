@@ -22,6 +22,8 @@ import {
   sendAbandonedCartEmail,
   sendReviewRequestEmail,
   sendAdminOrderNotification,
+  sendPhotoUploadConfirmation,
+  sendAdminPhotoNotification,
 } from "./_core/email";
 import crypto from "crypto";
 
@@ -502,7 +504,13 @@ export const appRouter = router({
 
   // ============= ORDER ROUTES =============
   orders: router({
-    createCheckout: sessionProcedure.mutation(async ({ ctx }) => {
+    createCheckout: sessionProcedure
+      .input(
+        z.object({
+          promoCode: z.string().min(1).max(50).trim().toUpperCase().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
       await assertCheckoutEnabled();
       const stripe = await getStripe();
 
@@ -539,6 +547,40 @@ export const appRouter = router({
         };
       });
 
+      // Validate and apply promo code if provided
+      let discountAmount = 0;
+      let promoCodeData = null;
+      if (input.promoCode) {
+        const promoValidation = await db.validatePromoCode(input.promoCode);
+        if (promoValidation.valid && promoValidation.promoCode) {
+          promoCodeData = promoValidation.promoCode;
+          const subtotal = cartItemsList.reduce((sum, item) => {
+            return sum + parseFloat(item.product?.basePrice || "0") * item.quantity;
+          }, 0);
+          const productTypes = cartItemsList.map(
+            item => item.product?.productType || "standard"
+          );
+          discountAmount = await db.calculateDiscount(
+            promoCodeData,
+            subtotal,
+            productTypes
+          );
+          if (discountAmount > 0) {
+            lineItems.push({
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `Discount (${input.promoCode})`,
+                  description: undefined,
+                },
+                unit_amount: -Math.round(discountAmount * 100),
+              },
+              quantity: 1,
+            } as never);
+          }
+        }
+      }
+
       // Use request origin, or APP_ORIGIN / OAUTH_SERVER_URL (e.g. https://fairytalefarms.net), or localhost for dev
       const origin =
         ctx.req.headers.origin ||
@@ -558,9 +600,15 @@ export const appRouter = router({
           user_id: ctx.user.id.toString(),
           customer_email: ctx.user.email || "",
           customer_name: ctx.user.name || "",
+          promo_code: input.promoCode || "",
+          discount_amount: discountAmount.toString(),
         },
-        allow_promotion_codes: true,
       });
+
+      // Atomically record promo code usage after session is created
+      if (promoCodeData && discountAmount > 0) {
+        await db.incrementPromoCodeUsage(promoCodeData.id);
+      }
 
       return {
         checkoutUrl: session.url,
@@ -986,6 +1034,26 @@ export const appRouter = router({
           fileSize: input.fileSize,
           mimeType: input.mimeType,
         });
+
+        // Send email notifications (fire-and-forget; do not block the response)
+        const order = await db.getOrderById(input.orderId);
+        if (order) {
+          const emailData = {
+            customerName: order.customerName || ctx.user.name || "Customer",
+            customerEmail: order.customerEmail || ctx.user.email || "",
+            orderNumber: order.orderNumber,
+            fileName: input.fileName,
+            orderId: input.orderId,
+          };
+          if (emailData.customerEmail) {
+            sendPhotoUploadConfirmation(emailData).catch(err =>
+              console.error("[Email] Failed to send photo upload confirmation:", err)
+            );
+          }
+          sendAdminPhotoNotification(emailData).catch(err =>
+            console.error("[Email] Failed to send admin photo notification:", err)
+          );
+        }
 
         return { id, success: true };
       }),

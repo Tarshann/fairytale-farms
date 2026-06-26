@@ -17,6 +17,7 @@ import {
   Users,
   Star,
   Bot,
+  ImageIcon,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -249,6 +250,20 @@ export default function AdminDashboard() {
                     <h3 className="text-xl font-bold">AI Automation</h3>
                     <p className="text-sm text-muted-foreground">
                       Demand, pricing & campaigns
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin/photos">
+              <Card className="hover:shadow-card-hover transition-all cursor-pointer bg-gradient-to-br from-teal-50 to-cyan-50">
+                <CardContent className="p-6 text-center space-y-4">
+                  <ImageIcon className="h-12 w-12 mx-auto text-teal-500" />
+                  <div>
+                    <h3 className="text-xl font-bold">Photo Review</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Approve portrait puck photos
                     </p>
                   </div>
                 </CardContent>

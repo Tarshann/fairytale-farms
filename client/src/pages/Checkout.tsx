@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, CreditCard, AlertTriangle, Calendar, Phone, MessageSquare } from "lucide-react";
+import { Loader2, CreditCard, AlertTriangle, Calendar, Phone, MessageSquare, Tag, X } from "lucide-react";
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
@@ -22,6 +22,13 @@ export default function Checkout() {
   const [preferredDate, setPreferredDate] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
 
+  // ── Promo code state ───────────────────────────────────────────────────────
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
+  const [promoDiscountAmount, setPromoDiscountAmount] = useState(0);
+  const [promoApplying, setPromoApplying] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
   const { data: cartItems, isLoading: cartLoading } = trpc.cart.get.useQuery(
     undefined,
     {
@@ -31,6 +38,8 @@ export default function Checkout() {
 
   const { data: checkoutStatus } = trpc.settings.checkoutEnabled.useQuery();
   const checkoutDisabled = checkoutStatus?.enabled === false;
+
+  const utils = trpc.useUtils();
 
   const createCheckoutMutation = trpc.orders.createCheckout.useMutation({
     onSuccess: data => {
@@ -78,6 +87,43 @@ export default function Checkout() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
 
+  const handleApplyPromo = async () => {
+    const code = promoCodeInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoError(null);
+    setAppliedPromoCode(null);
+    setPromoDiscountAmount(0);
+    setPromoApplying(true);
+    try {
+      const result = await utils.valentines.validatePromoCode.fetch({ code });
+      if (result.valid && result.promoCode) {
+        const pc = result.promoCode;
+        let discount = 0;
+        if (pc.discountType === "percentage") {
+          discount = subtotal * (parseFloat(String(pc.discountValue)) / 100);
+        } else {
+          discount = Math.min(parseFloat(String(pc.discountValue)), subtotal);
+        }
+        setAppliedPromoCode(code);
+        setPromoDiscountAmount(discount);
+        toast.success(`Promo code applied! Saving $${discount.toFixed(2)}`);
+      } else {
+        setPromoError(result.reason || "Invalid or expired promo code");
+      }
+    } catch {
+      setPromoError("Failed to validate promo code. Please try again.");
+    } finally {
+      setPromoApplying(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromoCode(null);
+    setPromoCodeInput("");
+    setPromoDiscountAmount(0);
+    setPromoError(null);
+  };
+
   const handleCheckout = () => {
     if (user?.email && typeof window !== "undefined") {
       localStorage.setItem("lastCheckoutEmail", user.email.trim().toLowerCase());
@@ -86,7 +132,7 @@ export default function Checkout() {
     if (typeof window !== "undefined") {
       localStorage.setItem("checkoutMeta", JSON.stringify({ phone, preferredDate, orderNotes }));
     }
-    createCheckoutMutation.mutate();
+    createCheckoutMutation.mutate({ promoCode: appliedPromoCode || undefined });
   };
 
   return (
@@ -232,6 +278,67 @@ export default function Checkout() {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Tag className="h-5 w-5 text-primary" />
+                    Promo Code
+                  </h2>
+
+                  {appliedPromoCode ? (
+                    <div className="flex items-center justify-between bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3">
+                      <div>
+                        <p className="font-semibold text-green-800 dark:text-green-300 text-sm">
+                          {appliedPromoCode}
+                        </p>
+                        <p className="text-xs text-green-700 dark:text-green-400">
+                          −${promoDiscountAmount.toFixed(2)} discount applied
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleRemovePromo}
+                        className="text-green-700 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200 transition-colors"
+                        aria-label="Remove promo code"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter promo code"
+                          value={promoCodeInput}
+                          onChange={e => {
+                            setPromoCodeInput(e.target.value);
+                            setPromoError(null);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === "Enter") handleApplyPromo();
+                          }}
+                          className="uppercase"
+                          maxLength={50}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={handleApplyPromo}
+                          disabled={promoApplying || !promoCodeInput.trim()}
+                        >
+                          {promoApplying ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Apply"
+                          )}
+                        </Button>
+                      </div>
+                      {promoError && (
+                        <p className="text-sm text-destructive">{promoError}</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             <div className="lg:col-span-1">
@@ -246,6 +353,17 @@ export default function Checkout() {
                         ${subtotal.toFixed(2)}
                       </span>
                     </div>
+                    {appliedPromoCode && promoDiscountAmount > 0 && (
+                      <div className="flex justify-between text-sm text-green-700 dark:text-green-400">
+                        <span className="flex items-center gap-1">
+                          <Tag className="h-3 w-3" />
+                          {appliedPromoCode}
+                        </span>
+                        <span className="font-medium">
+                          −${promoDiscountAmount.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Items</span>
                       <span className="font-medium">
@@ -262,7 +380,9 @@ export default function Checkout() {
 
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-primary">${subtotal.toFixed(2)}</span>
+                    <span className="text-primary">
+                      ${Math.max(0, subtotal - promoDiscountAmount).toFixed(2)}
+                    </span>
                   </div>
 
                   {checkoutDisabled ? (

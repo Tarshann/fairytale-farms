@@ -14,10 +14,11 @@ import {
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { getProductImageUrl } from "@/lib/productImages";
 import { toast } from "sonner";
 import { trackProductViewed, trackAddToCart } from "@/lib/analytics";
-import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star } from "lucide-react";
+import { Minus, Plus, ShoppingCart, ArrowLeft, AlertTriangle, Star, Heart, ZoomIn, X, Share2 } from "lucide-react";
 import ProductReviews from "@/components/ProductReviews";
 
 const CAKE_FLAVORS = [
@@ -38,6 +39,7 @@ export default function ProductDetail() {
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [selectedCakeFlavor, setSelectedCakeFlavor] = useState<string>("");
   const [selectedPickupDate, setSelectedPickupDate] = useState<string>("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const { data: checkoutStatus } = trpc.settings.checkoutEnabled.useQuery();
   const checkoutDisabled = checkoutStatus?.enabled === false;
@@ -65,11 +67,40 @@ export default function ProductDetail() {
     }
   }, [product?.id]);
 
+  // Close lightbox on Escape key
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lightboxOpen]);
+
   // Check if this is a Valentine's tier product (contains "Box" in name and is tier type)
   const isValentinesTier =
     product?.productType === "tier" && product?.name?.includes("Box");
 
+  const { isAuthenticated } = useAuth();
   const utils = trpc.useUtils();
+
+  const { data: wishlistData } = trpc.wishlist.isInWishlist.useQuery(
+    { productId: product?.id ?? 0 },
+    { enabled: !!product?.id && isAuthenticated }
+  );
+  const isInWishlist = wishlistData ?? false;
+
+  const toggleWishlistMutation = trpc.wishlist.toggle.useMutation({
+    onSuccess: data => {
+      utils.wishlist.isInWishlist.invalidate({ productId: product?.id });
+      utils.wishlist.count.invalidate();
+      toast.success(data.added ? "Added to wishlist!" : "Removed from wishlist");
+    },
+    onError: () => {
+      toast.error("Failed to update wishlist");
+    },
+  });
+
   const addToCartMutation = trpc.cart.add.useMutation({
     onSuccess: () => {
       utils.cart.get.invalidate();
@@ -297,13 +328,23 @@ export default function ProductDetail() {
           </Link>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            <div className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium">
+            <div
+              className="aspect-square overflow-hidden rounded-lg bg-muted shadow-premium relative group cursor-zoom-in"
+              onClick={() => getProductImageUrl(product) && setLightboxOpen(true)}
+            >
               {getProductImageUrl(product) && (
-                <img
-                  src={getProductImageUrl(product)}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={getProductImageUrl(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 rounded-full p-2 shadow-lg">
+                      <ZoomIn className="h-5 w-5 text-gray-700" />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
@@ -328,6 +369,56 @@ export default function ProductDetail() {
                 <p className="text-muted-foreground leading-relaxed">
                   {product.description}
                 </p>
+              </div>
+
+              {/* Social Share */}
+              <div className="flex items-center gap-3 pt-1">
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <Share2 className="h-3.5 w-3.5" />
+                  Share:
+                </span>
+                <button
+                  onClick={() => {
+                    const url = encodeURIComponent(`${appOrigin}/products/${product.slug}`);
+                    const text = encodeURIComponent(`Check out ${product.name} from Fairytale Farms!`);
+                    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener,noreferrer");
+                  }}
+                  className="p-2 rounded-full hover:bg-sky-50 text-sky-500 transition-colors"
+                  title="Share on X (Twitter)"
+                  aria-label="Share on X"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.261 5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    const url = encodeURIComponent(`${appOrigin}/products/${product.slug}`);
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank", "noopener,noreferrer");
+                  }}
+                  className="p-2 rounded-full hover:bg-blue-50 text-blue-600 transition-colors"
+                  title="Share on Facebook"
+                  aria-label="Share on Facebook"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    const url = encodeURIComponent(`${appOrigin}/products/${product.slug}`);
+                    const description = encodeURIComponent(`${product.name}${product.description ? ` - ${product.description}` : ""}`);
+                    const media = product.imageUrl ? `&media=${encodeURIComponent(product.imageUrl)}` : "";
+                    window.open(`https://pinterest.com/pin/create/button/?url=${url}&description=${description}${media}`, "_blank", "noopener,noreferrer");
+                  }}
+                  className="p-2 rounded-full hover:bg-red-50 text-red-600 transition-colors"
+                  title="Share on Pinterest"
+                  aria-label="Share on Pinterest"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                  </svg>
+                </button>
               </div>
 
               {!product.inStock && (
@@ -456,17 +547,45 @@ export default function ProductDetail() {
                       </div>
                     ) : (
                       <>
-                        <Button
-                          size="lg"
-                          className="w-full"
-                          onClick={handleAddToCart}
-                          disabled={addToCartMutation.isPending}
-                        >
-                          <ShoppingCart className="mr-2 h-5 w-4" />
-                          {addToCartMutation.isPending
-                            ? "Adding..."
-                            : "Add to Cart"}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="lg"
+                            className="flex-1"
+                            onClick={handleAddToCart}
+                            disabled={addToCartMutation.isPending}
+                          >
+                            <ShoppingCart className="mr-2 h-5 w-4" />
+                            {addToCartMutation.isPending
+                              ? "Adding..."
+                              : "Add to Cart"}
+                          </Button>
+
+                          {isAuthenticated && (
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              className={`border-pink-200 hover:bg-pink-50 ${
+                                isInWishlist
+                                  ? "text-pink-500 border-pink-300"
+                                  : "text-muted-foreground hover:text-pink-500"
+                              }`}
+                              onClick={() =>
+                                product &&
+                                toggleWishlistMutation.mutate({ productId: product.id })
+                              }
+                              disabled={toggleWishlistMutation.isPending}
+                              title={
+                                isInWishlist
+                                  ? "Remove from wishlist"
+                                  : "Add to wishlist"
+                              }
+                            >
+                              <Heart
+                                className={`h-5 w-5 ${isInWishlist ? "fill-pink-500 text-pink-500" : ""}`}
+                              />
+                            </Button>
+                          )}
+                        </div>
 
                         {product.isSubscription && product.subscriptionInterval && (
                           <Button
@@ -505,6 +624,31 @@ export default function ProductDetail() {
       </main>
 
       <Footer />
+
+      {/* Image Lightbox */}
+      {lightboxOpen && getProductImageUrl(product) && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+            onClick={e => {
+              e.stopPropagation();
+              setLightboxOpen(false);
+            }}
+            aria-label="Close image"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={getProductImageUrl(product)!}
+            alt={product.name}
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

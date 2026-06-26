@@ -30,6 +30,12 @@ export default function Navigation() {
   const cartCount =
     cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
+  const { data: wishlistCountData } = trpc.wishlist.count.useQuery(undefined, {
+    enabled: hasSession && isAuthenticated,
+  });
+
+  const wishlistCount = wishlistCountData || 0;
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/valentines", label: "Valentine's 2026", special: true },
@@ -137,9 +143,14 @@ export default function Navigation() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-pink-500 hover:text-pink-600 hover:bg-pink-50"
+                className="relative text-pink-500 hover:text-pink-600 hover:bg-pink-50"
               >
                 <Heart className="h-4 w-4" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </Button>
             </Link>
 
@@ -162,8 +173,13 @@ export default function Navigation() {
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-2">
             <Link href="/wishlist">
-              <Button variant="ghost" size="sm" className="text-pink-500">
+              <Button variant="ghost" size="sm" className="relative text-pink-500">
                 <Heart className="h-4 w-4" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </Button>
             </Link>
             <Link href="/cart">
@@ -247,6 +263,11 @@ export default function Navigation() {
                 >
                   <Heart className="h-4 w-4 mr-2" />
                   My Wishlist
+                  {wishlistCount > 0 && (
+                    <span className="ml-auto bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
               {isAuthenticated ? (
