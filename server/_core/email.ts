@@ -57,7 +57,7 @@ async function sendEmail(opts: {
       const { error } = await resend.emails.send({
         from: ENV.resendFrom,
         to: Array.isArray(opts.to) ? opts.to : [opts.to],
-        reply_to: opts.replyTo,
+        replyTo: opts.replyTo,
         subject: opts.subject,
         text: opts.text,
         html: opts.html,

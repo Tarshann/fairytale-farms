@@ -17,6 +17,13 @@ export const reviewsRouter = router({
       return await db.getProductRatingSummary(input.productId);
     }),
 
+  // Recent published reviews across all products — powers homepage testimonials.
+  recentPublished: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(24).default(6) }).optional())
+    .query(async ({ input }) => {
+      return await db.getRecentPublishedReviews(input?.limit ?? 6);
+    }),
+
   myReview: protectedProcedure
     .input(z.object({ productId: z.number() }))
     .query(async ({ ctx, input }) => {

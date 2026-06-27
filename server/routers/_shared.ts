@@ -72,7 +72,10 @@ let _stripe: import("stripe").default | null = null;
 export const getStripe = async () => {
   if (_stripe) return _stripe;
   const Stripe = (await import("stripe")).default;
-  _stripe = new Stripe(ENV.stripeSecretKey!, { apiVersion: "2025-01-27.acacia" });
+  // Pinned API version; cast keeps the pin valid across stripe-node SDK bumps.
+  _stripe = new Stripe(ENV.stripeSecretKey!, {
+    apiVersion: "2025-01-27.acacia" as import("stripe").Stripe.StripeConfig["apiVersion"],
+  });
   return _stripe;
 };
 

@@ -60,6 +60,8 @@ export const productsRouter = router({
         inStock: z.boolean().default(true),
         featured: z.boolean().default(false),
         displayOrder: z.number().int().min(0).default(0),
+        isSubscription: z.boolean().default(false),
+        subscriptionInterval: z.enum(["week", "month"]).nullable().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -87,6 +89,8 @@ export const productsRouter = router({
         inventorySold: z.number().int().min(0).optional(),
         availableFrom: z.string().max(50).nullable().optional(),
         availableUntil: z.string().max(50).nullable().optional(),
+        isSubscription: z.boolean().optional(),
+        subscriptionInterval: z.enum(["week", "month"]).nullable().optional(),
       })
     )
     .mutation(async ({ input }) => {

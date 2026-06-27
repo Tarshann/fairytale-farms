@@ -121,6 +121,20 @@ export default function ProductDetail() {
     },
   });
 
+  const subscribeMutation = trpc.orders.createSubscriptionCheckout.useMutation({
+    onSuccess: data => {
+      if (data?.checkoutUrl) window.location.href = data.checkoutUrl;
+    },
+    onError: error => {
+      toast.error(error.message || "Could not start subscription");
+    },
+  });
+
+  const handleSubscribe = () => {
+    if (!product) return;
+    subscribeMutation.mutate({ productId: product.id });
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -572,6 +586,20 @@ export default function ProductDetail() {
                             </Button>
                           )}
                         </div>
+
+                        {product.isSubscription && product.subscriptionInterval && (
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleSubscribe}
+                            disabled={subscribeMutation.isPending}
+                          >
+                            {subscribeMutation.isPending
+                              ? "Starting subscription..."
+                              : `Subscribe — billed ${product.subscriptionInterval === "week" ? "weekly" : "monthly"}`}
+                          </Button>
+                        )}
 
                         <div className="text-center text-sm text-muted-foreground">
                           Total: $

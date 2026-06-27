@@ -71,6 +71,20 @@ export const ENV = {
   resendFrom: (process.env.RESEND_FROM ?? "Fairytale Farms <onboarding@resend.dev>").trim(),
   /** Email address where contact form submissions are forwarded */
   contactEmail: (process.env.CONTACT_EMAIL ?? "fairytalefarms.net@gmail.com").trim(),
+  // ─── SMS (Twilio) — all optional; SMS is a no-op when unset ────────────────
+  /** Twilio Account SID (starts with AC...) */
+  twilioAccountSid: (process.env.TWILIO_ACCOUNT_SID ?? "").trim(),
+  /** Twilio Auth Token */
+  twilioAuthToken: (process.env.TWILIO_AUTH_TOKEN ?? "").trim(),
+  /** Sending phone number in E.164 (e.g. +16155551234) OR a Messaging Service SID (MG...) */
+  twilioFrom: (process.env.TWILIO_FROM_NUMBER ?? "").trim(),
+  /** Owner phone(s) for new-order SMS alerts — comma-separated E.164 numbers */
+  adminSmsTo: (process.env.ADMIN_SMS_TO ?? "")
+    .split(",")
+    .map(v => v.trim())
+    .filter(Boolean),
+  /** Public base URL for static assets — set to a CDN (e.g. CloudFront) to offload images */
+  assetCdnUrl: (process.env.ASSET_CDN_URL ?? "").trim().replace(/\/+$/, ""),
   /** Stripe secret key for server-side API calls */
   stripeSecretKey: (process.env.STRIPE_SECRET_KEY ?? "").trim() || null,
   /** Stripe webhook signing secret for verifying webhook events */

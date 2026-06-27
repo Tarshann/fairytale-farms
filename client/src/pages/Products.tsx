@@ -10,6 +10,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { trpc } from "@/lib/trpc";
 import { getProductImageUrl } from "@/lib/productImages";
+import { tracksInventory, isSoldOut, remainingStock } from "@shared/inventory";
 import { ChevronRight, Search, Eye, ShoppingCart, X, SlidersHorizontal, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -104,10 +105,14 @@ function QuickViewModal({
                 </div>
               )}
               
-              {product.inventoryCap && product.inventoryCap > 0 && (
-                <p className="text-sm text-muted-foreground mb-4">
-                  <span className="font-medium">Limited availability:</span> Only {product.inventoryCap} remaining
-                </p>
+              {tracksInventory(product) && (
+                isSoldOut(product) ? (
+                  <p className="text-sm font-medium text-red-600 mb-4">Sold out</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    <span className="font-medium">Limited availability:</span> Only {remainingStock(product)} remaining
+                  </p>
+                )
               )}
             </div>
             

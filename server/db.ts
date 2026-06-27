@@ -1394,6 +1394,7 @@ export {
   createReview,
   getReviewsByProduct,
   getReviewsByProductWithUser,
+  getRecentPublishedReviews,
   getProductRatingSummary,
   getUserReviewForProduct,
   getPendingReviews,
