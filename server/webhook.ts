@@ -301,12 +301,20 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
  * and fail-soft: any missing field is logged and skipped, never thrown.
  */
 async function handleSubscriptionInvoice(invoice: Stripe.Invoice) {
+  // These fields move around / aren't surfaced on Stripe.Invoice across API
+  // versions — read them through one narrow view instead of `any`.
+  const inv = invoice as Stripe.Invoice & {
+    subscription?: string | { id: string } | null;
+    parent?: { subscription_details?: { subscription?: string | null } | null } | null;
+    customer_phone?: string | null;
+    payment_intent?: string | { id: string } | null;
+  };
   // The subscription id can live in a couple of places across API versions.
   const subscriptionId =
-    typeof (invoice as any).subscription === "string"
-      ? (invoice as any).subscription
-      : (invoice as any).subscription?.id ||
-        (invoice as any).parent?.subscription_details?.subscription ||
+    typeof inv.subscription === "string"
+      ? inv.subscription
+      : inv.subscription?.id ||
+        inv.parent?.subscription_details?.subscription ||
         null;
 
   if (!subscriptionId) {
@@ -344,7 +352,7 @@ async function handleSubscriptionInvoice(invoice: Stripe.Invoice) {
   const customerEmail =
     meta.customer_email || invoice.customer_email || "";
   const customerPhone =
-    (invoice as any).customer_phone || null;
+    inv.customer_phone || null;
   const totalAmount = ((invoice.amount_paid ?? 0) / 100).toFixed(2);
 
   const randomSuffix = crypto.randomInt(1000, 9999);
@@ -361,8 +369,8 @@ async function handleSubscriptionInvoice(invoice: Stripe.Invoice) {
       customerPhone: customerPhone ?? undefined,
       status: "pending",
       stripePaymentIntentId:
-        typeof (invoice as any).payment_intent === "string"
-          ? (invoice as any).payment_intent
+        typeof inv.payment_intent === "string"
+          ? inv.payment_intent
           : undefined,
       stripePaymentStatus: "paid",
     })

@@ -671,7 +671,9 @@ function InquiryCard({
                         </div>
                       );
                     }
-                  } catch (e) {}
+                  } catch (e) {
+                    console.warn('[AdminInquiries] Failed to parse imageAttachments JSON', e);
+                  }
                   return null;
                 })()}
 
